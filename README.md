@@ -8,6 +8,7 @@ Tools for reading and manipulating data from the 1999 N64 release of the video g
 - `formats`: Kaitai Struct descriptions of game file formats
 - `js`: Format parsers and convenience code for Javascript/Typescript
 - `python`: Format parsers and convenience classes for Python 3
+- `tools`: Stand-alone modding and inspection tools
 
 ## License
 

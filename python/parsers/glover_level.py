@@ -262,7 +262,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class DiffuseLight(KaitaiStruct):
-        SEQ_FIELDS = ["r", "g", "b", "theta_1", "theta_2"]
+        SEQ_FIELDS = ["r", "g", "b", "theta_x", "theta_y"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -280,12 +280,27 @@ class GloverLevel(KaitaiStruct):
             self._debug['b']['start'] = self._io.pos()
             self.b = self._io.read_u2be()
             self._debug['b']['end'] = self._io.pos()
-            self._debug['theta_1']['start'] = self._io.pos()
-            self.theta_1 = self._io.read_f4be()
-            self._debug['theta_1']['end'] = self._io.pos()
-            self._debug['theta_2']['start'] = self._io.pos()
-            self.theta_2 = self._io.read_f4be()
-            self._debug['theta_2']['end'] = self._io.pos()
+            self._debug['theta_x']['start'] = self._io.pos()
+            self.theta_x = self._io.read_f4be()
+            self._debug['theta_x']['end'] = self._io.pos()
+            self._debug['theta_y']['start'] = self._io.pos()
+            self.theta_y = self._io.read_f4be()
+            self._debug['theta_y']['end'] = self._io.pos()
+
+
+    class PlatPathAcceleration(KaitaiStruct):
+        SEQ_FIELDS = ["acceleration"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['acceleration']['start'] = self._io.pos()
+            self.acceleration = self._io.read_f4be()
+            self._debug['acceleration']['end'] = self._io.pos()
 
 
     class Buzzer(KaitaiStruct):
@@ -617,6 +632,27 @@ class GloverLevel(KaitaiStruct):
             self._debug['radius']['end'] = self._io.pos()
 
 
+    class PlatSetInitialPos(KaitaiStruct):
+        SEQ_FIELDS = ["x", "y", "z"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['y']['start'] = self._io.pos()
+            self.y = self._io.read_f4be()
+            self._debug['y']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+
+
     class EnemyInstructionB(KaitaiStruct):
         SEQ_FIELDS = ["u32_0x02", "u32_0x06", "u32_0x0a", "u32_0x08", "u32_0x0c", "u32_0x10", "u32_0x0e", "u32_0x18", "u32_0x1e", "u32_0x14", "u32_0x16"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -660,21 +696,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x16']['start'] = self._io.pos()
             self.u32_0x16 = self._io.read_u2be()
             self._debug['u32_0x16']['end'] = self._io.pos()
-
-
-    class PlatPathSpeed(KaitaiStruct):
-        SEQ_FIELDS = ["speed"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['speed']['start'] = self._io.pos()
-            self.speed = self._io.read_f4be()
-            self._debug['speed']['end'] = self._io.pos()
 
 
     class PlatMaxVelocity(KaitaiStruct):
@@ -971,6 +992,21 @@ class GloverLevel(KaitaiStruct):
             self._debug['instr']['start'] = self._io.pos()
             self.instr = GloverLevel.EnemyInstruction(self._io, self, self._root)
             self._debug['instr']['end'] = self._io.pos()
+
+
+    class PlatSetTag(KaitaiStruct):
+        SEQ_FIELDS = ["tag"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['tag']['start'] = self._io.pos()
+            self.tag = self._io.read_u2be()
+            self._debug['tag']['end'] = self._io.pos()
 
 
     class Enemy0xa1(KaitaiStruct):
@@ -1323,27 +1359,6 @@ class GloverLevel(KaitaiStruct):
             pass
 
 
-    class PlatPos0xa6(KaitaiStruct):
-        SEQ_FIELDS = ["x", "y", "z"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['x']['start'] = self._io.pos()
-            self.x = self._io.read_f4be()
-            self._debug['x']['end'] = self._io.pos()
-            self._debug['y']['start'] = self._io.pos()
-            self.y = self._io.read_f4be()
-            self._debug['y']['end'] = self._io.pos()
-            self._debug['z']['start'] = self._io.pos()
-            self.z = self._io.read_f4be()
-            self._debug['z']['end'] = self._io.pos()
-
-
     class PlatSpecial0xc7(KaitaiStruct):
         SEQ_FIELDS = ["u16_0x2a", "u16_0x1c_and_0x24", "u16_0x28"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1602,6 +1617,21 @@ class GloverLevel(KaitaiStruct):
             pass
 
 
+    class PlatSetParent(KaitaiStruct):
+        SEQ_FIELDS = ["tag"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['tag']['start'] = self._io.pos()
+            self.tag = self._io.read_u2be()
+            self._debug['tag']['end'] = self._io.pos()
+
+
     class PuzzleOr(KaitaiStruct):
         SEQ_FIELDS = []
         def __init__(self, _io, _parent=None, _root=None):
@@ -1697,7 +1727,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 7:
                 self.params = GloverLevel.PuzzleNumtimes(self._io, self, self._root)
             elif _on == 113:
-                self.params = GloverLevel.PlatMvspnSetparent(self._io, self, self._root)
+                self.params = GloverLevel.PlatSetParent(self._io, self, self._root)
             elif _on == 121:
                 self.params = GloverLevel.PlatScale(self._io, self, self._root)
             elif _on == 96:
@@ -1785,7 +1815,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 8:
                 self.params = GloverLevel.PuzzleAny(self._io, self, self._root)
             elif _on == 166:
-                self.params = GloverLevel.PlatPos0xa6(self._io, self, self._root)
+                self.params = GloverLevel.PlatSetInitialPos(self._io, self, self._root)
             elif _on == 114:
                 self.params = GloverLevel.PlatConf0x72(self._io, self, self._root)
             elif _on == 181:
@@ -1797,9 +1827,9 @@ class GloverLevel(KaitaiStruct):
             elif _on == 117:
                 self.params = GloverLevel.PlatOrbit0x75(self._io, self, self._root)
             elif _on == 152:
-                self.params = GloverLevel.Unknown0x98(self._io, self, self._root)
+                self.params = GloverLevel.AmbientLight(self._io, self, self._root)
             elif _on == 109:
-                self.params = GloverLevel.PlatPathSpeed(self._io, self, self._root)
+                self.params = GloverLevel.PlatPathAcceleration(self._io, self, self._root)
             elif _on == 32000:
                 self.params = GloverLevel.EndLevelData(self._io, self, self._root)
             elif _on == 140:
@@ -1867,7 +1897,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 198:
                 self.params = GloverLevel.Plat0xc6(self._io, self, self._root)
             elif _on == 111:
-                self.params = GloverLevel.PlatPuzzle0x6f(self._io, self, self._root)
+                self.params = GloverLevel.PlatSetTag(self._io, self, self._root)
             elif _on == 190:
                 self.params = GloverLevel.EnvironmentalSound(self._io, self, self._root)
             elif _on == 196:
@@ -2342,6 +2372,27 @@ class GloverLevel(KaitaiStruct):
             self._debug['pitch']['end'] = self._io.pos()
 
 
+    class AmbientLight(KaitaiStruct):
+        SEQ_FIELDS = ["r", "g", "b"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['r']['start'] = self._io.pos()
+            self.r = self._io.read_u2be()
+            self._debug['r']['end'] = self._io.pos()
+            self._debug['g']['start'] = self._io.pos()
+            self.g = self._io.read_u2be()
+            self._debug['g']['end'] = self._io.pos()
+            self._debug['b']['start'] = self._io.pos()
+            self.b = self._io.read_u2be()
+            self._debug['b']['end'] = self._io.pos()
+
+
     class Enemy(KaitaiStruct):
         SEQ_FIELDS = ["enemy_type", "u1", "x", "y", "z", "y_rotation"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2370,21 +2421,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['y_rotation']['start'] = self._io.pos()
             self.y_rotation = self._io.read_f4be()
             self._debug['y_rotation']['end'] = self._io.pos()
-
-
-    class PlatPuzzle0x6f(KaitaiStruct):
-        SEQ_FIELDS = ["tag"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['tag']['start'] = self._io.pos()
-            self.tag = self._io.read_u2be()
-            self._debug['tag']['end'] = self._io.pos()
 
 
     class Plat0xa4(KaitaiStruct):
@@ -2492,7 +2528,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class Garib(KaitaiStruct):
-        SEQ_FIELDS = ["x", "y", "z", "u8_0x0e", "u8_0x0f"]
+        SEQ_FIELDS = ["x", "y", "z", "type", "u8_0x0f"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2510,9 +2546,9 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['start'] = self._io.pos()
             self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
-            self._debug['u8_0x0e']['start'] = self._io.pos()
-            self.u8_0x0e = self._io.read_u2be()
-            self._debug['u8_0x0e']['end'] = self._io.pos()
+            self._debug['type']['start'] = self._io.pos()
+            self.type = self._io.read_u2be()
+            self._debug['type']['end'] = self._io.pos()
             self._debug['u8_0x0f']['start'] = self._io.pos()
             self.u8_0x0f = self._io.read_u2be()
             self._debug['u8_0x0f']['end'] = self._io.pos()
@@ -2561,7 +2597,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class PlatPathPoint(KaitaiStruct):
-        SEQ_FIELDS = ["frame_id", "x", "y", "z"]
+        SEQ_FIELDS = ["duration", "x", "y", "z"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2570,9 +2606,9 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['frame_id']['start'] = self._io.pos()
-            self.frame_id = self._io.read_u2be()
-            self._debug['frame_id']['end'] = self._io.pos()
+            self._debug['duration']['start'] = self._io.pos()
+            self.duration = self._io.read_s2be()
+            self._debug['duration']['end'] = self._io.pos()
             self._debug['x']['start'] = self._io.pos()
             self.x = self._io.read_f4be()
             self._debug['x']['end'] = self._io.pos()
@@ -2865,27 +2901,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x28']['start'] = self._io.pos()
             self.u32_0x28 = self._io.read_u4be()
             self._debug['u32_0x28']['end'] = self._io.pos()
-
-
-    class Unknown0x98(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['h_0x02']['start'] = self._io.pos()
-            self.h_0x02 = self._io.read_u2be()
-            self._debug['h_0x02']['end'] = self._io.pos()
-            self._debug['h_0x04']['start'] = self._io.pos()
-            self.h_0x04 = self._io.read_u2be()
-            self._debug['h_0x04']['end'] = self._io.pos()
 
 
     class CameoInst1(KaitaiStruct):
@@ -3629,21 +3644,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['message_id']['start'] = self._io.pos()
             self.message_id = self._io.read_u2be()
             self._debug['message_id']['end'] = self._io.pos()
-
-
-    class PlatMvspnSetparent(KaitaiStruct):
-        SEQ_FIELDS = ["parent_tag"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['parent_tag']['start'] = self._io.pos()
-            self.parent_tag = self._io.read_u2be()
-            self._debug['parent_tag']['end'] = self._io.pos()
 
 
     class PuzzleAction0x490x4d(KaitaiStruct):

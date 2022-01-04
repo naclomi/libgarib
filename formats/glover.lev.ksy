@@ -26,7 +26,7 @@ types:
             0xA9: unknown_0xa9
             0xBB: mr_tip
             0x97: diffuse_light
-            0x98: unknown_0x98
+            0x98: ambient_light
             0x01: unknown_0x01
             0x02: ball_spawn_point
             0x03: unknown_0x03
@@ -59,7 +59,7 @@ types:
             0x58: plat_mvspn_0x58
             0x59: plat_mvspn_0x59
             0x5a: plat_mvspn_0x5a
-            0x71: plat_mvspn_setparent
+            0x71: plat_set_parent
             0x73: plat_mvspn_0x73
             0x74: plat_mvspn_0x74
             0x7b: plat_spin_0x7b
@@ -111,9 +111,9 @@ types:
             0x5f: plat_go_forwards_0x5f
             0x6b: plat_path_point
             0x6c: plat_max_velocity
-            0x6d: plat_path_speed
+            0x6d: plat_path_acceleration
             0xa7: plat_pos_0xa7
-            0xa6: plat_pos_0xa6
+            0xa6: plat_set_initial_pos
 
             0xc0: plat_anim_0xc0
             0xa4: plat_0xa4
@@ -124,7 +124,7 @@ types:
             0x9d: plat_0x9d
             0x66: plat_0x66
             0x6a: plat_or_actor_0x6a
-            0x6f: plat_puzzle_0x6f
+            0x6f: plat_set_tag
             0x82: plat_spike
             0x79: plat_scale
             0x7a: plat_str_0x7a
@@ -210,10 +210,6 @@ types:
         type: u2
 
   diffuse_light:
-    # Can have up to two diffuse lights
-    # angles are added to together (weird??) and applied to a y-axis rotation
-    # TODO: the addition might be an emulator rendering bug; it seems much more likely
-    # that one is for y axis rotation and the other for x axis
     seq:
       - id: r
         type: u2
@@ -221,20 +217,19 @@ types:
         type: u2
       - id: b
         type: u2
-      - id: theta_1
+      - id: theta_x
         type: f4
-      - id: theta_2
+      - id: theta_y
         type: f4
 
-  unknown_0x98:
-    # TODO
+  ambient_light:
     # notes: each H is cast to a B at runtime
     seq:
-      - id: h_0x00
+      - id: r
         type: u2
-      - id: h_0x02
+      - id: g
         type: u2
-      - id: h_0x04
+      - id: b
         type: u2
 
   unknown_0x01:
@@ -898,7 +893,7 @@ types:
   garib:
     # TODO: figure out the u8's better.
     # from observations:
-    # u8_0x0e: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
+    # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
         type: f4 
@@ -906,7 +901,7 @@ types:
         type: f4 
       - id: z
         type: f4 
-      - id: u8_0x0e
+      - id: type
         type: u2 
       - id: u8_0x0f
         type: u2 
@@ -958,9 +953,9 @@ types:
       - id: u32_0x18
         type: u4
 
-  plat_mvspn_setparent:
+  plat_set_parent:
     seq:
-      - id: parent_tag
+      - id: tag
         type: u2
 
   plat_mvspn_0x73:
@@ -1481,8 +1476,8 @@ types:
 
   plat_path_point: # 0x6b
     seq:
-      - id: frame_id # TODO: investigate frame_id
-        type: u2
+      - id: duration
+        type: s2
       - id: x
         type: f4
       - id: y
@@ -1495,9 +1490,9 @@ types:
       - id: velocity
         type: f4
 
-  plat_path_speed: # 0x6d
+  plat_path_acceleration: # 0x6d
     seq:
-      - id: speed
+      - id: acceleration
         type: f4
 
   plat_pos_0xa7: # 0xa7
@@ -1505,7 +1500,7 @@ types:
       - id: u8_idx
         type: u2
 
-  plat_pos_0xa6: # 0xa6
+  plat_set_initial_pos: # 0xa6
     seq:
       - id: x
         type: f4
@@ -1569,7 +1564,7 @@ types:
         type: u2
     
 
-  plat_puzzle_0x6f: # 0x6f
+  plat_set_tag: # 0x6f
     seq:
       - id: tag
         type: u2
