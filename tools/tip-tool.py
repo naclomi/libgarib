@@ -1,4 +1,55 @@
 #!/usr/bin/env python3
+#
+# Mr. Tip dialog editing tool
+# 01/03/2022 // naclomi
+#
+# Usage notes:
+#
+# Default ROM offsets expect a big-endian Glover N64 ROM
+# with a checksum of 0x9661EFD7.
+#
+# Rip dialog to YAML with the 'rip' command, patch new
+# dialog with the 'patch' command. Patches are read either
+# from a yaml script file specified or, if none is specified,
+# stdin.
+#
+# YAML format is a list of list of lists: script is a list
+# of messages, message is a list of pages, page is a list
+# of lines of text.
+#
+# Techincal notes:
+#
+# Tip messages are stored in a table whose records
+# correspond to individual lines of text. The record's
+# format is as follows:
+#
+# struct MsgLine {
+#   char *text; // RAM address
+#   uint32_t action;   
+# }
+# 
+# The text itself is stored as a null-terminated string
+# elsewhere in ROM. The record's text pointer is relative
+# to the game's RAM layout, not ROM layout, so to work
+# with text in the ROM you have to translate:
+#   rom_address = (ram_address & 0xFFFFF) + 0x1000;
+# and
+#   ram_address = (rom_address - 0x1000) | 0x80100000;
+#
+# The action byte indicates what to do after printing
+# a line of text to the screen:
+#   0 - next line
+#   1 - next page
+#   2 - end message
+#
+# A message's ID is given by how many complete messages
+# came before it in this table. Thus, an in-level Mr. Tip
+# object that prints the message with ID 9 will search from
+# the beginning of this table and start printing lines of
+# text immediately following the ninth record with an action
+# byte equalling 2 ("end message")
+#
+
 import argparse
 import struct
 import sys
