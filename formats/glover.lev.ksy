@@ -1060,9 +1060,9 @@ types:
 
   set_exit: # 0xa8
     seq:
-      - id: behavior_u16_0x40
+      - id: type # TODO: enumerate types
         type: u2
-      - id: visible # TODO: enum: 0: invisible, 1: visible
+      - id: visible
         type: u2
 
   plat_cat_0x69: # 0x69

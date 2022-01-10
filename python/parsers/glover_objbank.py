@@ -86,7 +86,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class ObjectRoot(KaitaiStruct):
-        SEQ_FIELDS = ["obj_id", "bank_base_addr", "u2", "mesh_ptr", "u3", "u4", "u5"]
+        SEQ_FIELDS = ["obj_id", "bank_base_addr", "u2", "mesh_ptr", "u3", "u4", "animation_ptr"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -113,9 +113,9 @@ class GloverObjbank(KaitaiStruct):
             self._debug['u4']['start'] = self._io.pos()
             self.u4 = self._io.read_u4be()
             self._debug['u4']['end'] = self._io.pos()
-            self._debug['u5']['start'] = self._io.pos()
-            self.u5 = self._io.read_u4be()
-            self._debug['u5']['end'] = self._io.pos()
+            self._debug['animation_ptr']['start'] = self._io.pos()
+            self.animation_ptr = self._io.read_u4be()
+            self._debug['animation_ptr']['end'] = self._io.pos()
 
         @property
         def mesh(self):
@@ -131,6 +131,21 @@ class GloverObjbank(KaitaiStruct):
                 self._io.seek(_pos)
 
             return self._m_mesh if hasattr(self, '_m_mesh') else None
+
+        @property
+        def animation(self):
+            if hasattr(self, '_m_animation'):
+                return self._m_animation if hasattr(self, '_m_animation') else None
+
+            if self.animation_ptr != 0:
+                _pos = self._io.pos()
+                self._io.seek(self.animation_ptr)
+                self._debug['_m_animation']['start'] = self._io.pos()
+                self._m_animation = GloverObjbank.Animation(self._io, self, self._root)
+                self._debug['_m_animation']['end'] = self._io.pos()
+                self._io.seek(_pos)
+
+            return self._m_animation if hasattr(self, '_m_animation') else None
 
 
     class DisplayListCmd(KaitaiStruct):
@@ -211,6 +226,30 @@ class GloverObjbank(KaitaiStruct):
             self._debug['t']['end'] = self._io.pos()
 
 
+    class AnimationDefinition(KaitaiStruct):
+        SEQ_FIELDS = ["start_time", "end_time", "playback_speed", "u1"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['start_time']['start'] = self._io.pos()
+            self.start_time = self._io.read_s2be()
+            self._debug['start_time']['end'] = self._io.pos()
+            self._debug['end_time']['start'] = self._io.pos()
+            self.end_time = self._io.read_s2be()
+            self._debug['end_time']['end'] = self._io.pos()
+            self._debug['playback_speed']['start'] = self._io.pos()
+            self.playback_speed = self._io.read_f4be()
+            self._debug['playback_speed']['end'] = self._io.pos()
+            self._debug['u1']['start'] = self._io.pos()
+            self.u1 = self._io.read_u4be()
+            self._debug['u1']['end'] = self._io.pos()
+
+
     class Face(KaitaiStruct):
         SEQ_FIELDS = ["v0", "v1", "v2"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -272,6 +311,100 @@ class GloverObjbank(KaitaiStruct):
             self._debug['u7']['start'] = self._io.pos()
             self.u7 = self._io.read_u2be()
             self._debug['u7']['end'] = self._io.pos()
+
+
+    class Animation(KaitaiStruct):
+        SEQ_FIELDS = ["num_animation_definitions", "current_animation_idx", "u3", "is_playing", "time_delta", "next_anim_idx", "pad", "next_is_playing", "next_time_delta", "next_anim_slot_idx", "u15", "animation_definitions_ptr", "cur_time"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['num_animation_definitions']['start'] = self._io.pos()
+            self.num_animation_definitions = self._io.read_s2be()
+            self._debug['num_animation_definitions']['end'] = self._io.pos()
+            self._debug['current_animation_idx']['start'] = self._io.pos()
+            self.current_animation_idx = self._io.read_s2be()
+            self._debug['current_animation_idx']['end'] = self._io.pos()
+            self._debug['u3']['start'] = self._io.pos()
+            self.u3 = self._io.read_u4be()
+            self._debug['u3']['end'] = self._io.pos()
+            self._debug['is_playing']['start'] = self._io.pos()
+            self.is_playing = self._io.read_u4be()
+            self._debug['is_playing']['end'] = self._io.pos()
+            self._debug['time_delta']['start'] = self._io.pos()
+            self.time_delta = self._io.read_f4be()
+            self._debug['time_delta']['end'] = self._io.pos()
+            self._debug['next_anim_idx']['start'] = self._io.pos()
+            self.next_anim_idx = [None] * (5)
+            for i in range(5):
+                if not 'arr' in self._debug['next_anim_idx']:
+                    self._debug['next_anim_idx']['arr'] = []
+                self._debug['next_anim_idx']['arr'].append({'start': self._io.pos()})
+                self.next_anim_idx[i] = self._io.read_s2be()
+                self._debug['next_anim_idx']['arr'][i]['end'] = self._io.pos()
+
+            self._debug['next_anim_idx']['end'] = self._io.pos()
+            self._debug['pad']['start'] = self._io.pos()
+            self.pad = self._io.read_u2be()
+            self._debug['pad']['end'] = self._io.pos()
+            self._debug['next_is_playing']['start'] = self._io.pos()
+            self.next_is_playing = [None] * (5)
+            for i in range(5):
+                if not 'arr' in self._debug['next_is_playing']:
+                    self._debug['next_is_playing']['arr'] = []
+                self._debug['next_is_playing']['arr'].append({'start': self._io.pos()})
+                self.next_is_playing[i] = self._io.read_u4be()
+                self._debug['next_is_playing']['arr'][i]['end'] = self._io.pos()
+
+            self._debug['next_is_playing']['end'] = self._io.pos()
+            self._debug['next_time_delta']['start'] = self._io.pos()
+            self.next_time_delta = [None] * (5)
+            for i in range(5):
+                if not 'arr' in self._debug['next_time_delta']:
+                    self._debug['next_time_delta']['arr'] = []
+                self._debug['next_time_delta']['arr'].append({'start': self._io.pos()})
+                self.next_time_delta[i] = self._io.read_u4be()
+                self._debug['next_time_delta']['arr'][i]['end'] = self._io.pos()
+
+            self._debug['next_time_delta']['end'] = self._io.pos()
+            self._debug['next_anim_slot_idx']['start'] = self._io.pos()
+            self.next_anim_slot_idx = self._io.read_s2be()
+            self._debug['next_anim_slot_idx']['end'] = self._io.pos()
+            self._debug['u15']['start'] = self._io.pos()
+            self.u15 = self._io.read_u2be()
+            self._debug['u15']['end'] = self._io.pos()
+            self._debug['animation_definitions_ptr']['start'] = self._io.pos()
+            self.animation_definitions_ptr = self._io.read_u4be()
+            self._debug['animation_definitions_ptr']['end'] = self._io.pos()
+            self._debug['cur_time']['start'] = self._io.pos()
+            self.cur_time = self._io.read_f4be()
+            self._debug['cur_time']['end'] = self._io.pos()
+
+        @property
+        def animation_definitions(self):
+            if hasattr(self, '_m_animation_definitions'):
+                return self._m_animation_definitions if hasattr(self, '_m_animation_definitions') else None
+
+            if self.animation_definitions_ptr != 0:
+                _pos = self._io.pos()
+                self._io.seek(self.animation_definitions_ptr)
+                self._debug['_m_animation_definitions']['start'] = self._io.pos()
+                self._m_animation_definitions = [None] * (self.num_animation_definitions)
+                for i in range(self.num_animation_definitions):
+                    if not 'arr' in self._debug['_m_animation_definitions']:
+                        self._debug['_m_animation_definitions']['arr'] = []
+                    self._debug['_m_animation_definitions']['arr'].append({'start': self._io.pos()})
+                    self._m_animation_definitions[i] = GloverObjbank.AnimationDefinition(self._io, self, self._root)
+                    self._debug['_m_animation_definitions']['arr'][i]['end'] = self._io.pos()
+
+                self._debug['_m_animation_definitions']['end'] = self._io.pos()
+                self._io.seek(_pos)
+
+            return self._m_animation_definitions if hasattr(self, '_m_animation_definitions') else None
 
 
     class Mesh(KaitaiStruct):

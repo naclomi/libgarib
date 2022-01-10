@@ -1238,7 +1238,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class SetExit(KaitaiStruct):
-        SEQ_FIELDS = ["behavior_u16_0x40", "visible"]
+        SEQ_FIELDS = ["type", "visible"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1247,9 +1247,9 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['behavior_u16_0x40']['start'] = self._io.pos()
-            self.behavior_u16_0x40 = self._io.read_u2be()
-            self._debug['behavior_u16_0x40']['end'] = self._io.pos()
+            self._debug['type']['start'] = self._io.pos()
+            self.type = self._io.read_u2be()
+            self._debug['type']['end'] = self._io.pos()
             self._debug['visible']['start'] = self._io.pos()
             self.visible = self._io.read_u2be()
             self._debug['visible']['end'] = self._io.pos()

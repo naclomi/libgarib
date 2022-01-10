@@ -33,13 +33,18 @@ types:
         type: u4
       - id: u4
         type: u4
-      - id: u5 # TODO
+      - id: animation_ptr
         type: u4
     instances:
       mesh:
         pos: mesh_ptr
         type: mesh
         if: mesh_ptr != 0
+      animation:
+        pos: animation_ptr
+        type: animation
+        if: animation_ptr != 0
+
   mesh:
     seq:
       - id: id
@@ -268,4 +273,54 @@ types:
         type: u1
       - id: params
         size: 7
-        
+  animation:
+    seq:
+      - id: num_animation_definitions
+        type: s2
+      - id: current_animation_idx
+        type: s2
+      - id: u3
+        type: u4
+      - id: is_playing
+        type: u4
+      - id: time_delta
+        type: f4
+      - id: next_anim_idx
+        type: s2
+        repeat: expr
+        repeat-expr: 5
+      - id: pad
+        type: u2
+      - id: next_is_playing
+        type: u4
+        repeat: expr
+        repeat-expr: 5
+      - id: next_time_delta
+        type: u4
+        repeat: expr
+        repeat-expr: 5
+      - id: next_anim_slot_idx
+        type: s2
+      - id: u15
+        type: u2
+      - id: animation_definitions_ptr
+        type: u4
+      - id: cur_time
+        type: f4
+    instances:
+      animation_definitions:
+        pos: animation_definitions_ptr
+        type: animation_definition
+        repeat: expr
+        repeat-expr: num_animation_definitions
+        if: animation_definitions_ptr != 0
+  animation_definition:
+    seq:
+      - id: start_time
+        type: s2
+      - id: end_time
+        type: s2
+      - id: playback_speed
+        type: f4
+      - id: u1
+        type: u4
