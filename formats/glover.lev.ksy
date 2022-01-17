@@ -65,7 +65,7 @@ types:
             0x7b: plat_spin_0x7b
 
             0xb8: plat_special_0xb8
-            0xb3: render_0xb3
+            0xb3: plat_actor_enable_water_animation
             0xb7: set_global_0xb7
             0xb5: buzzer
             0xb6: plat_special_0xb6
@@ -73,7 +73,7 @@ types:
             0xb9: plat_special_0xb9
             0xa8: set_exit
             0x69: plat_cat_0x69
-            0x68: plat_special_0x68
+            0x68: platform_conveyor
             0x9e: plat_special_0x9e
             0x89: set_teleport
             0x8a: plat_fan_0x8a
@@ -123,7 +123,7 @@ types:
             0xc8: plat_destructible_sound
             0x9d: plat_0x9d
             0x66: plat_0x66
-            0x6a: plat_or_actor_0x6a
+            0x6a: plat_actor_surface_type
             0x6f: plat_set_tag
             0x82: plat_spike
             0x79: plat_scale
@@ -136,7 +136,7 @@ types:
             0xa2: vent
             0xa3: vent_append_0xa3
             0x62: platform
-            0x5d: plat_0x5d
+            0x5d: null_platform
             0x83: enemy
             0xa1: enemy_0xa1
             0xba: enemy_0xba
@@ -908,17 +908,17 @@ types:
 
   powerup:
     seq:
-      - id: u16_0x00
+      - id: type
         type: u2
       - id: u16_0x02
         type: u2
       - id: u16_0x04
         type: u2
-      - id: f_0x06
+      - id: x
         type: f4 
-      - id: f_0x0a
+      - id: y
         type: f4 
-      - id: f_0x0e
+      - id: z
         type: f4 
 
 
@@ -988,12 +988,11 @@ types:
   plat_special_0xb8: # 0xb8
     seq: []
 
-  render_0xb3: # 0xb3
-    # TODO: ORs 0x20 into render mode of active platform or actor
+  plat_actor_enable_water_animation: # 0xb3
     seq: []
 
   set_global_0xb7: # 0xb7
-    # TODO: writes value to RAM 0x801efcf4
+    # TODO: writes value to RAM 0x801efcf4, only use is to set some behavior for setting platform's initial position
     seq:
       - id: value
         type: u4
@@ -1086,14 +1085,14 @@ types:
       - id: u32_0x1c
         type: u4
 
-  plat_special_0x68: # 0x68
+  platform_conveyor: # 0x68
     seq:
-      - id: u32_0x5c
-        type: u4
-      - id: u32_0x60
-        type: u4
-      - id: u32_0x65
-        type: u4
+      - id: vel_x
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_z
+        type: f4
 
   plat_special_0x9e: # 0x9e
     seq:
@@ -1557,8 +1556,8 @@ types:
   plat_0x66: # 0x66
     seq: []
 
-  plat_or_actor_0x6a: # 0x6a
-    # TODO: operates on platforms or actors
+  plat_actor_surface_type: # 0x6a
+    # TODO: figure out what value means. 6 = insta-death on contact
     seq:
       - id: value
         type: u2
@@ -1745,7 +1744,7 @@ types:
         type: u2
       - id: u16_0x0a
         type: u2
-      - id: tag
+      - id: parent_tag # possibly 0/NULL
         type: u2
 
       - id: f_0x38
@@ -1780,7 +1779,7 @@ types:
         size: 8
 
 
-  plat_0x5d: # 0x5d
+  null_platform: # 0x5d
     seq: []
 
   enemy: # 0x83

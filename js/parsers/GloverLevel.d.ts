@@ -23,24 +23,6 @@ declare class GloverLevel {
 }
 
 declare namespace GloverLevel {
-  class PlatSpecial0x68 {
-    constructor(io: any, parent?: any, root?: any);
-    __type: 'PlatSpecial0x68';
-    _io: any;
-
-    u320x5c: number;
-    u320x60: number;
-    u320x65: number;
-
-    _debug: {
-      u320x5c: DebugPosition;
-      u320x60: DebugPosition;
-      u320x65: DebugPosition;
-    };
-  }
-}
-
-declare namespace GloverLevel {
   class PuzzleAction0x54 {
     constructor(io: any, parent?: any, root?: any);
     __type: 'PuzzleAction0x54';
@@ -430,6 +412,20 @@ declare namespace GloverLevel {
 
     _debug: {
       enable: DebugPosition;
+    };
+  }
+}
+
+declare namespace GloverLevel {
+  class PlatActorSurfaceType {
+    constructor(io: any, parent?: any, root?: any);
+    __type: 'PlatActorSurfaceType';
+    _io: any;
+
+    value: number;
+
+    _debug: {
+      value: DebugPosition;
     };
   }
 }
@@ -840,7 +836,7 @@ declare namespace GloverLevel {
 
     u160x08: number;
     u160x0a: number;
-    tag: number;
+    parentTag: number;
     f0x38: number;
     f0x3c: number;
     f0x40: number;
@@ -851,7 +847,7 @@ declare namespace GloverLevel {
     _debug: {
       u160x08: DebugPosition;
       u160x0a: DebugPosition;
-      tag: DebugPosition;
+      parentTag: DebugPosition;
       f0x38: DebugPosition;
       f0x3c: DebugPosition;
       f0x40: DebugPosition;
@@ -1041,6 +1037,18 @@ declare namespace GloverLevel {
 }
 
 declare namespace GloverLevel {
+  class PlatActorEnableWaterAnimation {
+    constructor(io: any, parent?: any, root?: any);
+    __type: 'PlatActorEnableWaterAnimation';
+    _io: any;
+
+
+    _debug: {
+    };
+  }
+}
+
+declare namespace GloverLevel {
   class EnemyInstructionC {
     constructor(io: any, parent?: any, root?: any);
     __type: 'EnemyInstructionC';
@@ -1107,25 +1115,55 @@ declare namespace GloverLevel {
 }
 
 declare namespace GloverLevel {
+  class NullPlatform {
+    constructor(io: any, parent?: any, root?: any);
+    __type: 'NullPlatform';
+    _io: any;
+
+
+    _debug: {
+    };
+  }
+}
+
+declare namespace GloverLevel {
   class Powerup {
     constructor(io: any, parent?: any, root?: any);
     __type: 'Powerup';
     _io: any;
 
-    u160x00: number;
+    type: number;
     u160x02: number;
     u160x04: number;
-    f0x06: number;
-    f0x0a: number;
-    f0x0e: number;
+    x: number;
+    y: number;
+    z: number;
 
     _debug: {
-      u160x00: DebugPosition;
+      type: DebugPosition;
       u160x02: DebugPosition;
       u160x04: DebugPosition;
-      f0x06: DebugPosition;
-      f0x0a: DebugPosition;
-      f0x0e: DebugPosition;
+      x: DebugPosition;
+      y: DebugPosition;
+      z: DebugPosition;
+    };
+  }
+}
+
+declare namespace GloverLevel {
+  class PlatformConveyor {
+    constructor(io: any, parent?: any, root?: any);
+    __type: 'PlatformConveyor';
+    _io: any;
+
+    velX: number;
+    velY: number;
+    velZ: number;
+
+    _debug: {
+      velX: DebugPosition;
+      velY: DebugPosition;
+      velZ: DebugPosition;
     };
   }
 }
@@ -1206,18 +1244,6 @@ declare namespace GloverLevel {
       h0x00: DebugPosition;
       h0x02: DebugPosition;
       h0x04: DebugPosition;
-    };
-  }
-}
-
-declare namespace GloverLevel {
-  class Plat0x5d {
-    constructor(io: any, parent?: any, root?: any);
-    __type: 'Plat0x5d';
-    _io: any;
-
-
-    _debug: {
     };
   }
 }
@@ -1359,7 +1385,7 @@ declare namespace GloverLevel {
     _io: any;
 
     typeCode: number;
-    params: GloverLevel.Plat0x78 | GloverLevel.PlatRope | GloverLevel.Plat0x5d | GloverLevel.PlatOrbitPause0x76 | GloverLevel.Plat0x9f | GloverLevel.PlatSound0xc2 | GloverLevel.PlatSpecial0xb8 | GloverLevel.PlatCat0x69 | GloverLevel.PlatSpecial0x8e | GloverLevel.PlatSpinBlur0x70 | GloverLevel.VentAppend0xa3 | GloverLevel.Enemy | GloverLevel.PlatPos0xa7 | GloverLevel.LandActor | GloverLevel.Puzzle | GloverLevel.Unknown0xa9 | GloverLevel.Vent | GloverLevel.PlatMvspn0x74 | GloverLevel.PlatOrbitFlip0x77 | GloverLevel.PuzzleOr | GloverLevel.PuzzleNumtimes | GloverLevel.PlatSetParent | GloverLevel.PlatScale | GloverLevel.LookAtHand0x60 | GloverLevel.Unknown0xbf | GloverLevel.Unknown0x01 | GloverLevel.PuzzleAction | GloverLevel.LookAtBall0x61 | GloverLevel.PlatOrActor0x6a | GloverLevel.BackgroundActor0x91 | GloverLevel.PlatDestructible | GloverLevel.PlatSine | GloverLevel.PlatSpin0x7f | GloverLevel.PlatCheckpoint | GloverLevel.PuzzleCond | GloverLevel.PlatMvspn0x73 | GloverLevel.PlatPush0x5b | GloverLevel.PlatPathPoint | GloverLevel.PlatOrbit | GloverLevel.PlatMvspn0x59 | GloverLevel.PlatSpecial0x68 | GloverLevel.Platform | GloverLevel.PlatSpinSound0xc5 | GloverLevel.PlatGoForwards0x5f | GloverLevel.SetTeleport | GloverLevel.PlatMvspn0x58 | GloverLevel.Enemy0xa1 | GloverLevel.PlatFan0x8a | GloverLevel.Unknown0x03 | GloverLevel.PlatAnim0xc0 | GloverLevel.Plat0x7e | GloverLevel.FogConfiguration | GloverLevel.PuzzleAnd | GloverLevel.PlatCrumb0x67 | GloverLevel.PlatRest0x63 | GloverLevel.PlatSpecial0xb9 | GloverLevel.PlatSpecial0xb4 | GloverLevel.EnemyAttackInstruction | GloverLevel.PlatSpinFlip0x7d | GloverLevel.Enemy0xba | GloverLevel.BackgroundActor0xbc | GloverLevel.Backdrop | GloverLevel.PlatSpin0x7b | GloverLevel.Water | GloverLevel.PuzzleAny | GloverLevel.PlatSetInitialPos | GloverLevel.PlatConf0x72 | GloverLevel.Buzzer | GloverLevel.SetActorScale | GloverLevel.PlatSpecial0x9e | GloverLevel.PlatOrbit0x75 | GloverLevel.AmbientLight | GloverLevel.Unrecognized | GloverLevel.PlatPathAcceleration | GloverLevel.EndLevelData | GloverLevel.Wind | GloverLevel.PlatStr0x7a | GloverLevel.Render0xb3 | GloverLevel.Plat0xc3 | GloverLevel.PlatSpike | GloverLevel.MrTip | GloverLevel.Cameo | GloverLevel.PlatSpecial0xc7 | GloverLevel.Plat0xa4 | GloverLevel.PlatSpecial0xb6 | GloverLevel.PlatMaxVelocity | GloverLevel.UnknownSound0xbd | GloverLevel.SetExit | GloverLevel.CameoInst | GloverLevel.PlatSound0xc1 | GloverLevel.GaribGroup | GloverLevel.PlatTopple0x81 | GloverLevel.DiffuseLight | GloverLevel.Plat0x9d | GloverLevel.SetActorRotation | GloverLevel.Garib | GloverLevel.Plat0x66 | GloverLevel.PlatSpecial0x6e | GloverLevel.PlatMagnet0x8b | GloverLevel.EnemyConditionalInstruction | GloverLevel.BallSpawnPoint | GloverLevel.Powerup | GloverLevel.PlatSpinPause0x7c | GloverLevel.PlatDestructibleSound | GloverLevel.Enemy0x84 | GloverLevel.PlatVentAdvanceFrames | GloverLevel.Plat0xc6 | GloverLevel.PlatSetTag | GloverLevel.EnvironmentalSound | GloverLevel.Plat0xc4 | GloverLevel.SetGlobal0xb7 | GloverLevel.PlatSpin0x80 | GloverLevel.PlatMvspn0x5a | GloverLevel.EnemyNormalInstruction | undefined;
+    params: GloverLevel.Plat0x78 | GloverLevel.PlatRope | GloverLevel.NullPlatform | GloverLevel.PlatOrbitPause0x76 | GloverLevel.Plat0x9f | GloverLevel.PlatSound0xc2 | GloverLevel.PlatSpecial0xb8 | GloverLevel.PlatCat0x69 | GloverLevel.PlatSpecial0x8e | GloverLevel.PlatSpinBlur0x70 | GloverLevel.VentAppend0xa3 | GloverLevel.Enemy | GloverLevel.PlatPos0xa7 | GloverLevel.LandActor | GloverLevel.Puzzle | GloverLevel.Unknown0xa9 | GloverLevel.Vent | GloverLevel.PlatMvspn0x74 | GloverLevel.PlatOrbitFlip0x77 | GloverLevel.PuzzleOr | GloverLevel.PuzzleNumtimes | GloverLevel.PlatSetParent | GloverLevel.PlatScale | GloverLevel.LookAtHand0x60 | GloverLevel.Unknown0xbf | GloverLevel.Unknown0x01 | GloverLevel.PuzzleAction | GloverLevel.LookAtBall0x61 | GloverLevel.PlatActorSurfaceType | GloverLevel.BackgroundActor0x91 | GloverLevel.PlatDestructible | GloverLevel.PlatSine | GloverLevel.PlatSpin0x7f | GloverLevel.PlatCheckpoint | GloverLevel.PuzzleCond | GloverLevel.PlatMvspn0x73 | GloverLevel.PlatPush0x5b | GloverLevel.PlatPathPoint | GloverLevel.PlatOrbit | GloverLevel.PlatMvspn0x59 | GloverLevel.PlatformConveyor | GloverLevel.Platform | GloverLevel.PlatSpinSound0xc5 | GloverLevel.PlatGoForwards0x5f | GloverLevel.SetTeleport | GloverLevel.PlatMvspn0x58 | GloverLevel.Enemy0xa1 | GloverLevel.PlatFan0x8a | GloverLevel.Unknown0x03 | GloverLevel.PlatAnim0xc0 | GloverLevel.Plat0x7e | GloverLevel.FogConfiguration | GloverLevel.PuzzleAnd | GloverLevel.PlatCrumb0x67 | GloverLevel.PlatRest0x63 | GloverLevel.PlatSpecial0xb9 | GloverLevel.PlatSpecial0xb4 | GloverLevel.EnemyAttackInstruction | GloverLevel.PlatSpinFlip0x7d | GloverLevel.Enemy0xba | GloverLevel.BackgroundActor0xbc | GloverLevel.Backdrop | GloverLevel.PlatSpin0x7b | GloverLevel.Water | GloverLevel.PuzzleAny | GloverLevel.PlatSetInitialPos | GloverLevel.PlatConf0x72 | GloverLevel.Buzzer | GloverLevel.SetActorScale | GloverLevel.PlatSpecial0x9e | GloverLevel.PlatOrbit0x75 | GloverLevel.AmbientLight | GloverLevel.Unrecognized | GloverLevel.PlatPathAcceleration | GloverLevel.EndLevelData | GloverLevel.Wind | GloverLevel.PlatStr0x7a | GloverLevel.PlatActorEnableWaterAnimation | GloverLevel.Plat0xc3 | GloverLevel.PlatSpike | GloverLevel.MrTip | GloverLevel.Cameo | GloverLevel.PlatSpecial0xc7 | GloverLevel.Plat0xa4 | GloverLevel.PlatSpecial0xb6 | GloverLevel.PlatMaxVelocity | GloverLevel.UnknownSound0xbd | GloverLevel.SetExit | GloverLevel.CameoInst | GloverLevel.PlatSound0xc1 | GloverLevel.GaribGroup | GloverLevel.PlatTopple0x81 | GloverLevel.DiffuseLight | GloverLevel.Plat0x9d | GloverLevel.SetActorRotation | GloverLevel.Garib | GloverLevel.Plat0x66 | GloverLevel.PlatSpecial0x6e | GloverLevel.PlatMagnet0x8b | GloverLevel.EnemyConditionalInstruction | GloverLevel.BallSpawnPoint | GloverLevel.Powerup | GloverLevel.PlatSpinPause0x7c | GloverLevel.PlatDestructibleSound | GloverLevel.Enemy0x84 | GloverLevel.PlatVentAdvanceFrames | GloverLevel.Plat0xc6 | GloverLevel.PlatSetTag | GloverLevel.EnvironmentalSound | GloverLevel.Plat0xc4 | GloverLevel.SetGlobal0xb7 | GloverLevel.PlatSpin0x80 | GloverLevel.PlatMvspn0x5a | GloverLevel.EnemyNormalInstruction | undefined;
 
     _debug: {
       typeCode: DebugPosition;
@@ -1766,20 +1792,6 @@ declare namespace GloverLevel {
 
 
     _debug: {
-    };
-  }
-}
-
-declare namespace GloverLevel {
-  class PlatOrActor0x6a {
-    constructor(io: any, parent?: any, root?: any);
-    __type: 'PlatOrActor0x6a';
-    _io: any;
-
-    value: number;
-
-    _debug: {
-      value: DebugPosition;
     };
   }
 }
@@ -2244,18 +2256,6 @@ declare namespace GloverLevel {
       h0x00: DebugPosition;
       h0x02: DebugPosition;
       h0x04: DebugPosition;
-    };
-  }
-}
-
-declare namespace GloverLevel {
-  class Render0xb3 {
-    constructor(io: any, parent?: any, root?: any);
-    __type: 'Render0xb3';
-    _io: any;
-
-
-    _debug: {
     };
   }
 }
