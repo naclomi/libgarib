@@ -69,7 +69,7 @@ types:
             0xb7: set_global_0xb7
             0xb5: buzzer
             0xb6: plat_special_0xb6
-            0xb4: plat_special_0xb4
+            0xb4: set_object_sparkle
             0xb9: plat_special_0xb9
             0xa8: set_exit
             0x69: plat_cat_0x69
@@ -98,12 +98,12 @@ types:
             0x7c: plat_spin_pause_0x7c
             0x7d: plat_spin_flip_0x7d
             0x7e: plat_0x7e
-            0x7f: plat_spin_0x7f
+            0x7f: plat_constant_spin
             0x80: plat_spin_0x80
             0x81: plat_topple_0x81
             0x60: look_at_hand_0x60
             0x61: look_at_ball_0x61
-            0x70: plat_spin_blur_0x70
+            0x70: plat_rocking
             0x78: plat_0x78
 
             0xc1: plat_sound_0xc1
@@ -888,11 +888,10 @@ types:
       - id: u16_0xd2
         type: u2 
       - id: u8_0xd1
-        type: u2 
+        type: s2 
 
   garib:
-    # TODO: figure out the u8's better.
-    # from observations:
+    # TODO: figure out shadow_update_0x0f better
     # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
@@ -903,7 +902,7 @@ types:
         type: f4 
       - id: type
         type: u2 
-      - id: u8_0x0f
+      - id: shadow_update_0x0f
         type: u2 
 
   powerup:
@@ -1047,10 +1046,10 @@ types:
       - id: u16_0x40
         type: u2
 
-  plat_special_0xb4: # 0xb4
-    # TODO: sets some sort of value in active platform or actor
+  set_object_sparkle: # 0xb4
+    # Works on active actor or platform
     seq:
-      - id: u8_0x23
+      - id: period
         type: u2
 
   plat_special_0xb9: # 0xb9
@@ -1357,7 +1356,7 @@ types:
       - id: u32_0x28
         type: u4
 
-  plat_spin_0x7f: # 0x7f
+  plat_constant_spin: # 0x7f
     # TODO: axis is enum: {"0": "x", "1": "y", "2": "z"}
     seq:
       - id: axis
@@ -1419,17 +1418,17 @@ types:
       - id: u32_0x1c
         type: u4
 
-  plat_spin_blur_0x70: # 0x70
+  plat_rocking: # 0x70
     seq:
-      - id: idx
+      - id: axis
         type: u2
-      - id: u32_0x38
-        type: u4
-      - id: u32_0x18
-        type: u4
+      - id: theta
+        type: f4
+      - id: deceleration
+        type: f4
       - id: f_blur_0x578
         type: f4
-      - id: count
+      - id: frame_advance
         type: u2
 
   plat_0x78: # 0x78
