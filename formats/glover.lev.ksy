@@ -31,7 +31,7 @@ types:
             0x02: ball_spawn_point
             0x03: unknown_0x03
             0xA5: fog_configuration
-            0xBF: unknown_0xbf
+            0xBF: actor_0xbf
             0xBC: background_actor_0xbc
             0x91: background_actor_0x91
             0x92: land_actor
@@ -62,7 +62,7 @@ types:
             0x71: plat_set_parent
             0x73: plat_mvspn_0x73
             0x74: plat_mvspn_0x74
-            0x7b: plat_spin_0x7b
+            0x7b: plat_copy_spin_from_parent
 
             0xb8: plat_special_0xb8
             0xb3: plat_actor_enable_water_animation
@@ -78,7 +78,7 @@ types:
             0x89: set_teleport
             0x8a: plat_fan_0x8a
             0x8b: plat_magnet_0x8b
-            0x63: plat_rest_0x63
+            0x63: plat_checkpoint
             0x67: plat_crumb_0x67
             0xc7: plat_special_0xc7
             0x6e: plat_special_0x6e
@@ -86,10 +86,10 @@ types:
             0x5b: plat_push_0x5b
             0x72: plat_conf_0x72
 
-            0xc4: plat_0xc4
+            0xc4: plat_orbit_sound_0xc4
             0xc6: plat_0xc6
-            0x75: plat_orbit_0x75
-            0x76: plat_orbit_pause_0x76
+            0x75: plat_orbit_around_point
+            0x76: plat_orbit_pause
             0x77: plat_orbit_flip_0x77
 
             0xc3: plat_0xc3
@@ -118,7 +118,7 @@ types:
             0xc0: plat_anim_0xc0
             0xa4: plat_0xa4
             0x5c: plat_vent_advance_frames
-            0x64: plat_checkpoint
+            0x64: plat_no_clip
             0x65: plat_destructible
             0xc8: plat_destructible_sound
             0x9d: plat_0x9d
@@ -291,15 +291,15 @@ types:
       - id: near_clip
         type: u2
 
-  unknown_0xbf:
+  actor_0xbf:
     # TODO
-    # notes: mallocs a struct called "CamColSph", and switches behavior based on
-    #        whether "mode" is 0/1/2. 0 seems to be a 'start' command and 2 seems
-    #        to be an 'append' or something
+    # Used a lot in cutscenes. Searches current actor for a child with the
+    # specified mesh, and then modifies it based on the value of 'mode'.
+    #     0 seems to be a 'start' command and 2 seems to be an 'append'
     seq:
       - id: mode
         type: u2
-      - id: i_0x02
+      - id: child_mesh_id
         type: u4
 
   background_actor_0xbc:
@@ -884,14 +884,18 @@ types:
 ### Collectibles
 
   garib_group:
+    # TODO: investigate furhter
+    # initial_state:
+    #   <0: visible, not collectable
+    #   ==0: invisible, uncollectable
+    #   >0: visible, collectable
     seq:
-      - id: u16_0xd2
+      - id: puzzle_identifier_0xd2
         type: u2 
-      - id: u8_0xd1
+      - id: initial_state
         type: s2 
 
   garib:
-    # TODO: figure out shadow_update_0x0f better
     # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
@@ -902,7 +906,7 @@ types:
         type: f4 
       - id: type
         type: u2 
-      - id: shadow_update_0x0f
+      - id: dynamic_shadow
         type: u2 
 
   powerup:
@@ -977,8 +981,7 @@ types:
       - id: u32_0x3c
         type: u4
 
-  plat_spin_0x7b:
-    # TODO: ....is this right?
+  plat_copy_spin_from_parent:
     seq: []
 
 ###############################################################
@@ -1172,8 +1175,8 @@ types:
       - id: u32_0x1c
         type: u4
 
-  plat_rest_0x63: # 0x63
-    # TODO: seems to influence camera angle on spawn
+  plat_checkpoint: # 0x63
+    # TODO: input seems to influence camera angle on spawn?
     # theta is in radians
     seq:
       - id: u16_0x17
@@ -1245,7 +1248,7 @@ types:
 ###############################################################
 ### Platform Orbit
 
-  plat_0xc4: # 0xc4
+  plat_orbit_sound_0xc4: # 0xc4
     seq:
       - id: u16_0x3a
         type: u2
@@ -1263,33 +1266,33 @@ types:
       - id: u16_0x48
         type: u2
 
-  plat_orbit_0x75: # 0x75
+  plat_orbit_around_point: # 0x75
     # TODO: the parser doesn't consume bytes for everything after idx
     #       when the platform already has a point to orbit,
     #       but it's hard to detect this in a grammar because it
     #       relies on parser state. blah. probably fine to not model
     #       this behavior, but it's ugly.
     seq:
-      - id: idx
+      - id: axis
         type: u2
 
-      - id: u32_0x18
-        type: u4
-      - id: u32_0x1c
-        type: u4
-      - id: u32_0x20
-        type: u4
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
 
-      - id: u32_0x28
-        type: u4
+      - id: speed
+        type: f4
 
-  plat_orbit_pause_0x76: # 0x76
+  plat_orbit_pause: # 0x76
     # TODO: the parser doesn't consume these bytes if the platform already
     #       "has ORBITFLIP specified".
     seq:
-      - id: u16_0x08
+      - id: num_frames
         type: u2
-      - id: u16_0x0c
+      - id: num_pauses
         type: u2
 
 
@@ -1521,7 +1524,7 @@ types:
     meta:
       xref: [platform, vent]
 
-  plat_checkpoint: # 0x64
+  plat_no_clip: # 0x64
     seq: []
 
   plat_destructible: # 0x65

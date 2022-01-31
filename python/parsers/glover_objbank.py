@@ -149,7 +149,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class DisplayListCmd(KaitaiStruct):
-        SEQ_FIELDS = ["cmd", "params"]
+        SEQ_FIELDS = ["w1", "w0"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -158,12 +158,20 @@ class GloverObjbank(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['cmd']['start'] = self._io.pos()
-            self.cmd = self._io.read_u1()
-            self._debug['cmd']['end'] = self._io.pos()
-            self._debug['params']['start'] = self._io.pos()
-            self.params = self._io.read_bytes(7)
-            self._debug['params']['end'] = self._io.pos()
+            self._debug['w1']['start'] = self._io.pos()
+            self.w1 = self._io.read_u4be()
+            self._debug['w1']['end'] = self._io.pos()
+            self._debug['w0']['start'] = self._io.pos()
+            self.w0 = self._io.read_u4be()
+            self._debug['w0']['end'] = self._io.pos()
+
+        @property
+        def cmd(self):
+            if hasattr(self, '_m_cmd'):
+                return self._m_cmd if hasattr(self, '_m_cmd') else None
+
+            self._m_cmd = ((self.w1 >> 24) & 255)
+            return self._m_cmd if hasattr(self, '_m_cmd') else None
 
 
     class DirectoryEntry(KaitaiStruct):

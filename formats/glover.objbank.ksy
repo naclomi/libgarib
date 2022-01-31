@@ -269,10 +269,13 @@ types:
         type: u4
   display_list_cmd:
     seq:
-      - id: cmd
-        type: u1
-      - id: params
-        size: 7
+      - id: w1
+        type: u4
+      - id: w0
+        type: u4
+    instances:
+      cmd:
+        value: (w1 >> 24) & 0xFF
   animation:
     seq:
       - id: num_animation_definitions
