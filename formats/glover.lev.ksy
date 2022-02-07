@@ -27,13 +27,13 @@ types:
             0xBB: mr_tip
             0x97: diffuse_light
             0x98: ambient_light
-            0x01: unknown_0x01
+            0x01: glover_spawn_point
             0x02: ball_spawn_point
-            0x03: unknown_0x03
+            0x03: camera_spawn_point
             0xA5: fog_configuration
             0xBF: actor_0xbf
-            0xBC: background_actor_0xbc
-            0x91: background_actor_0x91
+            0xBC: animated_background_actor
+            0x91: background_actor
             0x92: land_actor
             0x93: set_actor_rotation
             0x94: set_actor_scale
@@ -68,7 +68,7 @@ types:
             0xb3: plat_actor_enable_water_animation
             0xb7: set_global_0xb7
             0xb5: buzzer
-            0xb6: plat_special_0xb6
+            0xb6: buzzer_duty_cycle
             0xb4: set_object_sparkle
             0xb9: plat_special_0xb9
             0xa8: set_exit
@@ -96,7 +96,7 @@ types:
             0xc5: plat_spin_sound_0xc5
             0x9f: plat_0x9f
             0x7c: plat_spin_pause_0x7c
-            0x7d: plat_spin_flip_0x7d
+            0x7d: plat_spin_flip
             0x7e: plat_0x7e
             0x7f: plat_constant_spin
             0x80: plat_spin_0x80
@@ -115,7 +115,7 @@ types:
             0xa7: plat_pos_0xa7
             0xa6: plat_set_initial_pos
 
-            0xc0: plat_anim_0xc0
+            0xc0: plat_play_object_animation
             0xa4: plat_0xa4
             0x5c: plat_vent_advance_frames
             0x64: plat_no_clip
@@ -129,7 +129,7 @@ types:
             0x79: plat_scale
             0x7a: plat_str_0x7a
 
-            0x8d: plat_rope
+            0x8d: rope
             0x90: plat_sine
             0x8f: plat_orbit
 
@@ -232,26 +232,34 @@ types:
       - id: b
         type: u2
 
-  unknown_0x01:
-    # TODO
-    # notes: word sizes confirmed, but guessing types from
-    #        ram inspection
+  glover_spawn_point:
     seq:
-      - id: f_0x00
+      - id: x
         type: f4
-      - id: f_0x04
+      - id: y
         type: f4  
-      - id: f_0x08
+      - id: z
         type: f4
 
   ball_spawn_point:
-    # TODO: on rare occasions based on h_0x00 and internal parser state, this
-    #       struct is JUST h_0x00 without the 3f. more analysis of the code and
-    #       level data is needed to figure out what the rules around this are.
+    #
+    # 'type' encodes how this ball affects overall game progress.
+    #   0: ball can contribute to game completion progress
+    #   1: unknown (TODO: seems to only be used in prehistoric 1, maybe it
+    #               means frozen-in-ice-cube?)
+    #   2: ball represents an in-transit ball between defeating a boss and
+    #      returning to the castle cave
+    #   3: ball does not contribute to game completion progress
+    #      (eg, bonus stages and cutscenes)
     #       
     # If missing, Glover will start level holding ball
+    #
+    # TODO: on rare occasions based on the type field and internal parser state,
+    #       this struct is JUST h_0x00 without the 3f. more analysis of the code
+    #       and level data is needed to figure out what the rules around this are.
+    #       so gross.
     seq:
-      - id: h_0x00
+      - id: type
         type: u2
       - id: x
         type: f4
@@ -260,20 +268,17 @@ types:
       - id: z
         type: f4
 
-  unknown_0x03:
-    # TODO
-    # notes: word sizes confirmed, but guessing types from
-    #        ram inspection
+  camera_spawn_point:
     seq:
-      - id: f_0x00
+      - id: x
         type: f4
-      - id: f_0x04
+      - id: y
         type: f4
-      - id: f_0x08
+      - id: z
         type: f4
-      - id: f_0x0c
+      - id: pitch
         type: f4
-      - id: f_0x10
+      - id: yaw
         type: f4
 
   fog_configuration:
@@ -302,9 +307,11 @@ types:
       - id: child_mesh_id
         type: u4
 
-  background_actor_0xbc:
-    # TODO
-    # what's the difference between 0xBC and 0x91?
+  animated_background_actor:
+    # Sets up a background actor and queues it to play
+    # anim idx 0. Hard-coded to start paused on the intro
+    # and outro cutscenes and carnival boss, otherwise
+    # starts playing immediately.
     seq:
       - id: object_id
         type: u4
@@ -319,7 +326,7 @@ types:
       - id: z
         type: f4
 
-  background_actor_0x91:
+  background_actor:
     seq:
       - id: object_id
         type: u4
@@ -1000,53 +1007,61 @@ types:
         type: u4
 
   buzzer: # 0xb5
+    # Creates a linear electric arc enemy
+    #
+    # If a non-zero platform tag is specified, the
+    # arc uses that platform's position as the respective
+    # endpoint. Otherwise, it uses the coordinates specified
+    # here.
+    #
+    # TODO: document draw flags
     seq:
-      - id: u16_0x2a
+      - id: unused
         type: u2
 
-      - id: tag_0x24
+      - id: platform_1_tag
         type: u2
 
-      - id: tag_0x20
+      - id: platform_2_tag
         type: u2
 
-      - id: u16_0x28
+      - id: draw_flags
         type: u2
 
-      - id: u8_0x2c
+      - id: r
         type: u2
-      - id: u8_0x2d
+      - id: g
         type: u2
-      - id: u8_0x2e
+      - id: b
         type: u2
-      - id: u8_0x2f
+      - id: color_jitter
         type: u2
 
-      - id: u32_0x08
+      - id: end_1_x
+        type: f4
+      - id: end_1_y
+        type: f4
+      - id: end_1_z
+        type: f4
+
+      - id: end_2_x
         type: u4
-      - id: u32_0x0c
+      - id: end_2_y
         type: u4
-      - id: u32_0x10
+      - id: end_2_z
         type: u4
 
-      - id: u32_0x14
-        type: u4
-      - id: u32_0x18
-        type: u4
-      - id: u32_0x1c
+      - id: draw_diameter
         type: u4
 
-      - id: u32_0x50
+      - id: draw_thickness
         type: u4
 
-      - id: u32_0x54
-        type: u4
-
-  plat_special_0xb6: # 0xb6
+  buzzer_duty_cycle: # 0xb6
     seq:
-      - id: u16_0x34
+      - id: frames_off
         type: u2
-      - id: u16_0x40
+      - id: frames_on
         type: u2
 
   set_object_sparkle: # 0xb4
@@ -1056,7 +1071,8 @@ types:
         type: u2
 
   plat_special_0xb9: # 0xb9
-    # TODO: ORs 0x20000000 into a flags field of active platform or actor
+    # TODO: ORs 0x20000000 into a flags field of active  platform or actor
+    #       affects physics calculations in FUN_80157708
     seq: []
 
   set_exit: # 0xa8
@@ -1346,13 +1362,13 @@ types:
       - id: u16_0x0a
         type: u2
 
-  plat_spin_flip_0x7d: # 0x7d
-    # TODO: only parses when SPINPAUSE is not specified:
+  plat_spin_flip: # 0x7d
+    # Only parses when SPINPAUSE is not specified
     seq:
-      - id: u16_0x0a
+      - id: cooldown_timer
         type: u2
-      - id: u32_0x14
-        type: u4
+      - id: theta
+        type: f4
 
   plat_0x7e: # 0x7e
     seq:
@@ -1429,7 +1445,7 @@ types:
         type: f4
       - id: deceleration
         type: f4
-      - id: f_blur_0x578
+      - id: blur_height
         type: f4
       - id: frame_advance
         type: u2
@@ -1511,7 +1527,9 @@ types:
         type: f4
 
 
-  plat_anim_0xc0: # 0xc0
+  plat_play_object_animation: # 0xc0
+    # Plays the skeletal animation at index 0 in the platform actor's
+    # animation data
     seq: []
 
   plat_0xa4: # 0xa4
@@ -1534,9 +1552,9 @@ types:
     seq:
       - id: flags 
         type: u2
-      - id: num_particles 
+      - id: num_fragments 
         type: u4
-      - id: particle_object_id
+      - id: fragment_object_id
         type: u4
       - id: name
         type: str
@@ -1598,17 +1616,17 @@ types:
         type: u2
 
 ###############################################################
-### Platform special paths
+### Special objects
 
-  plat_rope: # 0x8d
+  rope: # 0x8d
     seq:
-      - id: u32_count
+      - id: num_components
         type: u4
 
-      - id: u16_idx
+      - id: wiggle_axis
         type: u2
 
-      - id: u32_u1
+      - id: component_obj_id
         type: u4
 
       - id: name
@@ -1616,37 +1634,37 @@ types:
         type: str
         size: 8
 
-      - id: ustack176_0
+      - id: puzzle_unknown_1
+        type: f4
+      - id: sway_unknown_1
+        type: f4
+      - id: sway_unknown_2
+        type: f4
+      - id: sway_unknown_3
+        type: f4
+      - id: sway_rocking_theta
         type: u4
-      - id: ustack176_1
+      - id: sway_unknown_4
         type: u4
-      - id: ustack176_2
-        type: u4
-      - id: ustack176_3
-        type: u4
-      - id: ustack176_4
-        type: u4
-      - id: ustack176_5
-        type: u4
-      - id: ustack176_6
-        type: u4
-
-      - id: f_112
+      - id: sway_unknown_5
         type: f4
 
-      - id: f_108
+      - id: x
         type: f4
 
-      - id: f_104
+      - id: y
         type: f4
 
-      - id: f_100
+      - id: z
         type: f4
 
-      - id: f_96
+      - id: component_w
         type: f4
 
-      - id: f_92
+      - id: component_h
+        type: f4
+
+      - id: component_d
         type: f4
 
 
