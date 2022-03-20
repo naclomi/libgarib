@@ -53,8 +53,10 @@ types:
         type: str
         encoding: ASCII
         size: 8
+      - id: unused
+        type: u1
       - id: alpha
-        type: u2
+        type: u1
       - id: num_scale
         type: u2
       - id: num_translation
@@ -83,7 +85,7 @@ types:
         type: u4
       - id: sibling_ptr
         type: u4
-      - id: u15
+      - id: runtime_collision_data_ptr
         type: u4
     instances:
       geometry:
@@ -236,7 +238,7 @@ types:
     seq:
       - id: texture_id
         type: u4
-      - id: u2
+      - id: runtime_data_ptr
         type: u4
       - id: x
         type: u2
@@ -252,7 +254,7 @@ types:
         type: u2
       - id: u6
         type: u2
-      - id: u7
+      - id: flags
         type: u2
 
   affine_frame:

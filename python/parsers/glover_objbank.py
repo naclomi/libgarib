@@ -280,7 +280,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class Sprite(KaitaiStruct):
-        SEQ_FIELDS = ["texture_id", "u2", "x", "y", "z", "width", "height", "u5", "u6", "u7"]
+        SEQ_FIELDS = ["texture_id", "runtime_data_ptr", "x", "y", "z", "width", "height", "u5", "u6", "flags"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -292,9 +292,9 @@ class GloverObjbank(KaitaiStruct):
             self._debug['texture_id']['start'] = self._io.pos()
             self.texture_id = self._io.read_u4be()
             self._debug['texture_id']['end'] = self._io.pos()
-            self._debug['u2']['start'] = self._io.pos()
-            self.u2 = self._io.read_u4be()
-            self._debug['u2']['end'] = self._io.pos()
+            self._debug['runtime_data_ptr']['start'] = self._io.pos()
+            self.runtime_data_ptr = self._io.read_u4be()
+            self._debug['runtime_data_ptr']['end'] = self._io.pos()
             self._debug['x']['start'] = self._io.pos()
             self.x = self._io.read_u2be()
             self._debug['x']['end'] = self._io.pos()
@@ -316,9 +316,9 @@ class GloverObjbank(KaitaiStruct):
             self._debug['u6']['start'] = self._io.pos()
             self.u6 = self._io.read_u2be()
             self._debug['u6']['end'] = self._io.pos()
-            self._debug['u7']['start'] = self._io.pos()
-            self.u7 = self._io.read_u2be()
-            self._debug['u7']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = self._io.read_u2be()
+            self._debug['flags']['end'] = self._io.pos()
 
 
     class Animation(KaitaiStruct):
@@ -416,7 +416,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class Mesh(KaitaiStruct):
-        SEQ_FIELDS = ["id", "name", "alpha", "num_scale", "num_translation", "num_rotation", "geometry_ptr", "display_list_ptr", "scale_ptr", "translation_ptr", "rotation_ptr", "num_sprites", "sprites_ptr", "num_children", "render_mode", "child_ptr", "sibling_ptr", "u15"]
+        SEQ_FIELDS = ["id", "name", "unused", "alpha", "num_scale", "num_translation", "num_rotation", "geometry_ptr", "display_list_ptr", "scale_ptr", "translation_ptr", "rotation_ptr", "num_sprites", "sprites_ptr", "num_children", "render_mode", "child_ptr", "sibling_ptr", "runtime_collision_data_ptr"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -431,8 +431,11 @@ class GloverObjbank(KaitaiStruct):
             self._debug['name']['start'] = self._io.pos()
             self.name = (self._io.read_bytes(8)).decode(u"ASCII")
             self._debug['name']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_u1()
+            self._debug['unused']['end'] = self._io.pos()
             self._debug['alpha']['start'] = self._io.pos()
-            self.alpha = self._io.read_u2be()
+            self.alpha = self._io.read_u1()
             self._debug['alpha']['end'] = self._io.pos()
             self._debug['num_scale']['start'] = self._io.pos()
             self.num_scale = self._io.read_u2be()
@@ -476,9 +479,9 @@ class GloverObjbank(KaitaiStruct):
             self._debug['sibling_ptr']['start'] = self._io.pos()
             self.sibling_ptr = self._io.read_u4be()
             self._debug['sibling_ptr']['end'] = self._io.pos()
-            self._debug['u15']['start'] = self._io.pos()
-            self.u15 = self._io.read_u4be()
-            self._debug['u15']['end'] = self._io.pos()
+            self._debug['runtime_collision_data_ptr']['start'] = self._io.pos()
+            self.runtime_collision_data_ptr = self._io.read_u4be()
+            self._debug['runtime_collision_data_ptr']['end'] = self._io.pos()
 
         @property
         def rotation(self):

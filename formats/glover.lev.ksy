@@ -67,8 +67,10 @@ types:
             0xb8: plat_special_0xb8
             0xb3: plat_actor_enable_water_animation
             0xb7: set_global_0xb7
+
             0xb5: buzzer
             0xb6: buzzer_duty_cycle
+
             0xb4: set_object_sparkle
             0xb9: plat_special_0xb9
             0xa8: set_exit
@@ -134,13 +136,15 @@ types:
             0x8f: plat_orbit
 
             0xa2: vent
-            0xa3: vent_append_0xa3
+            0xa3: vent_duty_cycle
+
             0x62: platform
             0x5d: null_platform
+
             0x83: enemy
-            0xa1: enemy_0xa1
+            0xa1: enemy_set_attention_bbox
             0xba: enemy_0xba
-            0x84: enemy_0x84
+            0x84: enemy_finalize
             0x9a: enemy_normal_instruction
             0x9b: enemy_conditional_instruction
             0x9c: enemy_attack_instruction
@@ -376,39 +380,40 @@ types:
         type: f4
 
   wind:
-    # TODO: figure out what fields do
+    # TODO: figure out exactly what unknown_0x2c does,
+    #       seems to have something to do with effect distance
     seq:
-      - id: i_0x00
-        type: u4
-      - id: i_0x04
-        type: u4
-      - id: i_0x08
+      - id: left
+        type: f4
+      - id: top
+        type: f4
+      - id: front
+        type: f4
+
+      - id: width
+        type: f4
+      - id: height
+        type: f4
+      - id: depth
+        type: f4
+
+      - id: vel_x
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_z
+        type: f4
+
+      - id: turbulence
+        type: f4
+
+      - id: unknown_0x2c
         type: u4
 
-      - id: i_0x0c
-        type: u4
-      - id: i_0x10
-        type: u4
-      - id: i_0x14
+      - id: active
         type: u4
 
-      - id: i_0x18
-        type: u4
-      - id: i_0x1c
-        type: u4
-      - id: i_0x20
-        type: u4
-
-      - id: i_0x28
-        type: u4
-
-      - id: i_0x2c
-        type: u4
-
-      - id: i_0x24
-        type: u4
-
-      - id: i_0x30
+      - id: tag
         type: u4
 
 
@@ -1016,7 +1021,7 @@ types:
     #
     # TODO: document draw flags
     seq:
-      - id: unused
+      - id: tag
         type: u2
 
       - id: platform_1_tag
@@ -1045,17 +1050,17 @@ types:
         type: f4
 
       - id: end_2_x
-        type: u4
+        type: f4
       - id: end_2_y
-        type: u4
+        type: f4
       - id: end_2_z
-        type: u4
+        type: f4
 
       - id: draw_diameter
-        type: u4
+        type: f4
 
       - id: draw_thickness
-        type: u4
+        type: f4
 
   buzzer_duty_cycle: # 0xb6
     seq:
@@ -1760,34 +1765,33 @@ types:
 
   vent: # 0xa2
     seq:
-      - id: u16_0x08
+      - id: type
         type: u2
       - id: u16_0x0a
         type: u2
-      - id: parent_tag # possibly 0/NULL
+      - id: parent_tag
         type: u2
 
-      - id: f_0x38
+      - id: origin_x
         type: f4
-      - id: f_0x3c
+      - id: origin_y
         type: f4
-      - id: f_0x40
-        type: f4
-
-      - id: f_0x2c
-        type: f4
-      - id: f_0x30
-        type: f4
-      - id: f_0x34
+      - id: origin_z
         type: f4
 
+      - id: particle_velocity_x
+        type: f4
+      - id: particle_velocity_y
+        type: f4
+      - id: particle_velocity_z
+        type: f4
 
-  vent_append_0xa3: # 0xa3
+  vent_duty_cycle: # 0xa3
     seq:
-      - id: u16_idx_plus_0x10
-        type: u2
-      - id: u16_idx_plus_0x1c
-        type: u2
+      - id: frames_off
+        type: s2
+      - id: frames_on
+        type: s2
 
   platform: # 0x62
     seq:
@@ -1804,8 +1808,9 @@ types:
 
   enemy: # 0x83
     seq:
-      - id: enemy_type
+      - id: type
         type: u2
+        enum: enemy_type
       - id: u1
         type: u2
 
@@ -1818,26 +1823,80 @@ types:
 
       - id: y_rotation
         type: f4
+    enums:
+      enemy_type:
+        7: bovva
+        8: cannon
+        9: samtex
+        10: mallet
+        11: generalw
+        12: lionfish
+        13: chester
+        14: keg
+        15: reggie
+        16: swish
+        17: thrice
+        18: robes
+        19: fumble
+        20: mike
+        21: raptor
+        22: crumpet
+        23: tracey
+        24: yoofow
+        25: opec
+        26: cymon
+        27: sucker
+        28: bugle
+        29: dennis
+        30: chuck
+        31: hubchicken1
+        32: frankie2
+        33: kloset
+        34: willy
+        35: joff
+        36: cancer
+        37: kirk
+        38: robot
+        39: evilrobot
+        40: spank
+        41: babyspk2
+        42: evilglove
+        43: dibber
+        44: brundle
+        45: malcom
+        46: spotty
+        47: gordon
+        48: sidney
+        49: weevil
+        50: chopstik
+        51: butterfly
+        52: spider
+        53: bat
+        54: frog
+        55: dragfly
+        56: boxthing
+        57: bug
+        58: nmefrog
 
-  enemy_0xa1: # 0xa1
+  enemy_set_attention_bbox: # 0xa1
     seq:
-      - id: u32_1
-        type: u4
-      - id: u32_2
-        type: u4
-      - id: u32_3
-        type: u4
-      - id: u32_4
-        type: u4
-      - id: u32_5
-        type: u4
-      - id: u32_6
-        type: u4
+      - id: left
+        type: f4
+      - id: top
+        type: f4
+      - id: front
+        type: f4
+      - id: width
+        type: f4
+      - id: height
+        type: f4
+      - id: depth
+        type: f4
 
   enemy_0xba: # 0xba
     seq: []
 
-  enemy_0x84: # 0x84
+  enemy_finalize: # 0x84
     seq: []
 
   enemy_normal_instruction: # 0x9a
@@ -1858,43 +1917,83 @@ types:
 
   enemy_instruction:
     seq:
-      - id: type_code
+      - id: instr_type
         type: u2
-      - id: u16_0x02
-        type: u2
-      - id: body
+      - id: lifetime
+        type: s2
+      - id: params
         type:
-          switch-on: type_code
+          switch-on: instr_type
           cases:
-            0: enemy_instruction_a
-            1: enemy_instruction_a
-            2: enemy_instruction_a
-            9: enemy_instruction_a
-            0x0a: enemy_instruction_a
-            0x0b: enemy_instruction_a
-            0x0d: enemy_instruction_a
-            0x16: enemy_instruction_a
-            0x17: enemy_instruction_a
+            0: enemy_instruction_move
+            1: enemy_instruction_dash
+            2: enemy_instruction_turn
+            9: enemy_instruction_a # TODO
+            0x0a: enemy_instruction_a # TODO
+            0x0b: enemy_instruction_a # TODO
+            0x0d: enemy_instruction_a # TODO
+            0x16: enemy_instruction_a # TODO
+            0x17: enemy_instruction_a # TODO
 
-            0x3: enemy_instruction_b
+            0x3: enemy_instruction_random_walk
 
-            4: enemy_instruction_c
-            5: enemy_instruction_c
-            6: enemy_instruction_c
-            7: enemy_instruction_c
-            8: enemy_instruction_c
-            0xc: enemy_instruction_c
-            0xe: enemy_instruction_c
-            0xf: enemy_instruction_c
-            0x10: enemy_instruction_c
-            0x11: enemy_instruction_c
-            0x12: enemy_instruction_c
-            0x13: enemy_instruction_c
-            0x14: enemy_instruction_c
-            0x15: enemy_instruction_c
-            0x18: enemy_instruction_c
+            4: enemy_instruction_rest
+            5: enemy_instruction_c # TODO
+            6: enemy_instruction_c # TODO
+            7: enemy_instruction_play_animation
+            8: enemy_instruction_c # TODO
+            0xc: enemy_instruction_c # TODO
+            0xe: enemy_instruction_c # TODO
+            0xf: enemy_instruction_attack
+            0x10: enemy_instruction_c # TODO
+            0x11: enemy_instruction_c # TODO
+            0x12: enemy_instruction_goto
+            0x13: enemy_instruction_c # TODO
+            0x14: enemy_instruction_c # TODO
+            0x15: enemy_instruction_c # TODO
+            0x18: enemy_instruction_c # TODO
 
             _: enemy_instruction_error
+      - id: execution_condition_param_a
+        type: f4
+      - id: execution_condition_param_b
+        type: f4
+      - id: flags
+        type: u4
+        enum: instruction_flags
+      - id: execution_condition
+        type: u2
+        enum: execution_condition_type
+    enums:
+      execution_condition_type:
+        0: ball_within_range
+        1: ball_within_ground_range
+        2: glover_within_range
+        3: glover_within_ground_range
+        4: ball_or_glover_within_range
+        5: ball_or_glover_within_ground_range
+        6: ball_within_angle_of_view
+        7: glover_within_angle_of_view
+        8: ball_or_glover_within_angle_of_view
+        9: periodic
+        10: roll_angle_within_range_and_periodic
+        11: glover_holding_ball
+        12: glover_not_holding_ball
+        13: enemy_holding_ball
+        14: enemy_not_holding_ball
+        15: glover_holding_enemy
+        16: glover_not_holding_enemy
+        17: on_ball
+        18: on_glover
+        19: enemy_within_attention_bbox
+        20: always
+        21: never
+        22: random_chance_param_a_over_1000
+      instruction_flags:
+        0x100000: face_player
+        0x200000: face_ball
+        0x400000: face_closer_of_player_or_ball
+
 
   enemy_instruction_a:
     seq:
@@ -1908,48 +2007,86 @@ types:
       - id: u32_0x0e
         type: u4
 
-      - id: u32_0x18
-        type: u4
-
-      - id: u32_0x1e
-        type: u4
-
-      - id: u32_0x14
-        type: u4
-
-      - id: u32_0x16
-        type: u2
-
-  enemy_instruction_b:
+  enemy_instruction_dash:
     seq:
-      - id: u32_0x02
-        type: u4
-      - id: u32_0x06
-        type: u4
-      - id: u32_0x0a
+      - id: destination_x
+        type: f4
+      - id: destination_y
+        type: f4
+      - id: destination_z
+        type: f4
+      - id: vel_magnitude
+        type: f4
+
+  enemy_instruction_move:
+    seq:
+      - id: destination_x
+        type: f4
+      - id: destination_y
+        type: f4
+      - id: destination_z
+        type: f4
+      - id: vel_magnitude
+        type: f4
+
+  enemy_instruction_turn:
+    seq:
+      - id: lookat_x
+        type: f4
+      - id: lookat_y
+        type: f4
+      - id: lookat_z
+        type: f4
+      - id: choose_random_direction
         type: u4
 
-      - id: u32_0x08
+
+  enemy_instruction_goto:
+    seq:
+      - id: instr_idx
         type: u4
-      - id: u32_0x0c
-        type: u4
-      - id: u32_0x10
+      - id: unused
         type: u4
 
-      - id: u32_0x0e
+  enemy_instruction_random_walk:
+    seq:
+      - id: home_x
+        type: f4
+      - id: home_y
+        type: f4
+      - id: home_z
+        type: f4
+
+      - id: extent_x
+        type: f4
+      - id: extent_y
+        type: f4
+      - id: extent_z
+        type: f4
+
+      - id: min_travel_distance
+        type: f4
+
+  enemy_instruction_play_animation:
+    seq:
+      - id: anim_idx_1
+        type: s4
+      - id: anim_idx_2
+        type: s4
+ 
+  enemy_instruction_rest:
+    seq:
+      - id: flags
+        type: u4
+      - id: anim_start_playing
         type: u4
 
-      - id: u32_0x18
+  enemy_instruction_attack:
+    seq:
+      - id: unused_1
         type: u4
-
-      - id: u32_0x1e
+      - id: unused_2
         type: u4
-
-      - id: u32_0x14
-        type: u4
-
-      - id: u32_0x16
-        type: u2
 
   enemy_instruction_c:
     seq:
@@ -1959,17 +2096,6 @@ types:
       - id: u32_0x0e
         type: u4
 
-      - id: u32_0x18
-        type: u4
-
-      - id: u32_0x1e
-        type: u4
-
-      - id: u32_0x14
-        type: u4
-
-      - id: u32_0x16
-        type: u2
 
   enemy_instruction_error:
     seq: []

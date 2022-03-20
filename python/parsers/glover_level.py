@@ -4,6 +4,7 @@ from pkg_resources import parse_version
 import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 import collections
+from enum import Enum
 
 
 if parse_version(kaitaistruct.__version__) < parse_version('0.9'):
@@ -283,7 +284,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class Buzzer(KaitaiStruct):
-        SEQ_FIELDS = ["u16_0x2a", "tag_0x24", "tag_0x20", "u16_0x28", "u8_0x2c", "u8_0x2d", "u8_0x2e", "u8_0x2f", "u32_0x08", "u32_0x0c", "u32_0x10", "u32_0x14", "u32_0x18", "u32_0x1c", "u32_0x50", "u32_0x54"]
+        SEQ_FIELDS = ["tag", "platform_1_tag", "platform_2_tag", "draw_flags", "r", "g", "b", "color_jitter", "end_1_x", "end_1_y", "end_1_z", "end_2_x", "end_2_y", "end_2_z", "draw_diameter", "draw_thickness"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -292,54 +293,54 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['u16_0x2a']['start'] = self._io.pos()
-            self.u16_0x2a = self._io.read_u2be()
-            self._debug['u16_0x2a']['end'] = self._io.pos()
-            self._debug['tag_0x24']['start'] = self._io.pos()
-            self.tag_0x24 = self._io.read_u2be()
-            self._debug['tag_0x24']['end'] = self._io.pos()
-            self._debug['tag_0x20']['start'] = self._io.pos()
-            self.tag_0x20 = self._io.read_u2be()
-            self._debug['tag_0x20']['end'] = self._io.pos()
-            self._debug['u16_0x28']['start'] = self._io.pos()
-            self.u16_0x28 = self._io.read_u2be()
-            self._debug['u16_0x28']['end'] = self._io.pos()
-            self._debug['u8_0x2c']['start'] = self._io.pos()
-            self.u8_0x2c = self._io.read_u2be()
-            self._debug['u8_0x2c']['end'] = self._io.pos()
-            self._debug['u8_0x2d']['start'] = self._io.pos()
-            self.u8_0x2d = self._io.read_u2be()
-            self._debug['u8_0x2d']['end'] = self._io.pos()
-            self._debug['u8_0x2e']['start'] = self._io.pos()
-            self.u8_0x2e = self._io.read_u2be()
-            self._debug['u8_0x2e']['end'] = self._io.pos()
-            self._debug['u8_0x2f']['start'] = self._io.pos()
-            self.u8_0x2f = self._io.read_u2be()
-            self._debug['u8_0x2f']['end'] = self._io.pos()
-            self._debug['u32_0x08']['start'] = self._io.pos()
-            self.u32_0x08 = self._io.read_u4be()
-            self._debug['u32_0x08']['end'] = self._io.pos()
-            self._debug['u32_0x0c']['start'] = self._io.pos()
-            self.u32_0x0c = self._io.read_u4be()
-            self._debug['u32_0x0c']['end'] = self._io.pos()
-            self._debug['u32_0x10']['start'] = self._io.pos()
-            self.u32_0x10 = self._io.read_u4be()
-            self._debug['u32_0x10']['end'] = self._io.pos()
-            self._debug['u32_0x14']['start'] = self._io.pos()
-            self.u32_0x14 = self._io.read_u4be()
-            self._debug['u32_0x14']['end'] = self._io.pos()
-            self._debug['u32_0x18']['start'] = self._io.pos()
-            self.u32_0x18 = self._io.read_u4be()
-            self._debug['u32_0x18']['end'] = self._io.pos()
-            self._debug['u32_0x1c']['start'] = self._io.pos()
-            self.u32_0x1c = self._io.read_u4be()
-            self._debug['u32_0x1c']['end'] = self._io.pos()
-            self._debug['u32_0x50']['start'] = self._io.pos()
-            self.u32_0x50 = self._io.read_u4be()
-            self._debug['u32_0x50']['end'] = self._io.pos()
-            self._debug['u32_0x54']['start'] = self._io.pos()
-            self.u32_0x54 = self._io.read_u4be()
-            self._debug['u32_0x54']['end'] = self._io.pos()
+            self._debug['tag']['start'] = self._io.pos()
+            self.tag = self._io.read_u2be()
+            self._debug['tag']['end'] = self._io.pos()
+            self._debug['platform_1_tag']['start'] = self._io.pos()
+            self.platform_1_tag = self._io.read_u2be()
+            self._debug['platform_1_tag']['end'] = self._io.pos()
+            self._debug['platform_2_tag']['start'] = self._io.pos()
+            self.platform_2_tag = self._io.read_u2be()
+            self._debug['platform_2_tag']['end'] = self._io.pos()
+            self._debug['draw_flags']['start'] = self._io.pos()
+            self.draw_flags = self._io.read_u2be()
+            self._debug['draw_flags']['end'] = self._io.pos()
+            self._debug['r']['start'] = self._io.pos()
+            self.r = self._io.read_u2be()
+            self._debug['r']['end'] = self._io.pos()
+            self._debug['g']['start'] = self._io.pos()
+            self.g = self._io.read_u2be()
+            self._debug['g']['end'] = self._io.pos()
+            self._debug['b']['start'] = self._io.pos()
+            self.b = self._io.read_u2be()
+            self._debug['b']['end'] = self._io.pos()
+            self._debug['color_jitter']['start'] = self._io.pos()
+            self.color_jitter = self._io.read_u2be()
+            self._debug['color_jitter']['end'] = self._io.pos()
+            self._debug['end_1_x']['start'] = self._io.pos()
+            self.end_1_x = self._io.read_f4be()
+            self._debug['end_1_x']['end'] = self._io.pos()
+            self._debug['end_1_y']['start'] = self._io.pos()
+            self.end_1_y = self._io.read_f4be()
+            self._debug['end_1_y']['end'] = self._io.pos()
+            self._debug['end_1_z']['start'] = self._io.pos()
+            self.end_1_z = self._io.read_f4be()
+            self._debug['end_1_z']['end'] = self._io.pos()
+            self._debug['end_2_x']['start'] = self._io.pos()
+            self.end_2_x = self._io.read_f4be()
+            self._debug['end_2_x']['end'] = self._io.pos()
+            self._debug['end_2_y']['start'] = self._io.pos()
+            self.end_2_y = self._io.read_f4be()
+            self._debug['end_2_y']['end'] = self._io.pos()
+            self._debug['end_2_z']['start'] = self._io.pos()
+            self.end_2_z = self._io.read_f4be()
+            self._debug['end_2_z']['end'] = self._io.pos()
+            self._debug['draw_diameter']['start'] = self._io.pos()
+            self.draw_diameter = self._io.read_f4be()
+            self._debug['draw_diameter']['end'] = self._io.pos()
+            self._debug['draw_thickness']['start'] = self._io.pos()
+            self.draw_thickness = self._io.read_f4be()
+            self._debug['draw_thickness']['end'] = self._io.pos()
 
 
     class PuzzleAny(KaitaiStruct):
@@ -578,6 +579,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x28']['end'] = self._io.pos()
 
 
+    class EnemyInstructionDash(KaitaiStruct):
+        SEQ_FIELDS = ["destination_x", "destination_y", "destination_z", "vel_magnitude"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['destination_x']['start'] = self._io.pos()
+            self.destination_x = self._io.read_f4be()
+            self._debug['destination_x']['end'] = self._io.pos()
+            self._debug['destination_y']['start'] = self._io.pos()
+            self.destination_y = self._io.read_f4be()
+            self._debug['destination_y']['end'] = self._io.pos()
+            self._debug['destination_z']['start'] = self._io.pos()
+            self.destination_z = self._io.read_f4be()
+            self._debug['destination_z']['end'] = self._io.pos()
+            self._debug['vel_magnitude']['start'] = self._io.pos()
+            self.vel_magnitude = self._io.read_f4be()
+            self._debug['vel_magnitude']['end'] = self._io.pos()
+
+
     class EnvironmentalSound(KaitaiStruct):
         SEQ_FIELDS = ["sound_id", "volume", "flags", "h_0x06", "h_0x08", "h_0x0a", "h_0x0c", "h_0x0e", "x", "y", "z", "radius"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -647,51 +672,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['end'] = self._io.pos()
 
 
-    class EnemyInstructionB(KaitaiStruct):
-        SEQ_FIELDS = ["u32_0x02", "u32_0x06", "u32_0x0a", "u32_0x08", "u32_0x0c", "u32_0x10", "u32_0x0e", "u32_0x18", "u32_0x1e", "u32_0x14", "u32_0x16"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u32_0x02']['start'] = self._io.pos()
-            self.u32_0x02 = self._io.read_u4be()
-            self._debug['u32_0x02']['end'] = self._io.pos()
-            self._debug['u32_0x06']['start'] = self._io.pos()
-            self.u32_0x06 = self._io.read_u4be()
-            self._debug['u32_0x06']['end'] = self._io.pos()
-            self._debug['u32_0x0a']['start'] = self._io.pos()
-            self.u32_0x0a = self._io.read_u4be()
-            self._debug['u32_0x0a']['end'] = self._io.pos()
-            self._debug['u32_0x08']['start'] = self._io.pos()
-            self.u32_0x08 = self._io.read_u4be()
-            self._debug['u32_0x08']['end'] = self._io.pos()
-            self._debug['u32_0x0c']['start'] = self._io.pos()
-            self.u32_0x0c = self._io.read_u4be()
-            self._debug['u32_0x0c']['end'] = self._io.pos()
-            self._debug['u32_0x10']['start'] = self._io.pos()
-            self.u32_0x10 = self._io.read_u4be()
-            self._debug['u32_0x10']['end'] = self._io.pos()
-            self._debug['u32_0x0e']['start'] = self._io.pos()
-            self.u32_0x0e = self._io.read_u4be()
-            self._debug['u32_0x0e']['end'] = self._io.pos()
-            self._debug['u32_0x18']['start'] = self._io.pos()
-            self.u32_0x18 = self._io.read_u4be()
-            self._debug['u32_0x18']['end'] = self._io.pos()
-            self._debug['u32_0x1e']['start'] = self._io.pos()
-            self.u32_0x1e = self._io.read_u4be()
-            self._debug['u32_0x1e']['end'] = self._io.pos()
-            self._debug['u32_0x14']['start'] = self._io.pos()
-            self.u32_0x14 = self._io.read_u4be()
-            self._debug['u32_0x14']['end'] = self._io.pos()
-            self._debug['u32_0x16']['start'] = self._io.pos()
-            self.u32_0x16 = self._io.read_u2be()
-            self._debug['u32_0x16']['end'] = self._io.pos()
-
-
     class Actor0xbf(KaitaiStruct):
         SEQ_FIELDS = ["mode", "child_mesh_id"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -723,6 +703,19 @@ class GloverLevel(KaitaiStruct):
             self._debug['velocity']['start'] = self._io.pos()
             self.velocity = self._io.read_f4be()
             self._debug['velocity']['end'] = self._io.pos()
+
+
+    class EnemyFinalize(KaitaiStruct):
+        SEQ_FIELDS = []
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            pass
 
 
     class PlatMvspn0x59(KaitaiStruct):
@@ -784,6 +777,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['speed']['start'] = self._io.pos()
             self.speed = self._io.read_f4be()
             self._debug['speed']['end'] = self._io.pos()
+
+
+    class VentDutyCycle(KaitaiStruct):
+        SEQ_FIELDS = ["frames_off", "frames_on"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['frames_off']['start'] = self._io.pos()
+            self.frames_off = self._io.read_s2be()
+            self._debug['frames_off']['end'] = self._io.pos()
+            self._debug['frames_on']['start'] = self._io.pos()
+            self.frames_on = self._io.read_s2be()
+            self._debug['frames_on']['end'] = self._io.pos()
 
 
     class Plat0xc3(KaitaiStruct):
@@ -922,6 +933,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['i_0x14']['end'] = self._io.pos()
 
 
+    class EnemyInstructionTurn(KaitaiStruct):
+        SEQ_FIELDS = ["lookat_x", "lookat_y", "lookat_z", "choose_random_direction"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['lookat_x']['start'] = self._io.pos()
+            self.lookat_x = self._io.read_f4be()
+            self._debug['lookat_x']['end'] = self._io.pos()
+            self._debug['lookat_y']['start'] = self._io.pos()
+            self.lookat_y = self._io.read_f4be()
+            self._debug['lookat_y']['end'] = self._io.pos()
+            self._debug['lookat_z']['start'] = self._io.pos()
+            self.lookat_z = self._io.read_f4be()
+            self._debug['lookat_z']['end'] = self._io.pos()
+            self._debug['choose_random_direction']['start'] = self._io.pos()
+            self.choose_random_direction = self._io.read_u4be()
+            self._debug['choose_random_direction']['end'] = self._io.pos()
+
+
     class PuzzleAction0x4a(KaitaiStruct):
         SEQ_FIELDS = ["u32_0x24", "u32_0x24_0x0c", "u16_0x0a"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -986,38 +1021,8 @@ class GloverLevel(KaitaiStruct):
             pass
 
 
-    class Enemy0xa1(KaitaiStruct):
-        SEQ_FIELDS = ["u32_1", "u32_2", "u32_3", "u32_4", "u32_5", "u32_6"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u32_1']['start'] = self._io.pos()
-            self.u32_1 = self._io.read_u4be()
-            self._debug['u32_1']['end'] = self._io.pos()
-            self._debug['u32_2']['start'] = self._io.pos()
-            self.u32_2 = self._io.read_u4be()
-            self._debug['u32_2']['end'] = self._io.pos()
-            self._debug['u32_3']['start'] = self._io.pos()
-            self.u32_3 = self._io.read_u4be()
-            self._debug['u32_3']['end'] = self._io.pos()
-            self._debug['u32_4']['start'] = self._io.pos()
-            self.u32_4 = self._io.read_u4be()
-            self._debug['u32_4']['end'] = self._io.pos()
-            self._debug['u32_5']['start'] = self._io.pos()
-            self.u32_5 = self._io.read_u4be()
-            self._debug['u32_5']['end'] = self._io.pos()
-            self._debug['u32_6']['start'] = self._io.pos()
-            self.u32_6 = self._io.read_u4be()
-            self._debug['u32_6']['end'] = self._io.pos()
-
-
     class Vent(KaitaiStruct):
-        SEQ_FIELDS = ["u16_0x08", "u16_0x0a", "parent_tag", "f_0x38", "f_0x3c", "f_0x40", "f_0x2c", "f_0x30", "f_0x34"]
+        SEQ_FIELDS = ["type", "u16_0x0a", "parent_tag", "origin_x", "origin_y", "origin_z", "particle_velocity_x", "particle_velocity_y", "particle_velocity_z"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1026,33 +1031,33 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['u16_0x08']['start'] = self._io.pos()
-            self.u16_0x08 = self._io.read_u2be()
-            self._debug['u16_0x08']['end'] = self._io.pos()
+            self._debug['type']['start'] = self._io.pos()
+            self.type = self._io.read_u2be()
+            self._debug['type']['end'] = self._io.pos()
             self._debug['u16_0x0a']['start'] = self._io.pos()
             self.u16_0x0a = self._io.read_u2be()
             self._debug['u16_0x0a']['end'] = self._io.pos()
             self._debug['parent_tag']['start'] = self._io.pos()
             self.parent_tag = self._io.read_u2be()
             self._debug['parent_tag']['end'] = self._io.pos()
-            self._debug['f_0x38']['start'] = self._io.pos()
-            self.f_0x38 = self._io.read_f4be()
-            self._debug['f_0x38']['end'] = self._io.pos()
-            self._debug['f_0x3c']['start'] = self._io.pos()
-            self.f_0x3c = self._io.read_f4be()
-            self._debug['f_0x3c']['end'] = self._io.pos()
-            self._debug['f_0x40']['start'] = self._io.pos()
-            self.f_0x40 = self._io.read_f4be()
-            self._debug['f_0x40']['end'] = self._io.pos()
-            self._debug['f_0x2c']['start'] = self._io.pos()
-            self.f_0x2c = self._io.read_f4be()
-            self._debug['f_0x2c']['end'] = self._io.pos()
-            self._debug['f_0x30']['start'] = self._io.pos()
-            self.f_0x30 = self._io.read_f4be()
-            self._debug['f_0x30']['end'] = self._io.pos()
-            self._debug['f_0x34']['start'] = self._io.pos()
-            self.f_0x34 = self._io.read_f4be()
-            self._debug['f_0x34']['end'] = self._io.pos()
+            self._debug['origin_x']['start'] = self._io.pos()
+            self.origin_x = self._io.read_f4be()
+            self._debug['origin_x']['end'] = self._io.pos()
+            self._debug['origin_y']['start'] = self._io.pos()
+            self.origin_y = self._io.read_f4be()
+            self._debug['origin_y']['end'] = self._io.pos()
+            self._debug['origin_z']['start'] = self._io.pos()
+            self.origin_z = self._io.read_f4be()
+            self._debug['origin_z']['end'] = self._io.pos()
+            self._debug['particle_velocity_x']['start'] = self._io.pos()
+            self.particle_velocity_x = self._io.read_f4be()
+            self._debug['particle_velocity_x']['end'] = self._io.pos()
+            self._debug['particle_velocity_y']['start'] = self._io.pos()
+            self.particle_velocity_y = self._io.read_f4be()
+            self._debug['particle_velocity_y']['end'] = self._io.pos()
+            self._debug['particle_velocity_z']['start'] = self._io.pos()
+            self.particle_velocity_z = self._io.read_f4be()
+            self._debug['particle_velocity_z']['end'] = self._io.pos()
 
 
     class PuzzleCond(KaitaiStruct):
@@ -1113,6 +1118,42 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x3c']['start'] = self._io.pos()
             self.u32_0x3c = self._io.read_u4be()
             self._debug['u32_0x3c']['end'] = self._io.pos()
+
+
+    class EnemyInstructionAttack(KaitaiStruct):
+        SEQ_FIELDS = ["unused_1", "unused_2"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['unused_1']['start'] = self._io.pos()
+            self.unused_1 = self._io.read_u4be()
+            self._debug['unused_1']['end'] = self._io.pos()
+            self._debug['unused_2']['start'] = self._io.pos()
+            self.unused_2 = self._io.read_u4be()
+            self._debug['unused_2']['end'] = self._io.pos()
+
+
+    class EnemyInstructionRest(KaitaiStruct):
+        SEQ_FIELDS = ["flags", "anim_start_playing"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = self._io.read_u4be()
+            self._debug['flags']['end'] = self._io.pos()
+            self._debug['anim_start_playing']['start'] = self._io.pos()
+            self.anim_start_playing = self._io.read_u4be()
+            self._debug['anim_start_playing']['end'] = self._io.pos()
 
 
     class LookAtBall0x61(KaitaiStruct):
@@ -1267,7 +1308,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class EnemyInstructionC(KaitaiStruct):
-        SEQ_FIELDS = ["u32_0x02", "u32_0x0e", "u32_0x18", "u32_0x1e", "u32_0x14", "u32_0x16"]
+        SEQ_FIELDS = ["u32_0x02", "u32_0x0e"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1282,18 +1323,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x0e']['start'] = self._io.pos()
             self.u32_0x0e = self._io.read_u4be()
             self._debug['u32_0x0e']['end'] = self._io.pos()
-            self._debug['u32_0x18']['start'] = self._io.pos()
-            self.u32_0x18 = self._io.read_u4be()
-            self._debug['u32_0x18']['end'] = self._io.pos()
-            self._debug['u32_0x1e']['start'] = self._io.pos()
-            self.u32_0x1e = self._io.read_u4be()
-            self._debug['u32_0x1e']['end'] = self._io.pos()
-            self._debug['u32_0x14']['start'] = self._io.pos()
-            self.u32_0x14 = self._io.read_u4be()
-            self._debug['u32_0x14']['end'] = self._io.pos()
-            self._debug['u32_0x16']['start'] = self._io.pos()
-            self.u32_0x16 = self._io.read_u2be()
-            self._debug['u32_0x16']['end'] = self._io.pos()
 
 
     class PuzzleAnd(KaitaiStruct):
@@ -1462,24 +1491,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['i_0x0c']['start'] = self._io.pos()
             self.i_0x0c = self._io.read_u4be()
             self._debug['i_0x0c']['end'] = self._io.pos()
-
-
-    class VentAppend0xa3(KaitaiStruct):
-        SEQ_FIELDS = ["u16_idx_plus_0x10", "u16_idx_plus_0x1c"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u16_idx_plus_0x10']['start'] = self._io.pos()
-            self.u16_idx_plus_0x10 = self._io.read_u2be()
-            self._debug['u16_idx_plus_0x10']['end'] = self._io.pos()
-            self._debug['u16_idx_plus_0x1c']['start'] = self._io.pos()
-            self.u16_idx_plus_0x1c = self._io.read_u2be()
-            self._debug['u16_idx_plus_0x1c']['end'] = self._io.pos()
 
 
     class UnknownSound0xbd(KaitaiStruct):
@@ -1660,7 +1671,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 112:
                 self.params = GloverLevel.PlatRocking(self._io, self, self._root)
             elif _on == 163:
-                self.params = GloverLevel.VentAppend0xa3(self._io, self, self._root)
+                self.params = GloverLevel.VentDutyCycle(self._io, self, self._root)
             elif _on == 131:
                 self.params = GloverLevel.Enemy(self._io, self, self._root)
             elif _on == 167:
@@ -1732,7 +1743,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 88:
                 self.params = GloverLevel.PlatMvspn0x58(self._io, self, self._root)
             elif _on == 161:
-                self.params = GloverLevel.Enemy0xa1(self._io, self, self._root)
+                self.params = GloverLevel.EnemySetAttentionBbox(self._io, self, self._root)
             elif _on == 138:
                 self.params = GloverLevel.PlatFan0x8a(self._io, self, self._root)
             elif _on == 3:
@@ -1806,7 +1817,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 164:
                 self.params = GloverLevel.Plat0xa4(self._io, self, self._root)
             elif _on == 182:
-                self.params = GloverLevel.PlatSpecial0xb6(self._io, self, self._root)
+                self.params = GloverLevel.BuzzerDutyCycle(self._io, self, self._root)
             elif _on == 108:
                 self.params = GloverLevel.PlatMaxVelocity(self._io, self, self._root)
             elif _on == 189:
@@ -1846,7 +1857,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 200:
                 self.params = GloverLevel.PlatDestructibleSound(self._io, self, self._root)
             elif _on == 132:
-                self.params = GloverLevel.Enemy0x84(self._io, self, self._root)
+                self.params = GloverLevel.EnemyFinalize(self._io, self, self._root)
             elif _on == 92:
                 self.params = GloverLevel.PlatVentAdvanceFrames(self._io, self, self._root)
             elif _on == 198:
@@ -1892,7 +1903,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class Wind(KaitaiStruct):
-        SEQ_FIELDS = ["i_0x00", "i_0x04", "i_0x08", "i_0x0c", "i_0x10", "i_0x14", "i_0x18", "i_0x1c", "i_0x20", "i_0x28", "i_0x2c", "i_0x24", "i_0x30"]
+        SEQ_FIELDS = ["left", "top", "front", "width", "height", "depth", "vel_x", "vel_y", "vel_z", "turbulence", "unknown_0x2c", "active", "tag"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1901,45 +1912,45 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['i_0x00']['start'] = self._io.pos()
-            self.i_0x00 = self._io.read_u4be()
-            self._debug['i_0x00']['end'] = self._io.pos()
-            self._debug['i_0x04']['start'] = self._io.pos()
-            self.i_0x04 = self._io.read_u4be()
-            self._debug['i_0x04']['end'] = self._io.pos()
-            self._debug['i_0x08']['start'] = self._io.pos()
-            self.i_0x08 = self._io.read_u4be()
-            self._debug['i_0x08']['end'] = self._io.pos()
-            self._debug['i_0x0c']['start'] = self._io.pos()
-            self.i_0x0c = self._io.read_u4be()
-            self._debug['i_0x0c']['end'] = self._io.pos()
-            self._debug['i_0x10']['start'] = self._io.pos()
-            self.i_0x10 = self._io.read_u4be()
-            self._debug['i_0x10']['end'] = self._io.pos()
-            self._debug['i_0x14']['start'] = self._io.pos()
-            self.i_0x14 = self._io.read_u4be()
-            self._debug['i_0x14']['end'] = self._io.pos()
-            self._debug['i_0x18']['start'] = self._io.pos()
-            self.i_0x18 = self._io.read_u4be()
-            self._debug['i_0x18']['end'] = self._io.pos()
-            self._debug['i_0x1c']['start'] = self._io.pos()
-            self.i_0x1c = self._io.read_u4be()
-            self._debug['i_0x1c']['end'] = self._io.pos()
-            self._debug['i_0x20']['start'] = self._io.pos()
-            self.i_0x20 = self._io.read_u4be()
-            self._debug['i_0x20']['end'] = self._io.pos()
-            self._debug['i_0x28']['start'] = self._io.pos()
-            self.i_0x28 = self._io.read_u4be()
-            self._debug['i_0x28']['end'] = self._io.pos()
-            self._debug['i_0x2c']['start'] = self._io.pos()
-            self.i_0x2c = self._io.read_u4be()
-            self._debug['i_0x2c']['end'] = self._io.pos()
-            self._debug['i_0x24']['start'] = self._io.pos()
-            self.i_0x24 = self._io.read_u4be()
-            self._debug['i_0x24']['end'] = self._io.pos()
-            self._debug['i_0x30']['start'] = self._io.pos()
-            self.i_0x30 = self._io.read_u4be()
-            self._debug['i_0x30']['end'] = self._io.pos()
+            self._debug['left']['start'] = self._io.pos()
+            self.left = self._io.read_f4be()
+            self._debug['left']['end'] = self._io.pos()
+            self._debug['top']['start'] = self._io.pos()
+            self.top = self._io.read_f4be()
+            self._debug['top']['end'] = self._io.pos()
+            self._debug['front']['start'] = self._io.pos()
+            self.front = self._io.read_f4be()
+            self._debug['front']['end'] = self._io.pos()
+            self._debug['width']['start'] = self._io.pos()
+            self.width = self._io.read_f4be()
+            self._debug['width']['end'] = self._io.pos()
+            self._debug['height']['start'] = self._io.pos()
+            self.height = self._io.read_f4be()
+            self._debug['height']['end'] = self._io.pos()
+            self._debug['depth']['start'] = self._io.pos()
+            self.depth = self._io.read_f4be()
+            self._debug['depth']['end'] = self._io.pos()
+            self._debug['vel_x']['start'] = self._io.pos()
+            self.vel_x = self._io.read_f4be()
+            self._debug['vel_x']['end'] = self._io.pos()
+            self._debug['vel_y']['start'] = self._io.pos()
+            self.vel_y = self._io.read_f4be()
+            self._debug['vel_y']['end'] = self._io.pos()
+            self._debug['vel_z']['start'] = self._io.pos()
+            self.vel_z = self._io.read_f4be()
+            self._debug['vel_z']['end'] = self._io.pos()
+            self._debug['turbulence']['start'] = self._io.pos()
+            self.turbulence = self._io.read_f4be()
+            self._debug['turbulence']['end'] = self._io.pos()
+            self._debug['unknown_0x2c']['start'] = self._io.pos()
+            self.unknown_0x2c = self._io.read_u4be()
+            self._debug['unknown_0x2c']['end'] = self._io.pos()
+            self._debug['active']['start'] = self._io.pos()
+            self.active = self._io.read_u4be()
+            self._debug['active']['end'] = self._io.pos()
+            self._debug['tag']['start'] = self._io.pos()
+            self.tag = self._io.read_u4be()
+            self._debug['tag']['end'] = self._io.pos()
 
 
     class Puzzle(KaitaiStruct):
@@ -1998,7 +2009,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class PlatDestructible(KaitaiStruct):
-        SEQ_FIELDS = ["flags", "num_particles", "particle_object_id", "name"]
+        SEQ_FIELDS = ["flags", "num_fragments", "fragment_object_id", "name"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2010,12 +2021,12 @@ class GloverLevel(KaitaiStruct):
             self._debug['flags']['start'] = self._io.pos()
             self.flags = self._io.read_u2be()
             self._debug['flags']['end'] = self._io.pos()
-            self._debug['num_particles']['start'] = self._io.pos()
-            self.num_particles = self._io.read_u4be()
-            self._debug['num_particles']['end'] = self._io.pos()
-            self._debug['particle_object_id']['start'] = self._io.pos()
-            self.particle_object_id = self._io.read_u4be()
-            self._debug['particle_object_id']['end'] = self._io.pos()
+            self._debug['num_fragments']['start'] = self._io.pos()
+            self.num_fragments = self._io.read_u4be()
+            self._debug['num_fragments']['end'] = self._io.pos()
+            self._debug['fragment_object_id']['start'] = self._io.pos()
+            self.fragment_object_id = self._io.read_u4be()
+            self._debug['fragment_object_id']['end'] = self._io.pos()
             self._debug['name']['start'] = self._io.pos()
             self.name = (self._io.read_bytes(8)).decode(u"ASCII")
             self._debug['name']['end'] = self._io.pos()
@@ -2344,7 +2355,61 @@ class GloverLevel(KaitaiStruct):
 
 
     class Enemy(KaitaiStruct):
-        SEQ_FIELDS = ["enemy_type", "u1", "x", "y", "z", "y_rotation"]
+
+        class EnemyType(Enum):
+            bovva = 7
+            cannon = 8
+            samtex = 9
+            mallet = 10
+            generalw = 11
+            lionfish = 12
+            chester = 13
+            keg = 14
+            reggie = 15
+            swish = 16
+            thrice = 17
+            robes = 18
+            fumble = 19
+            mike = 20
+            raptor = 21
+            crumpet = 22
+            tracey = 23
+            yoofow = 24
+            opec = 25
+            cymon = 26
+            sucker = 27
+            bugle = 28
+            dennis = 29
+            chuck = 30
+            hubchicken1 = 31
+            frankie2 = 32
+            kloset = 33
+            willy = 34
+            joff = 35
+            cancer = 36
+            kirk = 37
+            robot = 38
+            evilrobot = 39
+            spank = 40
+            babyspk2 = 41
+            evilglove = 42
+            dibber = 43
+            brundle = 44
+            malcom = 45
+            spotty = 46
+            gordon = 47
+            sidney = 48
+            weevil = 49
+            chopstik = 50
+            butterfly = 51
+            spider = 52
+            bat = 53
+            frog = 54
+            dragfly = 55
+            boxthing = 56
+            bug = 57
+            nmefrog = 58
+        SEQ_FIELDS = ["type", "u1", "x", "y", "z", "y_rotation"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2353,9 +2418,9 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['enemy_type']['start'] = self._io.pos()
-            self.enemy_type = self._io.read_u2be()
-            self._debug['enemy_type']['end'] = self._io.pos()
+            self._debug['type']['start'] = self._io.pos()
+            self.type = KaitaiStream.resolve_enum(GloverLevel.Enemy.EnemyType, self._io.read_u2be())
+            self._debug['type']['end'] = self._io.pos()
             self._debug['u1']['start'] = self._io.pos()
             self.u1 = self._io.read_u2be()
             self._debug['u1']['end'] = self._io.pos()
@@ -2384,24 +2449,6 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             pass
-
-
-    class PlatSpecial0xb6(KaitaiStruct):
-        SEQ_FIELDS = ["u16_0x34", "u16_0x40"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u16_0x34']['start'] = self._io.pos()
-            self.u16_0x34 = self._io.read_u2be()
-            self._debug['u16_0x34']['end'] = self._io.pos()
-            self._debug['u16_0x40']['start'] = self._io.pos()
-            self.u16_0x40 = self._io.read_u2be()
-            self._debug['u16_0x40']['end'] = self._io.pos()
 
 
     class PlatOrbitPause(KaitaiStruct):
@@ -2588,6 +2635,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['start'] = self._io.pos()
             self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
+
+
+    class EnemyInstructionMove(KaitaiStruct):
+        SEQ_FIELDS = ["destination_x", "destination_y", "destination_z", "vel_magnitude"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['destination_x']['start'] = self._io.pos()
+            self.destination_x = self._io.read_f4be()
+            self._debug['destination_x']['end'] = self._io.pos()
+            self._debug['destination_y']['start'] = self._io.pos()
+            self.destination_y = self._io.read_f4be()
+            self._debug['destination_y']['end'] = self._io.pos()
+            self._debug['destination_z']['start'] = self._io.pos()
+            self.destination_z = self._io.read_f4be()
+            self._debug['destination_z']['end'] = self._io.pos()
+            self._debug['vel_magnitude']['start'] = self._io.pos()
+            self.vel_magnitude = self._io.read_f4be()
+            self._debug['vel_magnitude']['end'] = self._io.pos()
 
 
     class PlatPathPoint(KaitaiStruct):
@@ -2943,6 +3014,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['near_clip']['end'] = self._io.pos()
 
 
+    class BuzzerDutyCycle(KaitaiStruct):
+        SEQ_FIELDS = ["frames_off", "frames_on"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['frames_off']['start'] = self._io.pos()
+            self.frames_off = self._io.read_u2be()
+            self._debug['frames_off']['end'] = self._io.pos()
+            self._debug['frames_on']['start'] = self._io.pos()
+            self.frames_on = self._io.read_u2be()
+            self._debug['frames_on']['end'] = self._io.pos()
+
+
     class CameoInst5(KaitaiStruct):
         SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -3011,6 +3100,57 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x10']['start'] = self._io.pos()
             self.u16_0x10 = self._io.read_u2be()
             self._debug['u16_0x10']['end'] = self._io.pos()
+
+
+    class EnemyInstructionPlayAnimation(KaitaiStruct):
+        SEQ_FIELDS = ["anim_idx_1", "anim_idx_2"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['anim_idx_1']['start'] = self._io.pos()
+            self.anim_idx_1 = self._io.read_s4be()
+            self._debug['anim_idx_1']['end'] = self._io.pos()
+            self._debug['anim_idx_2']['start'] = self._io.pos()
+            self.anim_idx_2 = self._io.read_s4be()
+            self._debug['anim_idx_2']['end'] = self._io.pos()
+
+
+    class EnemyInstructionRandomWalk(KaitaiStruct):
+        SEQ_FIELDS = ["home_x", "home_y", "home_z", "extent_x", "extent_y", "extent_z", "min_travel_distance"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['home_x']['start'] = self._io.pos()
+            self.home_x = self._io.read_f4be()
+            self._debug['home_x']['end'] = self._io.pos()
+            self._debug['home_y']['start'] = self._io.pos()
+            self.home_y = self._io.read_f4be()
+            self._debug['home_y']['end'] = self._io.pos()
+            self._debug['home_z']['start'] = self._io.pos()
+            self.home_z = self._io.read_f4be()
+            self._debug['home_z']['end'] = self._io.pos()
+            self._debug['extent_x']['start'] = self._io.pos()
+            self.extent_x = self._io.read_f4be()
+            self._debug['extent_x']['end'] = self._io.pos()
+            self._debug['extent_y']['start'] = self._io.pos()
+            self.extent_y = self._io.read_f4be()
+            self._debug['extent_y']['end'] = self._io.pos()
+            self._debug['extent_z']['start'] = self._io.pos()
+            self.extent_z = self._io.read_f4be()
+            self._debug['extent_z']['end'] = self._io.pos()
+            self._debug['min_travel_distance']['start'] = self._io.pos()
+            self.min_travel_distance = self._io.read_f4be()
+            self._debug['min_travel_distance']['end'] = self._io.pos()
 
 
     class PuzzleAction0x55(KaitaiStruct):
@@ -3104,7 +3244,37 @@ class GloverLevel(KaitaiStruct):
 
 
     class EnemyInstruction(KaitaiStruct):
-        SEQ_FIELDS = ["type_code", "u16_0x02", "body"]
+
+        class ExecutionConditionType(Enum):
+            ball_within_range = 0
+            ball_within_ground_range = 1
+            glover_within_range = 2
+            glover_within_ground_range = 3
+            ball_or_glover_within_range = 4
+            ball_or_glover_within_ground_range = 5
+            ball_within_angle_of_view = 6
+            glover_within_angle_of_view = 7
+            ball_or_glover_within_angle_of_view = 8
+            periodic = 9
+            roll_angle_within_range_and_periodic = 10
+            glover_holding_ball = 11
+            glover_not_holding_ball = 12
+            enemy_holding_ball = 13
+            enemy_not_holding_ball = 14
+            glover_holding_enemy = 15
+            glover_not_holding_enemy = 16
+            on_ball = 17
+            on_glover = 18
+            enemy_within_attention_bbox = 19
+            always = 20
+            never = 21
+            random_chance_param_a_over_1000 = 22
+
+        class InstructionFlags(Enum):
+            face_player = 1048576
+            face_ball = 2097152
+            face_closer_of_player_or_ball = 4194304
+        SEQ_FIELDS = ["instr_type", "lifetime", "params", "execution_condition_param_a", "execution_condition_param_b", "flags", "execution_condition"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -3113,67 +3283,79 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['type_code']['start'] = self._io.pos()
-            self.type_code = self._io.read_u2be()
-            self._debug['type_code']['end'] = self._io.pos()
-            self._debug['u16_0x02']['start'] = self._io.pos()
-            self.u16_0x02 = self._io.read_u2be()
-            self._debug['u16_0x02']['end'] = self._io.pos()
-            self._debug['body']['start'] = self._io.pos()
-            _on = self.type_code
+            self._debug['instr_type']['start'] = self._io.pos()
+            self.instr_type = self._io.read_u2be()
+            self._debug['instr_type']['end'] = self._io.pos()
+            self._debug['lifetime']['start'] = self._io.pos()
+            self.lifetime = self._io.read_s2be()
+            self._debug['lifetime']['end'] = self._io.pos()
+            self._debug['params']['start'] = self._io.pos()
+            _on = self.instr_type
             if _on == 14:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 10:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             elif _on == 17:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 0:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionMove(self._io, self, self._root)
             elif _on == 4:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionRest(self._io, self, self._root)
             elif _on == 24:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 6:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 20:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 7:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionPlayAnimation(self._io, self, self._root)
             elif _on == 1:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionDash(self._io, self, self._root)
             elif _on == 13:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             elif _on == 11:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             elif _on == 12:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 3:
-                self.body = GloverLevel.EnemyInstructionB(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionRandomWalk(self._io, self, self._root)
             elif _on == 5:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 19:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 23:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             elif _on == 15:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionAttack(self._io, self, self._root)
             elif _on == 8:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 9:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             elif _on == 21:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 16:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
             elif _on == 18:
-                self.body = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionGoto(self._io, self, self._root)
             elif _on == 2:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionTurn(self._io, self, self._root)
             elif _on == 22:
-                self.body = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
             else:
-                self.body = GloverLevel.EnemyInstructionError(self._io, self, self._root)
-            self._debug['body']['end'] = self._io.pos()
+                self.params = GloverLevel.EnemyInstructionError(self._io, self, self._root)
+            self._debug['params']['end'] = self._io.pos()
+            self._debug['execution_condition_param_a']['start'] = self._io.pos()
+            self.execution_condition_param_a = self._io.read_f4be()
+            self._debug['execution_condition_param_a']['end'] = self._io.pos()
+            self._debug['execution_condition_param_b']['start'] = self._io.pos()
+            self.execution_condition_param_b = self._io.read_f4be()
+            self._debug['execution_condition_param_b']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.EnemyInstruction.InstructionFlags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
+            self._debug['execution_condition']['start'] = self._io.pos()
+            self.execution_condition = KaitaiStream.resolve_enum(GloverLevel.EnemyInstruction.ExecutionConditionType, self._io.read_u2be())
+            self._debug['execution_condition']['end'] = self._io.pos()
 
 
     class SetGlobal0xb7(KaitaiStruct):
@@ -3500,8 +3682,8 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x1c']['end'] = self._io.pos()
 
 
-    class Enemy0x84(KaitaiStruct):
-        SEQ_FIELDS = []
+    class EnemyInstructionGoto(KaitaiStruct):
+        SEQ_FIELDS = ["instr_idx", "unused"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -3510,11 +3692,16 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            pass
+            self._debug['instr_idx']['start'] = self._io.pos()
+            self.instr_idx = self._io.read_u4be()
+            self._debug['instr_idx']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_u4be()
+            self._debug['unused']['end'] = self._io.pos()
 
 
     class EnemyInstructionA(KaitaiStruct):
-        SEQ_FIELDS = ["u32_0x02", "u32_0x06", "u32_0x0a", "u32_0x0e", "u32_0x18", "u32_0x1e", "u32_0x14", "u32_0x16"]
+        SEQ_FIELDS = ["u32_0x02", "u32_0x06", "u32_0x0a", "u32_0x0e"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -3535,18 +3722,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x0e']['start'] = self._io.pos()
             self.u32_0x0e = self._io.read_u4be()
             self._debug['u32_0x0e']['end'] = self._io.pos()
-            self._debug['u32_0x18']['start'] = self._io.pos()
-            self.u32_0x18 = self._io.read_u4be()
-            self._debug['u32_0x18']['end'] = self._io.pos()
-            self._debug['u32_0x1e']['start'] = self._io.pos()
-            self.u32_0x1e = self._io.read_u4be()
-            self._debug['u32_0x1e']['end'] = self._io.pos()
-            self._debug['u32_0x14']['start'] = self._io.pos()
-            self.u32_0x14 = self._io.read_u4be()
-            self._debug['u32_0x14']['end'] = self._io.pos()
-            self._debug['u32_0x16']['start'] = self._io.pos()
-            self.u32_0x16 = self._io.read_u2be()
-            self._debug['u32_0x16']['end'] = self._io.pos()
 
 
     class PlatSpecial0xb9(KaitaiStruct):
@@ -3725,6 +3900,36 @@ class GloverLevel(KaitaiStruct):
             self._debug['theta']['start'] = self._io.pos()
             self.theta = self._io.read_f4be()
             self._debug['theta']['end'] = self._io.pos()
+
+
+    class EnemySetAttentionBbox(KaitaiStruct):
+        SEQ_FIELDS = ["left", "top", "front", "width", "height", "depth"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['left']['start'] = self._io.pos()
+            self.left = self._io.read_f4be()
+            self._debug['left']['end'] = self._io.pos()
+            self._debug['top']['start'] = self._io.pos()
+            self.top = self._io.read_f4be()
+            self._debug['top']['end'] = self._io.pos()
+            self._debug['front']['start'] = self._io.pos()
+            self.front = self._io.read_f4be()
+            self._debug['front']['end'] = self._io.pos()
+            self._debug['width']['start'] = self._io.pos()
+            self.width = self._io.read_f4be()
+            self._debug['width']['end'] = self._io.pos()
+            self._debug['height']['start'] = self._io.pos()
+            self.height = self._io.read_f4be()
+            self._debug['height']['end'] = self._io.pos()
+            self._debug['depth']['start'] = self._io.pos()
+            self.depth = self._io.read_f4be()
+            self._debug['depth']['end'] = self._io.pos()
 
 
 
