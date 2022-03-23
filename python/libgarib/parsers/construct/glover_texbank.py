@@ -1,6 +1,23 @@
 from construct import *
 from construct.lib import *
 
+def glover_texbank__texture_compression_format(subcon):
+	return Enum(subcon,
+		ci4=0,
+		ci8=1,
+		uncompressed_16b=2,
+		uncompressed_32b=3,
+	)
+
+def glover_texbank__texture_color_format(subcon):
+	return Enum(subcon,
+		rgba=0,
+		yuv=1,
+		ci=2,
+		ia=3,
+		i=4,
+	)
+
 glover_texbank__texture = Struct(
 	'id' / Int32ub,
 	'palette_anim_idx_min' / Int8ub,
@@ -19,23 +36,6 @@ glover_texbank__texture = Struct(
 	'palette_offset' / Int32ub,
 	'data' / FixedSized((this.length - 36), GreedyBytes),
 )
-
-def glover_texbank__texture_compression_format(subcon):
-	return Enum(subcon,
-		ci4=0,
-		ci8=1,
-		uncompressed_16b=2,
-		uncompressed_32b=3,
-	)
-
-def glover_texbank__texture_color_format(subcon):
-	return Enum(subcon,
-		rgba=0,
-		yuv=1,
-		ci=2,
-		ia=3,
-		i=4,
-	)
 
 glover_texbank = Struct(
 	'n_textures' / Int32ub,

@@ -140,13 +140,13 @@ types:
         type: u4
       - id: faces_ptr
         type: u4
-      - id: u1_ptr
+      - id: u1_ptr # TODO: colors?
         type: u4
       - id: uvs_ptr
         type: u4
-      - id: u3
+      - id: uvs_unmodified_ptr
         type: u4
-      - id: colors_norms_ptr
+      - id: colors_norms_ptr # TODO: just norms?
         type: u4
       - id: u5_ptr
         type: u4
@@ -177,6 +177,12 @@ types:
         repeat: expr
         repeat-expr: num_faces
         if: uvs_ptr != 0
+      uvs_unmodified:
+        pos: uvs_unmodified_ptr
+        type: uv
+        repeat: expr
+        repeat-expr: num_faces
+        if: uvs_unmodified_ptr != 0
       colors_norms:
         pos: colors_norms_ptr
         type: u4
