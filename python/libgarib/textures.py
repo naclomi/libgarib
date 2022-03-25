@@ -1,6 +1,7 @@
 import struct
 import sys
 
+import json
 import PIL.Image
 
 from .parsers.glover_texbank import GloverTexbank
@@ -17,26 +18,41 @@ def decodeRGBA16(raw):
 class TextureDecodeException(Exception):
     pass
 
-def imToTex(image, tex_id):
+def imToTex(im, tex_id):
     
-    # TODO: 1/2 are color channel info, 4 is anim
-    flags = 0
+    metadata = {}
+    if "Comment" in im.info:
+        metadata = json.loads(im.info["Comment"])
+
+    flags = metadata.get("flags", 0)
+
+    # Set palette animation flag based on other metadata
+    if metadata.get("palette_anim_idx_min", 0) != metadata.get("palette_anim_idx_max", 0):
+        flags |= 4
+    else:
+        flags &= ~4 & 0xFFFF
+
+    # TODO: if not filled out, guess based on image data
+    metadata["color_format"] = metadata.get("color_format", 0)
+    metadata["compression_format"] = metadata.get("compression_format", 0)
+
     pixels = []
     palette = []
 
+
     return texbank_writer.glover_texbank__texture.build({
         "id": tex_id,
-        "palette_anim_idx_min": 0,
-        "palette_anim_idx_max": 0,
-        "frame_increment": 0,
-        "frame_counter": 0,
+        "palette_anim_idx_min": metadata.get("palette_anim_idx_min", 0),
+        "palette_anim_idx_max": metadata.get("palette_anim_idx_max", 0),
+        "frame_increment": metadata.get("frame_increment", 0),
+        "frame_counter": metadata.get("frame_counter", 0),
         "flags": flags,
-        "width": image.size[0],
-        "height": image.size[1],
+        "width": im.size[0],
+        "height": im.size[1],
         "masks": 0, # TODO
         "maskt": 0, # TODO
-        "color_format": 0, # TODO
-        "compression_format": 0, # TODO
+        "color_format": metadata["color_format"],
+        "compression_format": metadata["compression_format"], 
         "data_ptr": 36,
         "palette_offset": 36 + len(pixels),
         "length": 36 + len(pixels) + len(palette),
@@ -47,7 +63,6 @@ def texToIm(texture: GloverTexbank):
     size = (texture.width, texture.height)
     decoded_pixels = []
     palette = []
-    print(hex(texture.id), hex(texture.flags), str(texture.color_format.name), str(texture.compression_format.name))
     if texture.color_format is GloverTexbank.TextureColorFormat.ia:
         if texture.compression_format is GloverTexbank.TextureCompressionFormat.uncompressed_16b:
             mode = "RGBA"

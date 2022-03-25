@@ -1,5 +1,6 @@
 import collections
 import io
+import os
 import struct
 import sys
 
@@ -157,3 +158,19 @@ def decompress(src, dst):
                 dst.write(backref_data)
 
                 bytes_written += backref_len
+
+def data_from_stream(file, length=None):
+    file_offset = file.tell()
+    magic_numbers = file.read(4)
+    file.seek(file_offset)
+    if magic_numbers == MAGIC_NUMBER_FLA:
+        raw_data_stream = io.BytesIO()
+        decompress(file, raw_data_stream)
+        raw_data = raw_data_stream.getvalue()
+    else:
+        if length is None:
+            file.seek(0, os.SEEK_END)
+            length = file.tell()
+            file.seek(file_offset)
+        raw_data = file.read(length)
+    return raw_data
