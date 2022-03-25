@@ -20,6 +20,9 @@ types:
         type: u1
       - id: flags
         type: u2
+        # 1: unknown
+        # 2: unknown
+        # 4: palette-animated
       - id: frame_increment
         type: s2
       - id: frame_counter
