@@ -6,7 +6,7 @@ import sys
 
 MAGIC_NUMBER_FLA = b"FLA2"
 
-def compress(src, dst, src_length=None):
+def compress(src, dst, src_length=None, progress_callback=None):
     # pypy/cpython cross-compatability hack:
     # cpython treats single-byte slices of a bytestring
     # as integers, while pypy treats them as characters,
@@ -15,7 +15,6 @@ def compress(src, dst, src_length=None):
 
     if type(src) is not bytes:
         src = src.read()
-    src_cursor = 0
     src_length = len(src)
 
     dst.write(b"FLA2")
@@ -44,6 +43,10 @@ def compress(src, dst, src_length=None):
             src_cursor += 1
         return (window_start, (window_rd_cursor - window_start) & 0xfff)
 
+    progress_delta = src_length / 100
+    progress_counter = progress_delta
+    progress_ticks = 0
+
     read_cursor = 0
     done = False
     while not done:
@@ -53,6 +56,7 @@ def compress(src, dst, src_length=None):
         for cmd_bit in range(8):
             next_byte = src[read_cursor]
             read_cursor += 1
+            progress_counter -= 1
 
             window[window_wr_cursor] = next_byte
             window_wr_cursor = (window_wr_cursor + 1) & 0xfff
@@ -85,7 +89,15 @@ def compress(src, dst, src_length=None):
                 # dst.write(("{:}".format(str((backref_start, backref_len+2)))).encode())
 
                 read_cursor += backref_len + 1
+                progress_counter -= backref_len + 1
+
                 window_wr_cursor = (window_wr_cursor + backref_len + 1) & 0xfff
+
+            if progress_counter <= 0:
+                progress_counter += progress_delta
+                progress_ticks += 1
+                if progress_callback is not None:
+                    progress_callback(progress_ticks)
 
             if read_cursor >= src_length:
                 done = True

@@ -59,6 +59,8 @@ def imToTex(im, tex_id):
         elif metadata["compression_format"] == "ci4":
             for y in range(im.size[1]):
                 for x in range(0, im.size[0], 2):
+                    if px[x,y] > 0xf or px[x+1,y] > 0xf:
+                        raise TextureEncodeException("Palette too large for CI4 encoding")
                     tex_pixels.append(struct.pack("B",((px[x,y] & 0xF) << 4) | (px[x+1,y] & 0xF)))
         else:
             raise TextureEncodeException("Conversion from paletted source image to true-color texture not yet supported")

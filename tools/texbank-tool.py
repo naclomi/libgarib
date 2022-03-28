@@ -59,9 +59,13 @@ if __name__=="__main__":
             "asset": list(map(lambda t: texbank_writer.glover_texbank__texture.parse(t), textures))
         })
         if args.compress:
+            def compression_progress_callback(percent):
+                sys.stdout.write("\rCompressing ({:}%)".format(percent));
             with open(args.output_file, "wb") as f:
                 bank_stream = io.BytesIO(bank)
-                compress(bank_stream, f)
+                compression_progress_callback(0)
+                compress(bank_stream, f, progress_callback=compression_progress_callback)
+                sys.stdout.write("\n")
         else:
             with open(args.output_file, "wb") as f:
                 f.write(bank)
