@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import io
 import json
 import os
 import sys
@@ -14,7 +15,7 @@ from libgarib.parsers.glover_texbank import GloverTexbank
 from libgarib.parsers.construct import glover_texbank as texbank_writer
 
 from libgarib.hash import hash_str
-from libgarib.fla2 import data_from_stream
+from libgarib.fla2 import compress, data_from_stream
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Tool to work with texture bank archives from Glover (N64)")
@@ -25,6 +26,8 @@ if __name__=="__main__":
                         help="Texture image to pack")
     pack_parser.add_argument("--output-file", type=str, required=True,
                         help="File to write bank into")
+    pack_parser.add_argument("--compress", action="store_true",
+                        help="FLA2-compress the output")
 
     unpack_parser = subparsers.add_parser('unpack', help='Extract raw image assets from texture banks')    
     unpack_parser.add_argument("bank_file", type=str, nargs="+",
@@ -47,7 +50,7 @@ if __name__=="__main__":
                     else:
                         tex_id = hash_str(basename)
                     textures.append(libgarib.textures.imToTex(im, tex_id))
-            except (json.JSONDecodeError, construct.core.MappingError) as e:
+            except (json.JSONDecodeError, construct.core.MappingError, libgarib.textures.TextureEncodeException) as e:
                 sys.stderr.write("WARNING: Malformed image metadata for texture '{:}': {:}. Texture was not included in bank\n".format(filename, str(e)))
             except PIL.UnidentifiedImageError:
                 sys.stderr.write("WARNING: Couldn't open image {:}. Texture was not included in bank\n".format(filename))
@@ -55,8 +58,13 @@ if __name__=="__main__":
             "n_textures": len(textures),
             "asset": list(map(lambda t: texbank_writer.glover_texbank__texture.parse(t), textures))
         })
-        with open(args.output_file, "wb") as f:
-            f.write(bank)
+        if args.compress:
+            with open(args.output_file, "wb") as f:
+                bank_stream = io.BytesIO(bank)
+                compress(bank_stream, f)
+        else:
+            with open(args.output_file, "wb") as f:
+                f.write(bank)
         sys.stdout.write("Packed {:} textures into bank '{:}'\n".format(len(textures), args.output_file))
     elif args.command == "unpack":
         for bank_filename in args.bank_file:
@@ -69,16 +77,22 @@ if __name__=="__main__":
                 try:
                     im = libgarib.textures.texToIm(texture)
                     out_file = os.path.join(bank_output_dir, "0x{:08X}.png".format(texture.id))
-                    metadata = PngInfo()
-                    metadata.add_text("Comment", json.dumps({
+                    metadata = {
                         "flags": texture.flags,
-                        "palette_anim_idx_min": texture.palette_anim_idx_min,
-                        "palette_anim_idx_max": texture.palette_anim_idx_max,
-                        "frame_increment": texture.frame_increment,
-                        "frame_counter": texture.frame_counter,
                         "color_format": texture.color_format.name,
                         "compression_format": texture.compression_format.name,
-                    }, indent=2))
-                    im.save(out_file, "PNG", pnginfo=metadata)                    
+                    }
+                    if texture.palette_anim_idx_min != texture.palette_anim_idx_max:
+                        metadata["palette_anim_idx_min"] = texture.palette_anim_idx_min
+                        metadata["palette_anim_idx_max"] = texture.palette_anim_idx_max
+                        metadata["frame_increment"] = texture.frame_increment
+                        metadata["frame_counter"] = texture.frame_counter
+                    if texture.width != 2 ** texture.masks:
+                        metadata["masks"] = texture.masks
+                    if texture.height != 2 ** texture.maskt:
+                        metadata["maskt"] = texture.maskt                        
+                    binary_metadata = PngInfo()
+                    binary_metadata.add_text("Comment", json.dumps(metadata, indent=2))
+                    im.save(out_file, "PNG", pnginfo=binary_metadata)                    
                 except libgarib.textures.TextureDecodeException as e:
                     sys.stderr.write("WARNING: " + str(e) + "\n")
