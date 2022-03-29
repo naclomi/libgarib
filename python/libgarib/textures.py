@@ -89,12 +89,12 @@ def imToTex(im, tex_id):
                     tex_pixels.append(struct.pack("BB", pixel[0], pixel[3]))
         elif mode == ("rgba", "uncompressed_16b"):
             for y in range(im.size[1]):
-                for x in range(0, im.size[0], 2):
+                for x in range(im.size[0]):
                     pixel = px[x,y]
                     tex_pixels.append(struct.pack(">H", encodeRGBA16(*pixel)))
         elif mode == ("rgba", "uncompressed_32b"):
             for y in range(im.size[1]):
-                for x in range(0, im.size[0], 2):
+                for x in range(im.size[0]):
                     pixel = px[x,y]
                     tex_pixels.append(struct.pack("BBBB", *pixel))
         else:
@@ -117,7 +117,7 @@ def imToTex(im, tex_id):
         "data_ptr": 36,
         "palette_offset": palette_offset,
         "length": 36 + len(tex_pixels),
-        "data": b"" # TODO
+        "data": tex_pixels
     })
 
 
