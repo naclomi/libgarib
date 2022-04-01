@@ -1,0 +1,1365 @@
+############################################
+#
+# Glover ROM file offsets
+# v0.01
+# Extracted by naclomi ~ https://github.com/naclomi
+#
+############################################
+# Observations are only guaranteed valid for ROMs with
+# the following checksum:
+rom_checksum: 0x9661EFD7
+regions:
+    
+  ######################################
+  ## Texture banks
+
+  - namespaced_id: 18
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x5056c
+        reg: v0
+    end_pointers:
+      - address: 0x50578
+        reg: v0
+    name: "RCDEMO_TEX_BANK.tex.bin"
+  - namespaced_id: 15
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x505a4
+        reg: v0
+    end_pointers:
+      - address: 0x505b0
+        reg: v0
+    name: "CKBONUS_TEX_BANK.tex.bin"
+  - namespaced_id: 16
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x505dc
+        reg: v0
+    end_pointers:
+      - address: 0x505e8
+        reg: v0
+    name: "CKCHEAT1_TEX_BANK.tex.bin"
+  - namespaced_id: 17
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50614
+        reg: v0
+    end_pointers:
+      - address: 0x50620
+        reg: v0
+    name: "CKCHEAT2_TEX_BANK.tex.bin"
+  - namespaced_id: 10
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x5064c
+        reg: v0
+    end_pointers:
+      - address: 0x50658
+        reg: v0
+    name: "FONT_TEX_BANK.tex.bin"
+  # TODO: how to encode unused japanese font texbank?
+  - namespaced_id: 9
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50688
+        reg: v0
+    end_pointers:
+      - address: 0x50694
+        reg: v0
+    name: "HUB_TEX_BANK.tex.bin"
+  - namespaced_id: 11
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x506c0
+        reg: v0
+    end_pointers:
+      - address: 0x506cc
+        reg: v0
+    name: "CAMEO_TEX_BANK.tex.bin"
+  - namespaced_id: 0
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x506f8
+        reg: v0
+    end_pointers:
+      - address: 0x50704
+        reg: v0
+    name: "TITLE_TEX_BANK.tex.bin"
+  - namespaced_id: 1
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50730
+        reg: v0
+    end_pointers:
+      - address: 0x5073c
+        reg: v0
+    name: "LEVELEND_TEX_BANK.tex.bin"
+  - namespaced_id: 14
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50768
+        reg: v0
+    end_pointers:
+      - address: 0x50774
+        reg: v0
+    name: "LEVELEND_TEX_BANK.tex.bin"
+  - namespaced_id: 2
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x507a0
+        reg: v0
+    end_pointers:
+      - address: 0x507ac
+        reg: v0
+    name: "GENERIC_TEX_BANK.tex.bin"
+  - namespaced_id: 3
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x507d8
+        reg: v0
+    end_pointers:
+      - address: 0x507e4
+        reg: v0
+    name: "ATLANTIS_TEX_BANK.tex.bin"
+  - namespaced_id: 4
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50810
+        reg: v0
+    end_pointers:
+      - address: 0x5081c
+        reg: v0
+    name: "CARNIVAL_TEX_BANK.tex.bin"
+  - namespaced_id: 6
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50848
+        reg: v0
+    end_pointers:
+      - address: 0x50854
+        reg: v0
+    name: "PIRATES_TEX_BANK.tex.bin"
+  - namespaced_id: 7
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50880
+        reg: v0
+    end_pointers:
+      - address: 0x5088c
+        reg: v0
+    name: "PREHISTORIC_TEX_BANK.tex.bin"
+  - namespaced_id: 8
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x508b8
+        reg: v0
+    end_pointers:
+      - address: 0x508c4
+        reg: v0
+    name: "FORTRESS_TEX_BANK.tex.bin"
+  - namespaced_id: 5
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x508f0
+        reg: v0
+    end_pointers:
+      - address: 0x508fc
+        reg: v0
+    name: "OOTW_TEX_BANK.tex.bin"
+  - namespaced_id: 12
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50928
+        reg: v0
+    end_pointers:
+      - address: 0x50934
+        reg: v0
+    name: "PRESENT_TEX_BANK.tex.bin"
+  - namespaced_id: 13
+    data_type: texbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x50960
+        reg: v0
+    end_pointers:
+      - address: 0x5096c
+        reg: v0
+    name: "FLYTHRU_TEX_BANK.tex.bin"
+
+  ######################################
+  ## Object banks
+
+  - namespaced_id: 71
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x51f00
+        reg: v0
+    end_pointers:
+      - address: 0x51f0c
+        reg: v0
+    name: "TWEEN.obj.bin"
+  - namespaced_id: 0
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x51f38
+        reg: v0
+    end_pointers:
+      - address: 0x51f44
+        reg: v0
+    name: "SYSTEM.obj.bin"
+  - namespaced_id: 67
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x51f70
+        reg: v0
+    end_pointers:
+      - address: 0x51f7c
+        reg: v0
+    name: "WAYROOM.obj.bin"
+  - namespaced_id: 66
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x51fa8
+        reg: v0
+    end_pointers:
+      - address: 0x51fb4
+        reg: v0
+    name: "OUTRO.obj.bin"
+  - namespaced_id: 68
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x51fe0
+        reg: v0
+    end_pointers:
+      - address: 0x51fec
+        reg: v0
+    name: "PRESENTATION.obj.bin"
+  - namespaced_id: 69
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52018
+        reg: v0
+    end_pointers:
+      - address: 0x52024
+        reg: v0
+    name: "FLYTHRU.obj.bin"
+  - namespaced_id: 65
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52050
+        reg: v0
+    end_pointers:
+      - address: 0x5205c
+        reg: v0
+    name: "INTRO.obj.bin"
+  - namespaced_id: 64
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52088
+        reg: v0
+    end_pointers:
+      - address: 0x52094
+        reg: v0
+    name: "HUB_SHARED.obj.bin"
+  - namespaced_id: 2
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x520c0
+        reg: v0
+    end_pointers:
+      - address: 0x520cc
+        reg: v0
+    name: "HUB_PART1.obj.bin"
+  - namespaced_id: 3
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x520f8
+        reg: v0
+    end_pointers:
+      - address: 0x52104
+        reg: v0
+    name: "HUB_PART2.obj.bin"
+  - namespaced_id: 4
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52130
+        reg: v0
+    end_pointers:
+      - address: 0x5213c
+        reg: v0
+    name: "HUB_PART3.obj.bin"
+  - namespaced_id: 5
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52168
+        reg: v0
+    end_pointers:
+      - address: 0x52174
+        reg: v0
+    name: "HUB_PART4.obj.bin"
+  - namespaced_id: 6
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x521a0
+        reg: v0
+    end_pointers:
+      - address: 0x521ac
+        reg: v0
+    name: "HUB_PART5.obj.bin"
+  - namespaced_id: 7
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x521d8
+        reg: v0
+    end_pointers:
+      - address: 0x521e4
+        reg: v0
+    name: "HUB_PART6.obj.bin"
+  - namespaced_id: 8
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52210
+        reg: v0
+    end_pointers:
+      - address: 0x5221c
+        reg: v0
+    name: "HUB_PART7.obj.bin"
+  - namespaced_id: 9
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52248
+        reg: v0
+    end_pointers:
+      - address: 0x52254
+        reg: v0
+    name: "HUB_PART8.obj.bin"
+  - namespaced_id: 10
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52280
+        reg: v0
+    end_pointers:
+      - address: 0x5228c
+        reg: v0
+    name: "CAVE.obj.bin"
+  - namespaced_id: 11
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x522b8
+        reg: v0
+    end_pointers:
+      - address: 0x522c4
+        reg: v0
+    name: "ASSAULT.obj.bin COURSE"
+  - namespaced_id: 1
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x522f0
+        reg: v0
+    end_pointers:
+      - address: 0x522fc
+        reg: v0
+    name: "GENERIC.obj.bin"
+  - namespaced_id: 12
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52328
+        reg: v0
+    end_pointers:
+      - address: 0x52334
+        reg: v0
+    name: "ATLANTIS_SHARED.obj.bin"
+  - namespaced_id: 13
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52360
+        reg: v0
+    end_pointers:
+      - address: 0x5236c
+        reg: v0
+    name: "ATLANTIS_L1.obj.bin"
+  - namespaced_id: 14
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52398
+        reg: v0
+    end_pointers:
+      - address: 0x523a4
+        reg: v0
+    name: "ATLANTIS_L2.obj.bin"
+  - namespaced_id: 15
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x523d0
+        reg: v0
+    end_pointers:
+      - address: 0x523dc
+        reg: v0
+    name: "ATLANTIS_L3A.obj.bin"
+  - namespaced_id: 17
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52408
+        reg: v0
+    end_pointers:
+      - address: 0x52414
+        reg: v0
+    name: "ATLANTIS_BOSS.obj.bin"
+  - namespaced_id: 18
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52440
+        reg: v0
+    end_pointers:
+      - address: 0x5244c
+        reg: v0
+    name: "ATLANTIS_BONUS.obj.bin"
+  - namespaced_id: 19
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52478
+        reg: v0
+    end_pointers:
+      - address: 0x52484
+        reg: v0
+    name: "CARNIVAL_SHARED.obj.bin"
+  - namespaced_id: 20
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x524b0
+        reg: v0
+    end_pointers:
+      - address: 0x524bc
+        reg: v0
+    name: "CARNIVAL_L1.obj.bin"
+  - namespaced_id: 21
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x524e8
+        reg: v0
+    end_pointers:
+      - address: 0x524f4
+        reg: v0
+    name: "CARNIVAL_L2A.obj.bin"
+  - namespaced_id: 23
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52520
+        reg: v0
+    end_pointers:
+      - address: 0x5252c
+        reg: v0
+    name: "CARNIVAL_L3A.obj.bin"
+  - namespaced_id: 25
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52558
+        reg: v0
+    end_pointers:
+      - address: 0x52564
+        reg: v0
+    name: "CARNIVAL_BOSS.obj.bin"
+  - namespaced_id: 26
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52590
+        reg: v0
+    end_pointers:
+      - address: 0x5259c
+        reg: v0
+    name: "CARNIVAL_BONUS.obj.bin"
+  - namespaced_id: 38
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x525c8
+        reg: v0
+    end_pointers:
+      - address: 0x525d4
+        reg: v0
+    name: "PIRATES_SHARED.obj.bin"
+  - namespaced_id: 39
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52600
+        reg: v0
+    end_pointers:
+      - address: 0x5260c
+        reg: v0
+    name: "PIRATES_L1.obj.bin"
+  - namespaced_id: 40
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52638
+        reg: v0
+    end_pointers:
+      - address: 0x52644
+        reg: v0
+    name: "PIRATES_L2A.obj.bin"
+  - namespaced_id: 43
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52670
+        reg: v0
+    end_pointers:
+      - address: 0x5267c
+        reg: v0
+    name: "PIRATES_L3B.obj.bin"
+  - namespaced_id: 44
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x526a8
+        reg: v0
+    end_pointers:
+      - address: 0x526b4
+        reg: v0
+    name: "PIRATES_BOSS.obj.bin"
+  - namespaced_id: 45
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x526e0
+        reg: v0
+    end_pointers:
+      - address: 0x526ec
+        reg: v0
+    name: "PIRATES_BONUS.obj.bin"
+  - namespaced_id: 46
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52718
+        reg: v0
+    end_pointers:
+      - address: 0x52724
+        reg: v0
+    name: "PREHISTORIC_SHARED.obj.bin"
+  - namespaced_id: 47
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52750
+        reg: v0
+    end_pointers:
+      - address: 0x5275c
+        reg: v0
+    name: "PREHISTORIC_L1A.obj.bin"
+  - namespaced_id: 49
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52788
+        reg: v0
+    end_pointers:
+      - address: 0x52794
+        reg: v0
+    name: "PREHISTORIC_L2A.obj.bin"
+  - namespaced_id: 52
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x527c0
+        reg: v0
+    end_pointers:
+      - address: 0x527cc
+        reg: v0
+    name: "PREHISTORIC_L3B.obj.bin"
+  - namespaced_id: 53
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x527f8
+        reg: v0
+    end_pointers:
+      - address: 0x52804
+        reg: v0
+    name: "PREHISTORIC_BOSS.obj.bin"
+  - namespaced_id: 54
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52830
+        reg: v0
+    end_pointers:
+      - address: 0x5283c
+        reg: v0
+    name: "PREHISTORIC_BONUS.obj.bin"
+  - namespaced_id: 55
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52868
+        reg: v0
+    end_pointers:
+      - address: 0x52874
+        reg: v0
+    name: "FORTRESS_SHARED.obj.bin"
+  - namespaced_id: 56
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x528a0
+        reg: v0
+    end_pointers:
+      - address: 0x528ac
+        reg: v0
+    name: "FORTRESS_L1A.obj.bin"
+  - namespaced_id: 58
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x528d8
+        reg: v0
+    end_pointers:
+      - address: 0x528e4
+        reg: v0
+    name: "FORTRESS_L2A.obj.bin"
+  - namespaced_id: 61
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52910
+        reg: v0
+    end_pointers:
+      - address: 0x5291c
+        reg: v0
+    name: "FORTRESS_L3B.obj.bin"
+  - namespaced_id: 63
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52948
+        reg: v0
+    end_pointers:
+      - address: 0x52954
+        reg: v0
+    name: "FORTRESS_BONUS.obj.bin"
+  - namespaced_id: 62
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52980
+        reg: v0
+    end_pointers:
+      - address: 0x5298c
+        reg: v0
+    name: "FORTRESS_BOSS.obj.bin"
+  - namespaced_id: 27
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x529b8
+        reg: v0
+    end_pointers:
+      - address: 0x529c4
+        reg: v0
+    name: "OOTW_SHARED.obj.bin"
+  - namespaced_id: 29
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x529f0
+        reg: v0
+    end_pointers:
+      - address: 0x529fc
+        reg: v0
+    name: "OOTW_L2A.obj.bin"
+  - namespaced_id: 30
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52a28
+        reg: v0
+    end_pointers:
+      - address: 0x52a34
+        reg: v0
+    name: "OOTW_L2B.obj.bin"
+  - namespaced_id: 31
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52a60
+        reg: v0
+    end_pointers:
+      - address: 0x52a6c
+        reg: v0
+    name: "OOTW_L3.obj.bin"
+  - namespaced_id: 33
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52a98
+        reg: v0
+    end_pointers:
+      - address: 0x52aa4
+        reg: v0
+    name: "OOTW_BOSS1.obj.bin"
+  - namespaced_id: 35
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52ad0
+        reg: v0
+    end_pointers:
+      - address: 0x52adc
+        reg: v0
+    name: "OOTW_BONUS.obj.bin"
+  - namespaced_id: 70
+    data_type: objbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x52b08
+        reg: v0
+    end_pointers:
+      - address: 0x52b14
+        reg: v0
+    name: "TITLE_BANK.obj.bin"
+
+  ######################################
+  ## Levels
+
+  - data_type: landscape
+    region_type: bounded_array
+    start_pointers:
+      - address: 0x534ac
+        reg: v0
+    end_pointers:
+      - address: 0x53564
+        reg: v1
+    name: "Landscapes"
+
+
+  ######################################
+  ## Audio
+
+  - data_type: midi_sequence
+    region_type: bounded_array
+    start_pointers:
+      - address: 0x536d8
+        reg: v0
+    end_pointers:
+      - address: 0x53790
+        reg: v1
+    name: "Songs"
+
+  - data_type: audio_ptr_table
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x33700
+        reg: s0
+    end_pointers:
+      - address: 0x33710
+        reg: s1
+    name: "AudioPtrTable1.ptr.bin"
+
+  - data_type: audio_ptr_table
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x33734
+        reg: a1
+    end_pointers:
+      - address: 0x33740
+        reg: a2
+    name: "AudioPtrTable2.ptr.bin"
+
+  - data_type: audio_wave_table
+    region_type: sized_single
+    start_pointers:
+      - address: 0x3384c
+        reg: a1
+    size: 0x214840 # TODO: confirm this size somehow
+
+  - namespaced_id: 28
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ab0
+        reg: a1
+    end_pointers:
+      - address: 0x78ab8
+        reg: a2
+  - namespaced_id: 29
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ac8
+        reg: a1
+    end_pointers:
+      - address: 0x78ad0
+        reg: a2
+  - namespaced_id: 30
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ae0
+        reg: a1
+    end_pointers:
+      - address: 0x78ae8
+        reg: a2
+  - namespaced_id: 31
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78af8
+        reg: a1
+    end_pointers:
+      - address: 0x78b00
+        reg: a2
+  - namespaced_id: 32
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b10
+        reg: a1
+    end_pointers:
+      - address: 0x78b18
+        reg: a2
+  - namespaced_id: 33
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b28
+        reg: a1
+    end_pointers:
+      - address: 0x78b30
+        reg: a2
+  - namespaced_id: 1
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b40
+        reg: a1
+    end_pointers:
+      - address: 0x78b48
+        reg: a2
+  - namespaced_id: 2
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b58
+        reg: a1
+    end_pointers:
+      - address: 0x78b60
+        reg: a2
+  - namespaced_id: 3
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b70
+        reg: a1
+    end_pointers:
+      - address: 0x78b78
+        reg: a2
+  - namespaced_id: 4
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78b88
+        reg: a1
+    end_pointers:
+      - address: 0x78b90
+        reg: a2
+  - namespaced_id: 5
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ba0
+        reg: a1
+    end_pointers:
+      - address: 0x78ba8
+        reg: a2
+  - namespaced_id: 6
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78bb8
+        reg: a1
+    end_pointers:
+      - address: 0x78bc0
+        reg: a2
+  - namespaced_id: 7
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78bd0
+        reg: a1
+    end_pointers:
+      - address: 0x78bd8
+        reg: a2
+  - namespaced_id: 8
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78be8
+        reg: a1
+    end_pointers:
+      - address: 0x78bf0
+        reg: a2
+  - namespaced_id: 9
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c00
+        reg: a1
+    end_pointers:
+      - address: 0x78c08
+        reg: a2
+  - namespaced_id: 10
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c18
+        reg: a1
+    end_pointers:
+      - address: 0x78c20
+        reg: a2
+  - namespaced_id: 11
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c30
+        reg: a1
+    end_pointers:
+      - address: 0x78c38
+        reg: a2
+  - namespaced_id: 12
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c48
+        reg: a1
+    end_pointers:
+      - address: 0x78c50
+        reg: a2
+  - namespaced_id: 13
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c60
+        reg: a1
+    end_pointers:
+      - address: 0x78c68
+        reg: a2
+  - namespaced_id: 14
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c78
+        reg: a1
+    end_pointers:
+      - address: 0x78c80
+        reg: a2
+  - namespaced_id: 15
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78c90
+        reg: a1
+    end_pointers:
+      - address: 0x78c98
+        reg: a2
+  - namespaced_id: 16
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ca8
+        reg: a1
+    end_pointers:
+      - address: 0x78cb0
+        reg: a2
+  - namespaced_id: 17
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78cc0
+        reg: a1
+    end_pointers:
+      - address: 0x78cc8
+        reg: a2
+  - namespaced_id: 18
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78cd8
+        reg: a1
+    end_pointers:
+      - address: 0x78ce0
+        reg: a2
+  - namespaced_id: 19
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78cf0
+        reg: a1
+    end_pointers:
+      - address: 0x78cf8
+        reg: a2
+  - namespaced_id: 20
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d08
+        reg: a1
+    end_pointers:
+      - address: 0x78d10
+        reg: a2
+  - namespaced_id: 21
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d20
+        reg: a1
+    end_pointers:
+      - address: 0x78d28
+        reg: a2
+  - namespaced_id: 22
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d38
+        reg: a1
+    end_pointers:
+      - address: 0x78d40
+        reg: a2
+  - namespaced_id: 23
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d50
+        reg: a1
+    end_pointers:
+      - address: 0x78d58
+        reg: a2
+  - namespaced_id: 24
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d68
+        reg: a1
+    end_pointers:
+      - address: 0x78d70
+        reg: a2
+  - namespaced_id: 25
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d80
+        reg: a1
+    end_pointers:
+      - address: 0x78d88
+        reg: a2
+  - namespaced_id: 26
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78d98
+        reg: a1
+    end_pointers:
+      - address: 0x78da0
+        reg: a2
+  - namespaced_id: 27
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78db0
+        reg: a1
+    end_pointers:
+      - address: 0x78db8
+        reg: a2
+  - namespaced_id: 42
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78dc8
+        reg: a1
+    end_pointers:
+      - address: 0x78dd0
+        reg: a2
+  - namespaced_id: 43
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78de0
+        reg: a1
+    end_pointers:
+      - address: 0x78de8
+        reg: a2
+  - namespaced_id: 44
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78df8
+        reg: a1
+    end_pointers:
+      - address: 0x78e00
+        reg: a2
+  - namespaced_id: 45
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e10
+        reg: a1
+    end_pointers:
+      - address: 0x78e18
+        reg: a2
+  - namespaced_id: 34
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e28
+        reg: a1
+    end_pointers:
+      - address: 0x78e30
+        reg: a2
+  - namespaced_id: 35
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e40
+        reg: a1
+    end_pointers:
+      - address: 0x78e48
+        reg: a2
+  - namespaced_id: 36
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e58
+        reg: a1
+    end_pointers:
+      - address: 0x78e60
+        reg: a2
+  - namespaced_id: 37
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e70
+        reg: a1
+    end_pointers:
+      - address: 0x78e78
+        reg: a2
+  - namespaced_id: 38
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78e88
+        reg: a1
+    end_pointers:
+      - address: 0x78e90
+        reg: a2
+  - namespaced_id: 39
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ea0
+        reg: a1
+    end_pointers:
+      - address: 0x78ea8
+        reg: a2
+  - namespaced_id: 40
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78eb8
+        reg: a1
+    end_pointers:
+      - address: 0x78ec0
+        reg: a2
+  - namespaced_id: 41
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ed0
+        reg: a1
+    end_pointers:
+      - address: 0x78ed8
+        reg: a2
+  - namespaced_id: 46
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ee8
+        reg: a1
+    end_pointers:
+      - address: 0x78ef0
+        reg: a2
+  - namespaced_id: 47
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f00
+        reg: a1
+    end_pointers:
+      - address: 0x78f08
+        reg: a2
+  - namespaced_id: 48
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f18
+        reg: a1
+    end_pointers:
+      - address: 0x78f20
+        reg: a2
+  - namespaced_id: 49
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f30
+        reg: a1
+    end_pointers:
+      - address: 0x78f38
+        reg: a2
+  - namespaced_id: 50
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f48
+        reg: a1
+    end_pointers:
+      - address: 0x78f50
+        reg: a2
+  - namespaced_id: 51
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f60
+        reg: a1
+    end_pointers:
+      - address: 0x78f68
+        reg: a2
+  - namespaced_id: 52
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f78
+        reg: a1
+    end_pointers:
+      - address: 0x78f80
+        reg: a2
+  - namespaced_id: 53
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78f90
+        reg: a1
+    end_pointers:
+      - address: 0x78f98
+        reg: a2
+  - namespaced_id: 54
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78fa8
+        reg: a1
+    end_pointers:
+      - address: 0x78fb0
+        reg: a2
+  - namespaced_id: 55
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78fc0
+        reg: a1
+    end_pointers:
+      - address: 0x78fc8
+        reg: a2
+  - namespaced_id: 56
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78fd8
+        reg: a1
+    end_pointers:
+      - address: 0x78fe0
+        reg: a2
+  - namespaced_id: 57
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x78ff0
+        reg: a1
+    end_pointers:
+      - address: 0x78ff8
+        reg: a2
+  - namespaced_id: 58
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x79008
+        reg: a1
+    end_pointers:
+      - address: 0x79010
+        reg: a2
+  - namespaced_id: 59
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x79020
+        reg: a1
+    end_pointers:
+      - address: 0x79028
+        reg: a2
+  - namespaced_id: 60
+    data_type: sndbank
+    region_type: bounded_single
+    start_pointers:
+      - address: 0x79038
+        reg: a1
+    end_pointers:
+      - address: 0x79040
+        reg: a2
