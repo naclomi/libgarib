@@ -123,7 +123,12 @@ class Region(object):
         self.descriptor = descriptor
 
     def key(self):
-        return (self.descriptor.get("data_type"), self.offset)
+        if "namespaced_id" in self.descriptor:
+            return (self.descriptor.get("data_type"), self.descriptor["namespaced_id"])
+        elif "name" in self.descriptor:
+            return (self.descriptor.get("data_type"), self.descriptor["name"])
+        else:
+            raise Exception("Couldn't build key")
 
     def __repr__(self):
         return str(self.key())

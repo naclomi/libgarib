@@ -833,6 +833,7 @@ regions:
       - address: 0x3384c
         reg: a1
     size: 0x214840 # TODO: confirm this size somehow
+    name: "AudioWaveTable"
 
   - namespaced_id: 28
     data_type: sndbank

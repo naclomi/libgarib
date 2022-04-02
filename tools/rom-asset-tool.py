@@ -16,14 +16,18 @@ def dump(rom_data, map_data, args):
     output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(args.rom_file))[0] + ".unpacked")
     os.makedirs(output_dir, exist_ok=True)
 
-    filenames = []
+    manifest = {}
     for region in rom.data:
-        filenames += region.dump_to_file(output_dir)
+        dumped_files = region.dump_to_file(output_dir)
+        dumped_files = list(map(lambda f: os.path.relpath(f, output_dir), dumped_files))
+        if len(dumped_files) == 1:
+            dumped_files = dumped_files[0]
+        else:
+            dumped_files = {idx:val for idx,val in enumerate(dumped_files)}
+        manifest[str(region.key())] = dumped_files
 
-    filenames = list(map(lambda f: os.path.relpath(f, output_dir), filenames))
     with open(os.path.join(output_dir, "manifest.yaml"), "w") as f:
-        # TODO
-        yaml.dump(filenames, f, indent=3)
+        yaml.dump(manifest, f, indent=3)
 
 
 if __name__=="__main__":
