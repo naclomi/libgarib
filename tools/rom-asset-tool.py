@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import argparse
-import sys
 import os
+import shutil
+import sys
 
 import yaml
 
@@ -15,6 +16,8 @@ def dump(rom_data, map_data, args):
     rom = libgarib.rom.Rom(rom_data, map_data)
     output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(args.rom_file))[0] + ".unpacked")
     os.makedirs(output_dir, exist_ok=True)
+
+    shutil.copy(args.map, os.path.join(output_dir, os.path.basename(args.map)))
 
     manifest = {}
     for region in rom.data:
