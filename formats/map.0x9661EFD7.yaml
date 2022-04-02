@@ -9,6 +9,17 @@
 # the following checksum:
 rom_checksum: 0x9661EFD7
 regions:
+
+  ######################################
+  ## Code
+
+  # TODO: identify data within the code block, like
+  #       mr. tip dialog
+  - data_type: opaque
+    region_type: static
+    start: 0
+    end: 0xf6780
+    name: "code"
     
   ######################################
   ## Texture banks
@@ -17,193 +28,193 @@ regions:
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x5056c
+      - address: 0x50564
         reg: v0
     end_pointers:
-      - address: 0x50578
+      - address: 0x50570
         reg: v0
-    name: "RCDEMO_TEX_BANK.tex.bin"
+    name: "RCDEMO_TEX_BANK"
   - namespaced_id: 15
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x505a4
+      - address: 0x5059c
         reg: v0
     end_pointers:
-      - address: 0x505b0
+      - address: 0x505a8
         reg: v0
-    name: "CKBONUS_TEX_BANK.tex.bin"
+    name: "CKBONUS_TEX_BANK"
   - namespaced_id: 16
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x505dc
+      - address: 0x505d4
         reg: v0
     end_pointers:
-      - address: 0x505e8
+      - address: 0x505e0
         reg: v0
-    name: "CKCHEAT1_TEX_BANK.tex.bin"
+    name: "CKCHEAT1_TEX_BANK"
   - namespaced_id: 17
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50614
+      - address: 0x5060c
         reg: v0
     end_pointers:
-      - address: 0x50620
+      - address: 0x50618
         reg: v0
-    name: "CKCHEAT2_TEX_BANK.tex.bin"
+    name: "CKCHEAT2_TEX_BANK"
   - namespaced_id: 10
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x5064c
+      - address: 0x50644
         reg: v0
     end_pointers:
-      - address: 0x50658
+      - address: 0x50650
         reg: v0
-    name: "FONT_TEX_BANK.tex.bin"
+    name: "FONT_TEX_BANK"
   # TODO: how to encode unused japanese font texbank?
   - namespaced_id: 9
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50688
+      - address: 0x50680
         reg: v0
     end_pointers:
-      - address: 0x50694
+      - address: 0x5068c
         reg: v0
-    name: "HUB_TEX_BANK.tex.bin"
+    name: "HUB_TEX_BANK"
   - namespaced_id: 11
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x506c0
+      - address: 0x506b8
         reg: v0
     end_pointers:
-      - address: 0x506cc
+      - address: 0x506c4
         reg: v0
-    name: "CAMEO_TEX_BANK.tex.bin"
+    name: "CAMEO_TEX_BANK"
   - namespaced_id: 0
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x506f8
+      - address: 0x506f0
         reg: v0
     end_pointers:
-      - address: 0x50704
+      - address: 0x506fc
         reg: v0
-    name: "TITLE_TEX_BANK.tex.bin"
+    name: "TITLE_TEX_BANK"
   - namespaced_id: 1
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50730
+      - address: 0x50728
         reg: v0
     end_pointers:
-      - address: 0x5073c
+      - address: 0x50734
         reg: v0
-    name: "LEVELEND_TEX_BANK.tex.bin"
+    name: "LEVELEND_TEX_BANK"
   - namespaced_id: 14
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50768
+      - address: 0x50760
         reg: v0
     end_pointers:
-      - address: 0x50774
+      - address: 0x5076c
         reg: v0
-    name: "LEVELEND_TEX_BANK.tex.bin"
+    name: "LEVELEND_TEX_BANK"
   - namespaced_id: 2
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x507a0
+      - address: 0x50798
         reg: v0
     end_pointers:
-      - address: 0x507ac
+      - address: 0x507a4
         reg: v0
-    name: "GENERIC_TEX_BANK.tex.bin"
+    name: "GENERIC_TEX_BANK"
   - namespaced_id: 3
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x507d8
+      - address: 0x507d0
         reg: v0
     end_pointers:
-      - address: 0x507e4
+      - address: 0x507dc
         reg: v0
-    name: "ATLANTIS_TEX_BANK.tex.bin"
+    name: "ATLANTIS_TEX_BANK"
   - namespaced_id: 4
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50810
+      - address: 0x50808
         reg: v0
     end_pointers:
-      - address: 0x5081c
+      - address: 0x50814
         reg: v0
-    name: "CARNIVAL_TEX_BANK.tex.bin"
+    name: "CARNIVAL_TEX_BANK"
   - namespaced_id: 6
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50848
+      - address: 0x50840
         reg: v0
     end_pointers:
-      - address: 0x50854
+      - address: 0x5084c
         reg: v0
-    name: "PIRATES_TEX_BANK.tex.bin"
+    name: "PIRATES_TEX_BANK"
   - namespaced_id: 7
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50880
+      - address: 0x50878
         reg: v0
     end_pointers:
-      - address: 0x5088c
+      - address: 0x50884
         reg: v0
-    name: "PREHISTORIC_TEX_BANK.tex.bin"
+    name: "PREHISTORIC_TEX_BANK"
   - namespaced_id: 8
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x508b8
+      - address: 0x508b0
         reg: v0
     end_pointers:
-      - address: 0x508c4
+      - address: 0x508bc
         reg: v0
-    name: "FORTRESS_TEX_BANK.tex.bin"
+    name: "FORTRESS_TEX_BANK"
   - namespaced_id: 5
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x508f0
+      - address: 0x508e8
         reg: v0
     end_pointers:
-      - address: 0x508fc
+      - address: 0x508f4
         reg: v0
-    name: "OOTW_TEX_BANK.tex.bin"
+    name: "OOTW_TEX_BANK"
   - namespaced_id: 12
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50928
+      - address: 0x50920
         reg: v0
     end_pointers:
-      - address: 0x50934
+      - address: 0x5092c
         reg: v0
-    name: "PRESENT_TEX_BANK.tex.bin"
+    name: "PRESENT_TEX_BANK"
   - namespaced_id: 13
     data_type: texbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x50960
+      - address: 0x50958
         reg: v0
     end_pointers:
-      - address: 0x5096c
+      - address: 0x50964
         reg: v0
-    name: "FLYTHRU_TEX_BANK.tex.bin"
+    name: "FLYTHRU_TEX_BANK"
 
   ######################################
   ## Object banks
@@ -212,562 +223,562 @@ regions:
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x51f00
+      - address: 0x51ef8
         reg: v0
     end_pointers:
-      - address: 0x51f0c
+      - address: 0x51f04
         reg: v0
-    name: "TWEEN.obj.bin"
+    name: "TWEEN"
   - namespaced_id: 0
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x51f38
+      - address: 0x51f30
         reg: v0
     end_pointers:
-      - address: 0x51f44
+      - address: 0x51f3c
         reg: v0
-    name: "SYSTEM.obj.bin"
+    name: "SYSTEM"
   - namespaced_id: 67
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x51f70
+      - address: 0x51f68
         reg: v0
     end_pointers:
-      - address: 0x51f7c
+      - address: 0x51f74
         reg: v0
-    name: "WAYROOM.obj.bin"
+    name: "WAYROOM"
   - namespaced_id: 66
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x51fa8
+      - address: 0x51fa0
         reg: v0
     end_pointers:
-      - address: 0x51fb4
+      - address: 0x51fac
         reg: v0
-    name: "OUTRO.obj.bin"
+    name: "OUTRO"
   - namespaced_id: 68
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x51fe0
+      - address: 0x51fd8
         reg: v0
     end_pointers:
-      - address: 0x51fec
+      - address: 0x51fe4
         reg: v0
-    name: "PRESENTATION.obj.bin"
+    name: "PRESENTATION"
   - namespaced_id: 69
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52018
+      - address: 0x52010
         reg: v0
     end_pointers:
-      - address: 0x52024
+      - address: 0x5201c
         reg: v0
-    name: "FLYTHRU.obj.bin"
+    name: "FLYTHRU"
   - namespaced_id: 65
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52050
+      - address: 0x52048
         reg: v0
     end_pointers:
-      - address: 0x5205c
+      - address: 0x52054
         reg: v0
-    name: "INTRO.obj.bin"
+    name: "INTRO"
   - namespaced_id: 64
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52088
+      - address: 0x52080
         reg: v0
     end_pointers:
-      - address: 0x52094
+      - address: 0x5208c
         reg: v0
-    name: "HUB_SHARED.obj.bin"
+    name: "HUB_SHARED"
   - namespaced_id: 2
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x520c0
+      - address: 0x520b8
         reg: v0
     end_pointers:
-      - address: 0x520cc
+      - address: 0x520c4
         reg: v0
-    name: "HUB_PART1.obj.bin"
+    name: "HUB_PART1"
   - namespaced_id: 3
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x520f8
+      - address: 0x520f0
         reg: v0
     end_pointers:
-      - address: 0x52104
+      - address: 0x520fc
         reg: v0
-    name: "HUB_PART2.obj.bin"
+    name: "HUB_PART2"
   - namespaced_id: 4
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52130
+      - address: 0x52128
         reg: v0
     end_pointers:
-      - address: 0x5213c
+      - address: 0x52134
         reg: v0
-    name: "HUB_PART3.obj.bin"
+    name: "HUB_PART3"
   - namespaced_id: 5
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52168
+      - address: 0x52160
         reg: v0
     end_pointers:
-      - address: 0x52174
+      - address: 0x5216c
         reg: v0
-    name: "HUB_PART4.obj.bin"
+    name: "HUB_PART4"
   - namespaced_id: 6
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x521a0
+      - address: 0x52198
         reg: v0
     end_pointers:
-      - address: 0x521ac
+      - address: 0x521a4
         reg: v0
-    name: "HUB_PART5.obj.bin"
+    name: "HUB_PART5"
   - namespaced_id: 7
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x521d8
+      - address: 0x521d0
         reg: v0
     end_pointers:
-      - address: 0x521e4
+      - address: 0x521dc
         reg: v0
-    name: "HUB_PART6.obj.bin"
+    name: "HUB_PART6"
   - namespaced_id: 8
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52210
+      - address: 0x52208
         reg: v0
     end_pointers:
-      - address: 0x5221c
+      - address: 0x52214
         reg: v0
-    name: "HUB_PART7.obj.bin"
+    name: "HUB_PART7"
   - namespaced_id: 9
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52248
+      - address: 0x52240
         reg: v0
     end_pointers:
-      - address: 0x52254
+      - address: 0x5224c
         reg: v0
-    name: "HUB_PART8.obj.bin"
+    name: "HUB_PART8"
   - namespaced_id: 10
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52280
+      - address: 0x52278
         reg: v0
     end_pointers:
-      - address: 0x5228c
+      - address: 0x52284
         reg: v0
-    name: "CAVE.obj.bin"
+    name: "CAVE"
   - namespaced_id: 11
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x522b8
+      - address: 0x522b0
         reg: v0
     end_pointers:
-      - address: 0x522c4
+      - address: 0x522bc
         reg: v0
-    name: "ASSAULT.obj.bin COURSE"
+    name: "ASSAULT COURSE"
   - namespaced_id: 1
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x522f0
+      - address: 0x522e8
         reg: v0
     end_pointers:
-      - address: 0x522fc
+      - address: 0x522f4
         reg: v0
-    name: "GENERIC.obj.bin"
+    name: "GENERIC"
   - namespaced_id: 12
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52328
+      - address: 0x52320
         reg: v0
     end_pointers:
-      - address: 0x52334
+      - address: 0x5232c
         reg: v0
-    name: "ATLANTIS_SHARED.obj.bin"
+    name: "ATLANTIS_SHARED"
   - namespaced_id: 13
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52360
+      - address: 0x52358
         reg: v0
     end_pointers:
-      - address: 0x5236c
+      - address: 0x52364
         reg: v0
-    name: "ATLANTIS_L1.obj.bin"
+    name: "ATLANTIS_L1"
   - namespaced_id: 14
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52398
+      - address: 0x52390
         reg: v0
     end_pointers:
-      - address: 0x523a4
+      - address: 0x5239c
         reg: v0
-    name: "ATLANTIS_L2.obj.bin"
+    name: "ATLANTIS_L2"
   - namespaced_id: 15
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x523d0
+      - address: 0x523c8
         reg: v0
     end_pointers:
-      - address: 0x523dc
+      - address: 0x523d4
         reg: v0
-    name: "ATLANTIS_L3A.obj.bin"
+    name: "ATLANTIS_L3A"
   - namespaced_id: 17
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52408
+      - address: 0x52400
         reg: v0
     end_pointers:
-      - address: 0x52414
+      - address: 0x5240c
         reg: v0
-    name: "ATLANTIS_BOSS.obj.bin"
+    name: "ATLANTIS_BOSS"
   - namespaced_id: 18
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52440
+      - address: 0x52438
         reg: v0
     end_pointers:
-      - address: 0x5244c
+      - address: 0x52444
         reg: v0
-    name: "ATLANTIS_BONUS.obj.bin"
+    name: "ATLANTIS_BONUS"
   - namespaced_id: 19
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52478
+      - address: 0x52470
         reg: v0
     end_pointers:
-      - address: 0x52484
+      - address: 0x5247c
         reg: v0
-    name: "CARNIVAL_SHARED.obj.bin"
+    name: "CARNIVAL_SHARED"
   - namespaced_id: 20
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x524b0
+      - address: 0x524a8
         reg: v0
     end_pointers:
-      - address: 0x524bc
+      - address: 0x524b4
         reg: v0
-    name: "CARNIVAL_L1.obj.bin"
+    name: "CARNIVAL_L1"
   - namespaced_id: 21
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x524e8
+      - address: 0x524e0
         reg: v0
     end_pointers:
-      - address: 0x524f4
+      - address: 0x524ec
         reg: v0
-    name: "CARNIVAL_L2A.obj.bin"
+    name: "CARNIVAL_L2A"
   - namespaced_id: 23
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52520
+      - address: 0x52518
         reg: v0
     end_pointers:
-      - address: 0x5252c
+      - address: 0x52524
         reg: v0
-    name: "CARNIVAL_L3A.obj.bin"
+    name: "CARNIVAL_L3A"
   - namespaced_id: 25
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52558
+      - address: 0x52550
         reg: v0
     end_pointers:
-      - address: 0x52564
+      - address: 0x5255c
         reg: v0
-    name: "CARNIVAL_BOSS.obj.bin"
+    name: "CARNIVAL_BOSS"
   - namespaced_id: 26
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52590
+      - address: 0x52588
         reg: v0
     end_pointers:
-      - address: 0x5259c
+      - address: 0x52594
         reg: v0
-    name: "CARNIVAL_BONUS.obj.bin"
+    name: "CARNIVAL_BONUS"
   - namespaced_id: 38
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x525c8
+      - address: 0x525c0
         reg: v0
     end_pointers:
-      - address: 0x525d4
+      - address: 0x525cc
         reg: v0
-    name: "PIRATES_SHARED.obj.bin"
+    name: "PIRATES_SHARED"
   - namespaced_id: 39
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52600
+      - address: 0x525f8
         reg: v0
     end_pointers:
-      - address: 0x5260c
+      - address: 0x52604
         reg: v0
-    name: "PIRATES_L1.obj.bin"
+    name: "PIRATES_L1"
   - namespaced_id: 40
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52638
+      - address: 0x52630
         reg: v0
     end_pointers:
-      - address: 0x52644
+      - address: 0x5263c
         reg: v0
-    name: "PIRATES_L2A.obj.bin"
+    name: "PIRATES_L2A"
   - namespaced_id: 43
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52670
+      - address: 0x52668
         reg: v0
     end_pointers:
-      - address: 0x5267c
+      - address: 0x52674
         reg: v0
-    name: "PIRATES_L3B.obj.bin"
+    name: "PIRATES_L3B"
   - namespaced_id: 44
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x526a8
+      - address: 0x526a0
         reg: v0
     end_pointers:
-      - address: 0x526b4
+      - address: 0x526ac
         reg: v0
-    name: "PIRATES_BOSS.obj.bin"
+    name: "PIRATES_BOSS"
   - namespaced_id: 45
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x526e0
+      - address: 0x526d8
         reg: v0
     end_pointers:
-      - address: 0x526ec
+      - address: 0x526e4
         reg: v0
-    name: "PIRATES_BONUS.obj.bin"
+    name: "PIRATES_BONUS"
   - namespaced_id: 46
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52718
+      - address: 0x52710
         reg: v0
     end_pointers:
-      - address: 0x52724
+      - address: 0x5271c
         reg: v0
-    name: "PREHISTORIC_SHARED.obj.bin"
+    name: "PREHISTORIC_SHARED"
   - namespaced_id: 47
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52750
+      - address: 0x52748
         reg: v0
     end_pointers:
-      - address: 0x5275c
+      - address: 0x52754
         reg: v0
-    name: "PREHISTORIC_L1A.obj.bin"
+    name: "PREHISTORIC_L1A"
   - namespaced_id: 49
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52788
+      - address: 0x52780
         reg: v0
     end_pointers:
-      - address: 0x52794
+      - address: 0x5278c
         reg: v0
-    name: "PREHISTORIC_L2A.obj.bin"
+    name: "PREHISTORIC_L2A"
   - namespaced_id: 52
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x527c0
+      - address: 0x527b8
         reg: v0
     end_pointers:
-      - address: 0x527cc
+      - address: 0x527c4
         reg: v0
-    name: "PREHISTORIC_L3B.obj.bin"
+    name: "PREHISTORIC_L3B"
   - namespaced_id: 53
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x527f8
+      - address: 0x527f0
         reg: v0
     end_pointers:
-      - address: 0x52804
+      - address: 0x527fc
         reg: v0
-    name: "PREHISTORIC_BOSS.obj.bin"
+    name: "PREHISTORIC_BOSS"
   - namespaced_id: 54
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52830
+      - address: 0x52828
         reg: v0
     end_pointers:
-      - address: 0x5283c
+      - address: 0x52834
         reg: v0
-    name: "PREHISTORIC_BONUS.obj.bin"
+    name: "PREHISTORIC_BONUS"
   - namespaced_id: 55
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52868
+      - address: 0x52860
         reg: v0
     end_pointers:
-      - address: 0x52874
+      - address: 0x5286c
         reg: v0
-    name: "FORTRESS_SHARED.obj.bin"
+    name: "FORTRESS_SHARED"
   - namespaced_id: 56
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x528a0
+      - address: 0x52898
         reg: v0
     end_pointers:
-      - address: 0x528ac
+      - address: 0x528a4
         reg: v0
-    name: "FORTRESS_L1A.obj.bin"
+    name: "FORTRESS_L1A"
   - namespaced_id: 58
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x528d8
+      - address: 0x528d0
         reg: v0
     end_pointers:
-      - address: 0x528e4
+      - address: 0x528dc
         reg: v0
-    name: "FORTRESS_L2A.obj.bin"
+    name: "FORTRESS_L2A"
   - namespaced_id: 61
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52910
+      - address: 0x52908
         reg: v0
     end_pointers:
-      - address: 0x5291c
+      - address: 0x52914
         reg: v0
-    name: "FORTRESS_L3B.obj.bin"
+    name: "FORTRESS_L3B"
   - namespaced_id: 63
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52948
+      - address: 0x52940
         reg: v0
     end_pointers:
-      - address: 0x52954
+      - address: 0x5294c
         reg: v0
-    name: "FORTRESS_BONUS.obj.bin"
+    name: "FORTRESS_BONUS"
   - namespaced_id: 62
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52980
+      - address: 0x52978
         reg: v0
     end_pointers:
-      - address: 0x5298c
+      - address: 0x52984
         reg: v0
-    name: "FORTRESS_BOSS.obj.bin"
+    name: "FORTRESS_BOSS"
   - namespaced_id: 27
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x529b8
+      - address: 0x529b0
         reg: v0
     end_pointers:
-      - address: 0x529c4
+      - address: 0x529bc
         reg: v0
-    name: "OOTW_SHARED.obj.bin"
+    name: "OOTW_SHARED"
   - namespaced_id: 29
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x529f0
+      - address: 0x529e8
         reg: v0
     end_pointers:
-      - address: 0x529fc
+      - address: 0x529f4
         reg: v0
-    name: "OOTW_L2A.obj.bin"
+    name: "OOTW_L2A"
   - namespaced_id: 30
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52a28
+      - address: 0x52a20
         reg: v0
     end_pointers:
-      - address: 0x52a34
+      - address: 0x52a2c
         reg: v0
-    name: "OOTW_L2B.obj.bin"
+    name: "OOTW_L2B"
   - namespaced_id: 31
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52a60
+      - address: 0x52a58
         reg: v0
     end_pointers:
-      - address: 0x52a6c
+      - address: 0x52a64
         reg: v0
-    name: "OOTW_L3.obj.bin"
+    name: "OOTW_L3"
   - namespaced_id: 33
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52a98
+      - address: 0x52a90
         reg: v0
     end_pointers:
-      - address: 0x52aa4
+      - address: 0x52a9c
         reg: v0
-    name: "OOTW_BOSS1.obj.bin"
+    name: "OOTW_BOSS1"
   - namespaced_id: 35
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52ad0
+      - address: 0x52ac8
         reg: v0
     end_pointers:
-      - address: 0x52adc
+      - address: 0x52ad4
         reg: v0
-    name: "OOTW_BONUS.obj.bin"
+    name: "OOTW_BONUS"
   - namespaced_id: 70
     data_type: objbank
     region_type: bounded_single
     start_pointers:
-      - address: 0x52b08
+      - address: 0x52b00
         reg: v0
     end_pointers:
-      - address: 0x52b14
+      - address: 0x52b0c
         reg: v0
-    name: "TITLE_BANK.obj.bin"
+    name: "TITLE_BANK"
 
   ######################################
   ## Levels
@@ -804,7 +815,7 @@ regions:
     end_pointers:
       - address: 0x33710
         reg: s1
-    name: "AudioPtrTable1.ptr.bin"
+    name: "AudioPtrTable1"
 
   - data_type: audio_ptr_table
     region_type: bounded_single
@@ -814,7 +825,7 @@ regions:
     end_pointers:
       - address: 0x33740
         reg: a2
-    name: "AudioPtrTable2.ptr.bin"
+    name: "AudioPtrTable2"
 
   - data_type: audio_wave_table
     region_type: sized_single

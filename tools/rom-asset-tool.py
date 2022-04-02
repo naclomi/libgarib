@@ -3,14 +3,28 @@ import argparse
 import sys
 import os
 
-def patch(args):
+import yaml
+
+import _prefer_local_implementation
+import libgarib.rom
+
+def patch(rom_data, map_data, args):
     pass
 
-def dump(args):
-    output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(rom_file))[0] + ".unpacked")
+def dump(rom_data, map_data, args):
+    rom = libgarib.rom.Rom(rom_data, map_data)
+    output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(args.rom_file))[0] + ".unpacked")
     os.makedirs(output_dir, exist_ok=True)
-    with open(args.rom_filename, "rb") as f:
-        rom_data = f.read()
+
+    filenames = []
+    for region in rom.data:
+        filenames += region.dump_to_file(output_dir)
+
+    filenames = list(map(lambda f: os.path.relpath(f, output_dir), filenames))
+    with open(os.path.join(output_dir, "manifest.yaml"), "w") as f:
+        # TODO
+        yaml.dump(filenames, f, indent=3)
+
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Tool to dump/replace/relocate ROM assets within Glover (N64)")
@@ -28,9 +42,15 @@ if __name__=="__main__":
     dump_parser.add_argument("--output-dir", type=str, default=os.getcwd(),
                         help="Directory to output bank contents")
 
-
     args = parser.parse_args()
+
+    with open(args.rom_file, "rb") as f:
+        rom_data = f.read()
+
+    with open(args.map, "r") as f:
+        map_data = yaml.safe_load(f.read())
+
     if args.command == "patch":
-        pass
+        patch(rom_data, map_data, args)
     elif args.command == "dump":
-        dump(args)
+        dump(rom_data, map_data, args)
