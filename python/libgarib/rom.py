@@ -393,6 +393,7 @@ class Rom(object):
         # TODO: padding?
         rom_data = io.BytesIO()
         for region in self.data:
+            print(region.key(), "\t", hex(region.offset), hex(cursor), "\t", hex(region.offset-cursor))
             region.offset = cursor
             cursor += region.size()
             region.dump_to_buffer(rom_data)

@@ -74,7 +74,11 @@ regions:
       - address: 0x50650
         reg: v0
     name: "FONT_TEX_BANK"
-  # TODO: how to encode unused japanese font texbank?
+  - data_type: texbank
+    region_type: static
+    start: 0x255740
+    end: 0x25efc0
+    name: "JAPANESE_FONT_TEX_BANK"
   - namespaced_id: 9
     data_type: texbank
     region_type: bounded_single
@@ -832,8 +836,16 @@ regions:
     start_pointers:
       - address: 0x3384c
         reg: a1
-    size: 0x214840 # TODO: confirm this size somehow
-    name: "AudioWaveTable"
+    size: 0x1233a0 # TODO: confirm this size somehow
+    name: "MusicWaveTable"
+
+  - data_type: audio_wave_table
+    region_type: unbounded_single
+    start_pointers:
+      - address: 0x337b0
+        reg: v0
+    size: 0xf14a0 # TODO: confirm this size somehow
+    name: "SfxWaveTable"
 
   - namespaced_id: 28
     data_type: sndbank
