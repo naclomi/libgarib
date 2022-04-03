@@ -244,6 +244,12 @@ class Rom(object):
             self.data.append(region)
         self.data.sort(key=lambda r:r.offset)
 
+    def get_region(self, key):
+        for region in self.data:
+            if region.key() == key:
+                return region
+        raise KeyError(key)
+
     def finalize(self):
         for region in self.data:
             pass
