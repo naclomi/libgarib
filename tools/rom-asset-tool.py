@@ -31,14 +31,25 @@ def patch(rom_data, map_data, args):
                 elem_filename = os.path.join(manifest_dir, elem_filename)
                 with open(elem_filename, "rb") as f:
                     new_elem_data = f.read()
-                # TODO
-                print("Patched {:} into {:}[{:}]".format(elem_filename, region_key, elem_idx))
+                region.data[elem_idx] = new_elem_data
+                logging.info("Patched {:} into {:}[{:}]".format(elem_filename, region_key, elem_idx))
         else:
             region_filename = os.path.join(manifest_dir, region_filename)
             with open(region_filename, "rb") as f:
                 new_region_data = f.read()
-            # TODO
-            print("Patched {:} into {:}".format(region_filename, region_key))
+            print(len(region.data) == len(new_region_data), region.key())
+            region.data = new_region_data
+            logging.info("Patched {:} into {:}".format(region_filename, region_key))
+
+    final_rom_data = rom.finalize()
+    out_filename = os.path.basename(args.rom_file).split(".")
+    out_filename.insert(-1,"patched")
+    out_filename = ".".join(out_filename)
+    with open(os.path.join(args.output_dir, out_filename), "wb") as f:
+        f.write(final_rom_data)
+    # TODO: produce updated map file
+
+
 
 def dump(rom_data, map_data, args):
     rom = libgarib.rom.Rom(rom_data, map_data)

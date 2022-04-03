@@ -1,4 +1,5 @@
 import logging
+import io
 import os
 import struct
 import sys
@@ -7,6 +8,7 @@ import capstone
 import unicorn
 import unicorn.mips_const
 import keystone
+import zlib
 
 N64_HEADER_SIZE = 0x40
 N64_HEADER_CRC_OFFSET = 0x10
@@ -69,6 +71,97 @@ regs = {
 mips_to_unicorn = {}
 for name, mips_num in regs.items():
     mips_to_unicorn[mips_num] = getattr(unicorn.mips_const, "UC_MIPS_REG_" + name.upper())
+
+def identifyCIC(f):
+    f.seek(N64_HEADER_SIZE)
+    data = f.read(0x1000-N64_HEADER_SIZE)
+    crc = zlib.crc32(data)
+    return {
+        0x6170A4A1: 6101,
+        0x90BB6CB5: 6102,
+        0x0B050EE0: 6103,
+        0x98BC2C86: 6105,
+        0xACC8580A: 6106
+    }[crc]
+
+
+def calculateChecksum(f, bigEndian=True):
+    # Adapted from http://n64dev.org/n64crc.html
+
+    word_struct = ">I" if bigEndian else "<I"
+
+    # TODO: test on non-6102 roms
+
+    bootcode = identifyCIC(f)
+    seed = {
+        6101: 0xF8CA4DDC,
+        6102: 0xF8CA4DDC,
+        6103: 0xA3886759,
+        6105: 0xDF26F436,
+        6106: 0x1FEA617A
+    }[bootcode]
+
+    f.seek(0x1000)
+    data = f.read(0x100000)
+
+    if bootcode == 6105:
+        f.seek(N64_HEADER_SIZE + 0x0710)
+        lut = f.read(260)
+
+    t1 = t2 = t3 = t4 = t5 = t6 = seed
+
+    offset = 0
+    while offset < len(data):
+        data_word = struct.unpack(word_struct, data[offset:offset+4])[0]
+        if t6 + data_word > 0xFFFFFFFF:
+            t4 += 1
+            t4 &= 0xFFFFFFFF
+        t6 += data_word
+        t6 &= 0xFFFFFFFF
+        t3 ^= data_word
+
+        delta = data_word & 0x1F
+        r = (data_word << delta) | (data_word >> (32-delta))
+        r &= 0xFFFFFFFF
+        t5 += r
+        t5 &= 0xFFFFFFFF
+        if t2 > data_word:
+            t2 ^= r
+        else:
+            t2 ^= t6 ^ data_word
+
+        if bootcode == 6105:
+            lut_offset = offset & 0xFF
+            t1 += struct.unpack(word_struct, lut[lut_offset:lut_offset+4])[0] ^ data_word
+        else:
+            t1 += t5 ^ data_word
+        t1 &= 0xFFFFFFFF
+
+        offset += 4
+
+    if bootcode == 6103:
+        crc = ((t6 ^ t4) + t3, (t5 ^ t2) + t1)
+    elif bootcode == 6106:
+        crc = ((t6 * t4) + t3, (t5 * t2) + t1)
+    else:
+        crc = (t6 ^ t4 ^ t3, t5 ^ t2 ^ t1)
+
+    return (
+        struct.pack(word_struct, crc[0] & 0xFFFFFFFF),
+        struct.pack(word_struct, crc[1] & 0xFFFFFFFF)
+    )
+
+
+def unique_filename(filename):
+    next_number = 1
+    file_dir = os.path.dirname(filename)
+    file_base = os.path.basename(filename).split(".")
+    file_base.insert(1, "{:}")
+    file_base = ".".join(file_base)
+    while os.path.exists(filename):
+        filename = os.path.join(file_dir, file_base.format(next_number))
+        next_number += 1
+    return filename
 
 
 class RomParseException(Exception):
@@ -133,6 +226,12 @@ class Region(object):
     def __repr__(self):
         return str(self.key())
 
+    def size(self):
+        return len(self.data)
+
+    def dump_to_buffer(self, buffer):
+        buffer.write(self.data)
+
     def dump_to_file(self, basepath):
         if self.descriptor["data_type"] in file_extensions:
             basepath = os.path.join(basepath, self.descriptor["data_type"])
@@ -145,15 +244,17 @@ class Region(object):
             filename = "0x{:08X}".format(self.offset)
         filename += file_extensions.get(self.descriptor["data_type"], ".bin")
         filename = os.path.join(basepath, filename)
+        filename = unique_filename(filename)
         with open(filename, "wb") as f:
             f.write(self.data)
         return [filename]
 
+    def update_pointers(self, buffer):
+        pass
+
     def parse(self, rom_data):
         pass
 
-    def patch(self, rom_data):
-        pass
 
 def scrape_pointers(rom_data, pointer_list):
     val = None
@@ -173,12 +274,30 @@ class BoundedSingleRegion(Region):
         self.offset = start_pointer
         self.data = rom_data[start_pointer:end_pointer]
 
-class SizedSingleRegion(Region):
+    def update_pointers(self, buffer):
+        addr = self.offset | 0xB0000000
+        for pointer in self.descriptor["start_pointers"]:
+            buffer.seek(pointer["address"])
+            buffer.write(ptrCode.get_code(addr, pointer["reg"]))
+        addr += self.size()
+        for pointer in self.descriptor["end_pointers"]:
+            buffer.seek(pointer["address"])
+            buffer.write(ptrCode.get_code(addr, pointer["reg"]))
+
+
+class UnboundedSingleRegion(Region):
     def parse(self, rom_data):
         start_pointer = scrape_pointers(rom_data, self.descriptor["start_pointers"]) & 0x0FFFFFFF
         end_pointer = start_pointer + self.descriptor["size"]
         self.offset = start_pointer
         self.data = rom_data[start_pointer:end_pointer]
+
+    def update_pointers(self, buffer):
+        addr = self.offset | 0xB0000000
+        for pointer in self.descriptor["start_pointers"]:
+            buffer.seek(pointer["address"])
+            buffer.write(ptrCode.get_code(addr, pointer["reg"]))
+        
 
 class BoundedArrayRegion(Region):
     def parse(self, rom_data):
@@ -192,7 +311,14 @@ class BoundedArrayRegion(Region):
             elem_len = struct.unpack(">I", rom_data[cursor:cursor+4])[0]
             self.data.append(rom_data[cursor:cursor+elem_len])
             cursor += elem_len
-    
+
+    def size(self):
+        return sum(len(data) for data in self.data)
+
+    def dump_to_buffer(self, buffer):
+        for elem in self.data:
+            buffer.write(elem)
+
     def dump_to_file(self, basepath):
         if self.descriptor["data_type"] in file_extensions:
             basepath = os.path.join(basepath, self.descriptor["data_type"])
@@ -212,10 +338,22 @@ class BoundedArrayRegion(Region):
             else:
                 filename = "{:}{:}".format(idx, extension)
             filename = os.path.join(basepath, filename)
+            filename = unique_filename(filename)
             filenames.append(filename)
             with open(filename, "wb") as f:
                 f.write(elem_data)
         return filenames
+
+    def update_pointers(self, buffer):
+        addr = self.offset | 0xB0000000
+        for pointer in self.descriptor["start_pointers"]:
+            buffer.seek(pointer["address"])
+            buffer.write(ptrCode.get_code(addr, pointer["reg"]))
+        addr += self.size()
+        for pointer in self.descriptor["end_pointers"]:
+            buffer.seek(pointer["address"])
+            buffer.write(ptrCode.get_code(addr, pointer["reg"]))
+
 
 class StaticRegion(Region):
     def parse(self, rom_data):
@@ -236,7 +374,7 @@ class Rom(object):
             region_type = {
                 "bounded_single": BoundedSingleRegion,
                 "bounded_array": BoundedArrayRegion,
-                "sized_single": SizedSingleRegion,
+                "unbounded_single": UnboundedSingleRegion,
                 "static": StaticRegion,
             }[region["region_type"]]
             region = region_type(region)
@@ -251,7 +389,23 @@ class Rom(object):
         raise KeyError(key)
 
     def finalize(self):
+        cursor = 0
+        # TODO: padding?
+        rom_data = io.BytesIO()
         for region in self.data:
-            pass
-            # TODO
+            region.offset = cursor
+            cursor += region.size()
+            region.dump_to_buffer(rom_data)
+        for region in self.data:
+            region.update_pointers(rom_data)
+
+        rom_data.seek(0)
+        csum = calculateChecksum(rom_data, True)
+        rom_data.seek(N64_HEADER_CRC_OFFSET)
+        rom_data.write(csum[0])
+        rom_data.write(csum[1])
+
+        return rom_data.getvalue()
+
+
 

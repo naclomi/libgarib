@@ -56,6 +56,9 @@ import sys
 
 import yaml
 
+import _prefer_local_implementation
+import libgarib.rom
+
 import checksum
 
 def toROM(addr):
@@ -164,8 +167,8 @@ if __name__=="__main__":
 
             # Rewrite ROM checksum
             f.seek(0)
-            csum = checksum.calculateChecksum(f, True)
-            f.seek(checksum.N64_HEADER_CRC_OFFSET)
+            csum = rom.calculateChecksum(f, True)
+            f.seek(rom.N64_HEADER_CRC_OFFSET)
             f.write(csum[0])
             f.write(csum[1])
 

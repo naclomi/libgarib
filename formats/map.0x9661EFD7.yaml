@@ -828,7 +828,7 @@ regions:
     name: "AudioPtrTable2"
 
   - data_type: audio_wave_table
-    region_type: sized_single
+    region_type: unbounded_single
     start_pointers:
       - address: 0x3384c
         reg: a1
