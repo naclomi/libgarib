@@ -7,7 +7,7 @@
 ############################################
 # Observations are only guaranteed valid for ROMs with
 # the following checksum:
-rom_checksum: 0x9661EFD7
+rom_checksum: [0x8e6e01ff, 0xccb4f948]
 regions:
 
   ######################################

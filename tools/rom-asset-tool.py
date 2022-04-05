@@ -17,7 +17,6 @@ def patch(rom_data, map_data, args):
         manifest = yaml.safe_load(f.read())
     manifest_dir = os.path.dirname(args.manifest)
 
-    # TODO: sound effects sound very wonky after patching
     # TODO: support a syntax for deleting/zeroing regions?
 
     for region_key, region_filename in manifest.items():
@@ -47,8 +46,12 @@ def patch(rom_data, map_data, args):
     out_filename = ".".join(out_filename)
     with open(os.path.join(args.output_dir, out_filename), "wb") as f:
         f.write(final_rom_data)
-    # TODO: produce updated map file
 
+    map_filename = out_filename.split(".")[:-1]
+    map_filename.append("memmap.yaml")
+    map_filename = ".".join(map_filename)
+    with open(os.path.join(args.output_dir, map_filename), "w") as f:
+        yaml.dump(map_data, f)
 
 
 def dump(rom_data, map_data, args):

@@ -252,6 +252,9 @@ class Region(object):
     def update_pointers(self, buffer):
         pass
 
+    def update_descriptor(self):
+        pass
+
     def parse(self, rom_data):
         pass
 
@@ -291,6 +294,9 @@ class UnboundedSingleRegion(Region):
         end_pointer = start_pointer + self.descriptor["size"]
         self.offset = start_pointer
         self.data = rom_data[start_pointer:end_pointer]
+
+    def update_descriptor(self):
+        self.descriptor["size"] = len(self.data)
 
     def update_pointers(self, buffer):
         addr = self.offset | 0xB0000000
@@ -345,6 +351,7 @@ class BoundedArrayRegion(Region):
         return filenames
 
     def update_pointers(self, buffer):
+        # TODO: update individual elem lengths?
         addr = self.offset | 0xB0000000
         for pointer in self.descriptor["start_pointers"]:
             buffer.seek(pointer["address"])
@@ -360,17 +367,22 @@ class StaticRegion(Region):
         self.offset = self.descriptor["start"]
         self.data = rom_data[self.descriptor["start"]:self.descriptor["end"]]
 
+    def update_descriptor(self):
+        self.descriptor["start"] = self.offset
+        self.descriptor["end"] = self.offset + len(self.data)
+
 
 class Rom(object):
     def __init__(self, rom_data, map_data):
-        self.rom_checksum = struct.unpack(">I", rom_data[N64_HEADER_CRC_OFFSET: N64_HEADER_CRC_OFFSET+4])[0]
-        self.map = map_data["regions"]
+        self.rom_checksum = struct.unpack(">II", rom_data[N64_HEADER_CRC_OFFSET: N64_HEADER_CRC_OFFSET+8])
+        self.map_data = map_data
+        self.regions = map_data["regions"]
 
-        if self.rom_checksum != map_data["rom_checksum"]:
+        if self.rom_checksum != tuple(map_data["rom_checksum"]):
             logging.warning("Rom and memory map checksums do not match!")
 
         self.data = []
-        for region in self.map:
+        for region in self.regions:
             region_type = {
                 "bounded_single": BoundedSingleRegion,
                 "bounded_array": BoundedArrayRegion,
@@ -399,10 +411,12 @@ class Rom(object):
             region.update_pointers(rom_data)
 
         rom_data.seek(0)
-        csum = calculateChecksum(rom_data, True)
+        self.rom_checksum = calculateChecksum(rom_data, True)
         rom_data.seek(N64_HEADER_CRC_OFFSET)
-        rom_data.write(csum[0])
-        rom_data.write(csum[1])
+        rom_data.write(self.rom_checksum[0])
+        rom_data.write(self.rom_checksum[1])
+
+        self.map_data["rom_checksum"] = list(map(lambda x: struct.unpack(">I",x)[0], self.rom_checksum))
 
         return rom_data.getvalue()
 
