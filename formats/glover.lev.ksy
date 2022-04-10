@@ -110,6 +110,7 @@ types:
 
             0xc1: plat_sound_0xc1
             0xc2: plat_sound_0xc2
+            0x5e: plat_turn_towards_path_point
             0x5f: plat_go_forwards_0x5f
             0x6b: plat_path_point
             0x6c: plat_max_velocity
@@ -154,6 +155,31 @@ types:
             # 0x00: noop
             # _: unknown
             _: unrecognized
+
+# TODO: custom metadata is indicated by, immediately following
+#       header:
+#       0x0098 FFxx yyyyyyyy
+#       where xx is the metadata type and yyyyyyyy is a type-defined data word
+#       the following types are currently defined:
+#       FF00 - pointer to unstructured ascii text at offset y from start of landscape file
+#       FF01 - pointer to loading sequence information at offset y from start of landscape file
+#
+#       loading sequence format:
+#       a series of commands to set up level assets, of the format:
+#       nndddddd
+#       where nn is a command byte and dddddd is a 3-byte unsigned number.
+#       the following commands are defined:
+#       00 - end sequence
+#       01 - latch d as beginning ROM offset
+#       02 - latch d as ending ROM offset
+#       03 - load object bank between latched ROM offsets
+#       04 - load texture bank between latched ROM offsets
+#       05 - load object bank with internal id d
+#       06 - load texture bank with internal id d
+#       07 - load sound bank with internal id d
+#       08 - load song with internal id d
+#       09 - load song between latched ROM offsets
+#       TODO: are absolute offsets actually useful? consider "yet another lookup table"
 
 ###############################################################
 ### Landscape
@@ -1481,6 +1507,13 @@ types:
         type: u2
       - id: pitch
         type: u2
+
+  plat_turn_towards_path_point: # 0x5e
+    seq:
+      - id: input_1
+        type: u4
+      - id: input_2
+        type: u4
 
   plat_go_forwards_0x5f: # 0x5f
     # TODO: empty seq if there isn't an active

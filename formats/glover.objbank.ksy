@@ -132,6 +132,13 @@ types:
         if: display_list_ptr != 0
   geometry:
     seq:
+      # TODO: u1 and colors_norms seem to encode the same
+      #       data, but u1 is per-face and colors_norms is
+      #       per-vertex. from this, it seems likely that
+      #       u1 is face normals and colors_norms is just
+      #       colors, but this should be confirmed whether
+      #       or not to be true
+
       - id: num_faces
         type: u2
       - id: num_vertices
