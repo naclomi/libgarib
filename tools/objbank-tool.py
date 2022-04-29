@@ -16,7 +16,7 @@ def unpack(args):
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverObjbank.from_bytes(bank_data)
-        # TODO: export PLY files
+
         for entry in bank.directory:
             obj = entry.obj_root
             if obj is None:
@@ -28,7 +28,7 @@ def unpack(args):
                 name_str = mesh.name.strip("\x00")
                 if len(parents) > 0:
                     name_str = libgarib.objects.parent_str(parents) + "." + name_str
-                dl = libgarib.objects.dump_mesh_dl(mesh)
+                dl = libgarib.objects.dump_f3dex_dl(mesh, bank_data)
                 if len(dl) > 0:
                     with open(os.path.join(obj_output_dir, name_str + ".f3dex.bin"), "wb") as f:
                         f.write(dl)
