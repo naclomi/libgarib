@@ -30,7 +30,7 @@ def unpack(args):
                     name_str = libgarib.objects.parent_str(parents) + "." + name_str
                 dl = libgarib.objects.dump_f3dex_dl(mesh, bank_data)
                 if len(dl) > 0:
-                    with open(os.path.join(obj_output_dir, name_str + ".f3dex.bin"), "wb") as f:
+                    with open(os.path.join(obj_output_dir, name_str + ".f3dex.lgdl"), "wb") as f:
                         f.write(dl)
                 if mesh.geometry.num_faces > 0:
                     with open(os.path.join(obj_output_dir, name_str + ".ply"), "wb") as f:
