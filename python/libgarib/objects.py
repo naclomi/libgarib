@@ -26,6 +26,21 @@ def for_each_mesh(mesh, callback, parents=None):
         for_each_mesh(mesh.child, callback, child_parents)
 
 def dump_f3dex_dl(mesh, bank):
+    # Libgarib display list format is a packed array
+    # of {uint32_t n_bytes, uint8_t body[n_bytes]} records.
+    # The first record is necessarily an F3DEX display
+    # list, but future records may contain vertex data
+    # or further display lists.
+    #
+    # In-display-list pointers to model data are replaced
+    # with an index into this record array which corresponds
+    # to the relevant dumped data.
+    #
+    # Texture commands are left as-is, since they're
+    # using hash references rather than data pointers.
+    #
+    # All fields are big-endian.
+    #
     if mesh.display_list is not None:
         data_regions = []
         output = bytearray(b"")
