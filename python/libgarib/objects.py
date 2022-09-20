@@ -10,6 +10,36 @@ from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
 
+class LinkableData(object):
+    def __init__(self, segment, parent):
+        self.parent = parent
+        self.segment = segment
+        self.segment_offset = None
+        self.absolute_offset = None
+
+    def len(self):
+        return 0
+
+    def link(self):
+        return b""
+
+class CollatedDataFile(object):
+    def __init__(self, segments):
+        self.segments_by_name = {}
+        for segment_name in segments:
+            self.segments_by_name[segment_name] = []
+        self.segments = segments
+
+    def pushData(self, segment_name, linkable_data):
+        self.segments_by_name[segment_name].append(linkable_data)
+
+    def link(self):
+        raw = []
+        for segment_name in self.segments:
+            raw += self.segments_by_name[segment_name].link()
+        # TODO: need to find and link references somehow
+        return b"".join(raw)
+
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
@@ -22,7 +52,7 @@ def for_each_mesh(mesh, callback, parents=None):
         for_each_mesh(mesh.sibling, callback, parents)
     if mesh.child is not None:
         child_parents = parents[:]
-        child_parents += mesh
+        child_parents.append(mesh)
         for_each_mesh(mesh.child, callback, child_parents)
 
 def dump_f3dex_dl(mesh, bank):
