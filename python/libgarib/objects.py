@@ -29,8 +29,8 @@ def dump_f3dex_dl(mesh, bank):
     # Libgarib display list format is a packed array
     # of {uint32_t n_bytes, uint8_t body[n_bytes]} records.
     # The first record is necessarily an F3DEX display
-    # list, but future records may contain vertex data
-    # or further display lists.
+    # list, but future records may contain vertex data,
+    # matrices, or further display lists.
     #
     # In-display-list pointers to model data are replaced
     # with an index into this record array which corresponds
@@ -60,7 +60,13 @@ def dump_f3dex_dl(mesh, bank):
                 data_regions.append((region_offset, region_size))
                 args["address"] = len(data_regions)
                 output[offset:offset+8] = cmd.toBytes(args)
-            # TODO: catch G_DL, G_MOVEMEM, etc
+            elif (cmd is F3DEX.byName["G_MTX"]
+             or cmd is F3DEX.byName["G_MOVEMEM"]
+             or cmd is F3DEX.byName["G_VTX"]
+             or cmd is F3DEX.byName["G_DL"]
+             or cmd is F3DEX.byName["G_BRANCH_Z"]):
+                raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
+
             offset += 8
         for offset, size in data_regions:
             raw_dl += struct.pack(">I",size)
