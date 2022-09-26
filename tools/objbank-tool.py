@@ -11,6 +11,29 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 from libgarib.hash import hash_str
 from libgarib.fla2 import compress, data_from_stream
 
+def kaitaiObjectRange(obj):
+    if type(obj) is list:
+        return kaitaiObjectRange(obj[0])[0], kaitaiObjectRange(obj[-1])[1]
+    else:
+        start_field = obj.SEQ_FIELDS[0]
+        end_field = obj.SEQ_FIELDS[0]
+        return obj._debug[start_field]["start"], obj._debug[end_field]["end"]
+
+def bankmap(args):
+    output = {}
+    for bank_filename in args.bank_file:
+        with open(bank_filename, "rb") as f:
+            bank_data = data_from_stream(f)
+        bank = GloverObjbank.from_bytes(bank_data)
+
+        print(str(bank.directory[0].SEQ_FIELDS))
+        # print(str(kaitaiObjectRange(bank.directory)))
+        bank_map = []
+
+        output[bank_filename] = bank_map
+
+    return output
+
 def unpack(args):
     for bank_filename in args.bank_file:
         bank_output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(bank_filename))[0] + ".unpacked")
@@ -107,8 +130,16 @@ if __name__=="__main__":
     unpack_parser.add_argument("--output-dir", type=str, default=os.getcwd(),
                         help="Directory to output bank contents")
 
+    map_parser = subparsers.add_parser('map', help='Dump memory map of object banks')
+    map_parser.add_argument("bank_file", type=str, nargs="+",
+                        help="Object bank file (potentially FLA2-compressed)")
+
+
     args = parser.parse_args()
     if args.command == "pack":
         pack(args)
     elif args.command == "unpack":
         unpack(args)
+    elif args.command == "map":
+        print(json.dumps(bankmap(args)))
+
