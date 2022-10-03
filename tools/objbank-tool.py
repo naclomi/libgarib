@@ -16,7 +16,7 @@ def kaitaiObjectRange(obj):
         return kaitaiObjectRange(obj[0])[0], kaitaiObjectRange(obj[-1])[1]
     else:
         start_field = obj.SEQ_FIELDS[0]
-        end_field = obj.SEQ_FIELDS[0]
+        end_field = obj.SEQ_FIELDS[-1]
         return obj._debug[start_field]["start"], obj._debug[end_field]["end"]
 
 def bankmap(args):
@@ -26,9 +26,49 @@ def bankmap(args):
             bank_data = data_from_stream(f)
         bank = GloverObjbank.from_bytes(bank_data)
 
-        print(str(bank.directory[0].SEQ_FIELDS))
-        # print(str(kaitaiObjectRange(bank.directory)))
         bank_map = []
+        def bank_push(obj, name):
+            if obj is None:
+                return
+            if type(obj) is list and len(obj) == 0:
+                return
+            bank_map.append((kaitaiObjectRange(obj), name))            
+
+
+        bank_push(bank.directory, "Directory")
+        for dir_entry in bank.directory:
+            actor = dir_entry.obj_root
+            if actor is None:
+                continue
+            bank_push(actor, "Actor root ({:08X})".format(dir_entry.obj_id))
+            if actor.mesh is not None:
+                def scrape_mesh(mesh, parents, cur_matrix):
+                    name = "{:08X}.".format(dir_entry.obj_id) + libgarib.objects.parent_str(parents + [mesh])
+                    bank_push(mesh, "Mesh ({:})".format(name))
+
+                    if mesh.geometry is not None:
+                        geo = mesh.geometry
+                        bank_push(geo, "Geometry root ({:})".format(name))
+                        bank_push(geo.u1, "Geometry (face normals) ({:})".format(name))
+                        bank_push(geo.vertices, "Geometry (vertices) ({:})".format(name))
+                        bank_push(geo.faces, "Geometry (faces) ({:})".format(name))
+                        bank_push(geo.uvs, "Geometry (UVs) ({:})".format(name))
+                        bank_push(geo.uvs_unmodified, "Geometry (UV original copies) ({:})".format(name))
+                        bank_push(geo.colors_norms, "Geometry (vertex colors) ({:})".format(name))
+                        bank_push(geo.u5, "Geometry (face properties) ({:})".format(name))
+                        bank_push(geo.texture_ids, "Geometry (texture ids) ({:})".format(name))
+                    bank_push(mesh.sprites, "Sprites ({:})".format(name))
+                    bank_push(mesh.scale, "Keyframes (scale) ({:})".format(name))
+                    bank_push(mesh.translation, "Keyframes (translation) ({:})".format(name))
+                    bank_push(mesh.rotation, "Keyframes (rotation) ({:})".format(name))
+                    # TODO: scrape:
+                    # display_list (and associated pointer data)
+
+
+                libgarib.objects.for_each_mesh(actor.mesh, scrape_mesh)
+            if actor.animation is not None:
+                bank_push(actor.animation, "Animation props ({:08X})".format(dir_entry.obj_id))
+                bank_push(actor.animation.animation_definitions, "Animation defs ({:08X})".format(dir_entry.obj_id))
 
         output[bank_filename] = bank_map
 
