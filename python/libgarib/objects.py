@@ -1,3 +1,4 @@
+import json
 import math
 import struct
 import sys
@@ -58,22 +59,38 @@ def for_each_mesh(mesh, callback, parents=None):
 def dump_f3dex_dl(mesh, bank):
     # Libgarib display list format is a packed array
     # of {uint32_t n_bytes, uint8_t body[n_bytes]} records.
-    # The first record is necessarily an F3DEX display
-    # list, but future records may contain vertex data,
-    # matrices, or further display lists.
     #
-    # In-display-list pointers to model data are replaced
-    # with an index into this record array which corresponds
-    # to the relevant dumped data.
+    # The first record is a utf8-encoded JSON dictionary
+    # which contains file metadata
     #
-    # Texture commands are left as-is, since they're
-    # using hash references rather than data pointers.
+    # The second record is a reference table used to
+    # provide a layer of addressing indirection between
+    # the following segments of binary data. All pointers
+    # within the following binary data are replaced with
+    # indices into this table, which itself is a series of
+    # {uint32_t pointer_type, uint32_t pointer} records.
+    # The following pointer types are supported:
+    #   - 0: Static value (implementation-defined meaning)
+    #   - 1: Index into this file's binary records
+    #   - 2: {uint16_t index, uint16_t offset} into this file's binary records
+    #   - 3: Cross-file identifier
+    #
+    # The third record is a display list, implied to be the "root" display list
+    # to be executed
     #
     # All fields are big-endian.
     #
+    # TODO: implement all of the above
+
     if mesh.display_list is not None:
+        metadata = json.dumps({
+            "lgdl-version": 0.1,
+            "microcode-version": "F3DEX",
+        })
+        metadata = struct.pack(">I", len(metadata)) + bytearray(metadata)
+        
         data_regions = []
-        output = bytearray(b"")
+        output = metadata
 
         raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in mesh.display_list))
 
