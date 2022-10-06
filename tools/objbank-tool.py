@@ -11,13 +11,18 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 from libgarib.hash import hash_str
 from libgarib.fla2 import compress, data_from_stream
 
-def kaitaiObjectRange(obj):
-    if type(obj) is list:
-        return kaitaiObjectRange(obj[0])[0], kaitaiObjectRange(obj[-1])[1]
+def kaitaiObjectRange(parent, field):
+    if field is None:
+        start_field = parent.SEQ_FIELDS[0]
+        end_field = parent.SEQ_FIELDS[-1]
+        return parent._debug[start_field]["start"], parent._debug[end_field]["end"]
+    elif field in parent._debug:
+        return parent._debug[field]["start"], parent._debug[field]["end"]
     else:
-        start_field = obj.SEQ_FIELDS[0]
-        end_field = obj.SEQ_FIELDS[-1]
-        return obj._debug[start_field]["start"], obj._debug[end_field]["end"]
+        getattr(parent, field) # Force lazy load of Kaitai object instance (grrl, ew)
+        instance_name = "_m_{:}".format(field)
+        return parent._debug[instance_name]["start"], parent._debug[instance_name]["end"]
+    raise Exception(field)
 
 def bankmap(args):
     output = {}
@@ -27,48 +32,54 @@ def bankmap(args):
         bank = GloverObjbank.from_bytes(bank_data)
 
         bank_map = []
-        def bank_push(obj, name):
-            if obj is None:
+        def bank_push(parent, field, dtype, name):
+            if parent is None:
                 return
-            if type(obj) is list and len(obj) == 0:
-                return
-            bank_map.append((kaitaiObjectRange(obj), name))            
+            if field is not None:
+                if not hasattr(parent, field):
+                    return
+                if getattr(parent, field) is None:
+                    return
+            bank_map.append({
+                "memory_range": kaitaiObjectRange(parent, field),
+                "dtype": dtype,
+                "name": name
+            })
 
-
-        bank_push(bank.directory, "Directory")
+        bank_push(bank, "directory", "Directory", "")
         for dir_entry in bank.directory:
             actor = dir_entry.obj_root
             if actor is None:
                 continue
-            bank_push(actor, "Actor root ({:08X})".format(dir_entry.obj_id))
+            bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
             if actor.mesh is not None:
                 def scrape_mesh(mesh, parents, cur_matrix):
                     name = "{:08X}.".format(dir_entry.obj_id) + libgarib.objects.parent_str(parents + [mesh])
-                    bank_push(mesh, "Mesh ({:})".format(name))
+                    bank_push(mesh, None, "Mesh", name)
 
                     if mesh.geometry is not None:
                         geo = mesh.geometry
-                        bank_push(geo, "Geometry root ({:})".format(name))
-                        bank_push(geo.u1, "Geometry (face normals) ({:})".format(name))
-                        bank_push(geo.vertices, "Geometry (vertices) ({:})".format(name))
-                        bank_push(geo.faces, "Geometry (faces) ({:})".format(name))
-                        bank_push(geo.uvs, "Geometry (UVs) ({:})".format(name))
-                        bank_push(geo.uvs_unmodified, "Geometry (UV original copies) ({:})".format(name))
-                        bank_push(geo.colors_norms, "Geometry (vertex colors) ({:})".format(name))
-                        bank_push(geo.u5, "Geometry (face properties) ({:})".format(name))
-                        bank_push(geo.texture_ids, "Geometry (texture ids) ({:})".format(name))
-                    bank_push(mesh.sprites, "Sprites ({:})".format(name))
-                    bank_push(mesh.scale, "Keyframes (scale) ({:})".format(name))
-                    bank_push(mesh.translation, "Keyframes (translation) ({:})".format(name))
-                    bank_push(mesh.rotation, "Keyframes (rotation) ({:})".format(name))
+                        bank_push(mesh, "geo", "Geometry root", name)
+                        bank_push(geo, "u1", "Geometry (face normals)", name)
+                        bank_push(geo, "vertices", "Geometry (vertices)", name)
+                        bank_push(geo, "faces", "Geometry (faces)", name)
+                        bank_push(geo, "uvs", "Geometry (UVs)", name)
+                        bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
+                        bank_push(geo, "colors_norms", "Geometry (vertex colors)", name)
+                        bank_push(geo, "u5", "Geometry (face properties)", name)
+                        bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
+                    bank_push(mesh, "sprites", "Sprites", name)
+                    bank_push(mesh, "scale", "Keyframes (scale)", name)
+                    bank_push(mesh, "translation", "Keyframes (translation)", name)
+                    bank_push(mesh, "rotation", "Keyframes (rotation)", name)
                     # TODO: scrape:
                     # display_list (and associated pointer data)
 
 
                 libgarib.objects.for_each_mesh(actor.mesh, scrape_mesh)
             if actor.animation is not None:
-                bank_push(actor.animation, "Animation props ({:08X})".format(dir_entry.obj_id))
-                bank_push(actor.animation.animation_definitions, "Animation defs ({:08X})".format(dir_entry.obj_id))
+                bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
+                bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
 
         output[bank_filename] = bank_map
 
