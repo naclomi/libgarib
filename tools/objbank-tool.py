@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import dataclasses
 import json
 import os
 import sys
+import typing
 
 import _prefer_local_implementation
 import libgarib.objects
@@ -10,6 +12,7 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 
 from libgarib.hash import hash_str
 from libgarib.fla2 import compress, data_from_stream
+from libgarib.gbi import F3DEX
 
 def kaitaiObjectRange(parent, field):
     if field is None:
@@ -24,66 +27,115 @@ def kaitaiObjectRange(parent, field):
         return parent._debug[instance_name]["start"], parent._debug[instance_name]["end"]
     raise Exception(field)
 
+@dataclasses.dataclass
+class BankSegment:
+    memory_range: typing.Tuple[int, int]
+    dtype: str
+    name: str
+
+def scrapeBankSegments(bank_data):
+    bank = GloverObjbank.from_bytes(bank_data)
+
+    bank_map = []
+    def bank_push(parent, field, dtype, name):
+        if parent is None:
+            return
+        if field is not None:
+            if not hasattr(parent, field):
+                return
+            if getattr(parent, field) is None:
+                return
+        bank_map.append(BankSegment(
+            memory_range=kaitaiObjectRange(parent, field),
+            dtype=dtype,
+            name=name
+        ))
+
+    bank_push(bank, "directory", "Directory", "")
+    for dir_entry in bank.directory:
+        actor = dir_entry.obj_root
+        if actor is None:
+            continue
+        bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
+        if actor.mesh is not None:
+
+            def scrape_mesh(mesh, parents, cur_matrix):
+                name = "{:08X}.".format(dir_entry.obj_id) + libgarib.objects.parent_str(parents + [mesh])
+                bank_push(mesh, None, "Mesh", name)
+
+                if mesh.geometry is not None:
+                    geo = mesh.geometry
+                    bank_push(mesh, "geo", "Geometry root", name)
+                    bank_push(geo, "u1", "Geometry (face normals)", name)
+                    bank_push(geo, "vertices", "Geometry (vertices)", name)
+                    bank_push(geo, "faces", "Geometry (faces)", name)
+                    bank_push(geo, "uvs", "Geometry (UVs)", name)
+                    bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
+                    bank_push(geo, "colors_norms", "Geometry (vertex colors)", name)
+                    bank_push(geo, "u5", "Geometry (face properties)", name)
+                    bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
+                bank_push(mesh, "sprites", "Sprites", name)
+                bank_push(mesh, "scale", "Keyframes (scale)", name)
+                bank_push(mesh, "translation", "Keyframes (translation)", name)
+                bank_push(mesh, "rotation", "Keyframes (rotation)", name)
+                bank_push(mesh, "display_list", "Display list", name)
+
+                if mesh.display_list is not None:
+                    def scrape_dl(file, offset):
+                        base_offset = offset
+                        while True:
+                            cmd, cmd_args = F3DEX.parse(file[offset: offset+8])
+                            offset += 8
+                            if cmd is F3DEX.byName["G_ENDDL"]:
+                                break
+                            elif cmd is F3DEX.byName["G_VTX"]:
+                                start = cmd_args["address"]
+                                end = start + cmd_args["length"]
+                                bank_map.append(BankSegment(
+                                    memory_range=(start, end),
+                                    dtype="DL Vertex Data",
+                                    name="{:}.dl.cmd[{:08X}]".format(name, offset)
+                                ))
+                            elif (cmd is F3DEX.byName["G_MTX"]
+                             or cmd is F3DEX.byName["G_MOVEMEM"]
+                             or cmd is F3DEX.byName["G_DL"]
+                             or cmd is F3DEX.byName["G_BRANCH_Z"]):
+                                raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
+                    scrape_dl(bank_data, mesh._debug["_m_display_list"]["start"])
+
+
+            libgarib.objects.for_each_mesh(actor.mesh, scrape_mesh)
+        if actor.animation is not None:
+            bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
+            bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
+    bank_map.sort(key=lambda b: b.memory_range[0])
+    return bank_map
+
+def findGapsAndOverlaps(segments):
+    overlaps = []
+    gaps = []
+    for idx in range(1,len(segments)):
+        # TODO
+        pass
+    return gaps, overlaps
+
 def bankmap(args):
-    output = {}
     for bank_filename in args.bank_file:
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
-        bank = GloverObjbank.from_bytes(bank_data)
+        segments = scrapeBankSegments(bank_data)
+        gaps, overlaps = findGapsAndOverlaps(segments)
 
-        bank_map = []
-        def bank_push(parent, field, dtype, name):
-            if parent is None:
-                return
-            if field is not None:
-                if not hasattr(parent, field):
-                    return
-                if getattr(parent, field) is None:
-                    return
-            bank_map.append({
-                "memory_range": kaitaiObjectRange(parent, field),
-                "dtype": dtype,
-                "name": name
-            })
+        # TODO: print gaps and overlaps
 
-        bank_push(bank, "directory", "Directory", "")
-        for dir_entry in bank.directory:
-            actor = dir_entry.obj_root
-            if actor is None:
-                continue
-            bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
-            if actor.mesh is not None:
-                def scrape_mesh(mesh, parents, cur_matrix):
-                    name = "{:08X}.".format(dir_entry.obj_id) + libgarib.objects.parent_str(parents + [mesh])
-                    bank_push(mesh, None, "Mesh", name)
-
-                    if mesh.geometry is not None:
-                        geo = mesh.geometry
-                        bank_push(mesh, "geo", "Geometry root", name)
-                        bank_push(geo, "u1", "Geometry (face normals)", name)
-                        bank_push(geo, "vertices", "Geometry (vertices)", name)
-                        bank_push(geo, "faces", "Geometry (faces)", name)
-                        bank_push(geo, "uvs", "Geometry (UVs)", name)
-                        bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
-                        bank_push(geo, "colors_norms", "Geometry (vertex colors)", name)
-                        bank_push(geo, "u5", "Geometry (face properties)", name)
-                        bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
-                    bank_push(mesh, "sprites", "Sprites", name)
-                    bank_push(mesh, "scale", "Keyframes (scale)", name)
-                    bank_push(mesh, "translation", "Keyframes (translation)", name)
-                    bank_push(mesh, "rotation", "Keyframes (rotation)", name)
-                    # TODO: scrape:
-                    # display_list (and associated pointer data)
-
-
-                libgarib.objects.for_each_mesh(actor.mesh, scrape_mesh)
-            if actor.animation is not None:
-                bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
-                bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
-
-        output[bank_filename] = bank_map
-
-    return output
+        print("{:}:".format(bank_filename))
+        for segment in segments:
+            print("\t0x{:08X}-0x{:08X}\t{:}\t{:}".format(
+                segment.memory_range[0],
+                segment.memory_range[1],
+                segment.dtype,
+                segment.name))
+ 
 
 def unpack(args):
     for bank_filename in args.bank_file:
@@ -192,5 +244,5 @@ if __name__=="__main__":
     elif args.command == "unpack":
         unpack(args)
     elif args.command == "map":
-        print(json.dumps(bankmap(args)))
+        bankmap(args)
 

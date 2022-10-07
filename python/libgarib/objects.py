@@ -109,7 +109,6 @@ def dump_f3dex_dl(mesh, bank):
                 output[offset:offset+8] = cmd.toBytes(args)
             elif (cmd is F3DEX.byName["G_MTX"]
              or cmd is F3DEX.byName["G_MOVEMEM"]
-             or cmd is F3DEX.byName["G_VTX"]
              or cmd is F3DEX.byName["G_DL"]
              or cmd is F3DEX.byName["G_BRANCH_Z"]):
                 raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
