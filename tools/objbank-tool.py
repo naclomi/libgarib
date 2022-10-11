@@ -65,7 +65,7 @@ def scrapeBankSegments(bank_data):
 
                 if mesh.geometry is not None:
                     geo = mesh.geometry
-                    bank_push(mesh, "geo", "Geometry root", name)
+                    bank_push(mesh, "geometry", "Geometry root", name)
                     bank_push(geo, "u1", "Geometry (face normals)", name)
                     bank_push(geo, "vertices", "Geometry (vertices)", name)
                     bank_push(geo, "faces", "Geometry (faces)", name)
@@ -90,7 +90,7 @@ def scrapeBankSegments(bank_data):
                                 break
                             elif cmd is F3DEX.byName["G_VTX"]:
                                 start = cmd_args["address"]
-                                end = start + cmd_args["length"]
+                                end = start + cmd_args["length"] + 1
                                 bank_map.append(BankSegment(
                                     memory_range=(start, end),
                                     dtype="DL Vertex Data",
@@ -100,7 +100,7 @@ def scrapeBankSegments(bank_data):
                              or cmd is F3DEX.byName["G_MOVEMEM"]
                              or cmd is F3DEX.byName["G_DL"]
                              or cmd is F3DEX.byName["G_BRANCH_Z"]):
-                                raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
+                                raise Exception("TODO: Not yet implemented: Scrape F3DEX command {:}".format(cmd))
                     scrape_dl(bank_data, mesh._debug["_m_display_list"]["start"])
 
 
@@ -108,31 +108,60 @@ def scrapeBankSegments(bank_data):
         if actor.animation is not None:
             bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
             bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
-    bank_map.sort(key=lambda b: b.memory_range[0])
+    bank_map.sort(key=lambda s: s.memory_range[0])
     return bank_map
 
-def findGapsAndOverlaps(segments):
-    overlaps = []
+def fillGaps(segments):
     gaps = []
-    for idx in range(1,len(segments)):
-        # TODO
-        pass
-    return gaps, overlaps
+    activeSegments = []
+    for segment in segments:
+        nextActiveSegments = [s for s in activeSegments if s.memory_range[1]  >= segment.memory_range[0]]
+        if len(activeSegments) > 0 and len(nextActiveSegments) == 0:
+            lastEnd = max(s.memory_range[1] for s in activeSegments)
+            gaps.append(BankSegment(
+                memory_range=(lastEnd, segment.memory_range[0]),
+                dtype="???",
+                name=""
+            ))
+        activeSegments = nextActiveSegments
+        activeSegments.append(segment)
+
+    segments = segments + gaps
+    segments.sort(key=lambda s: s.memory_range[0])
+    return segments
 
 def bankmap(args):
     for bank_filename in args.bank_file:
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         segments = scrapeBankSegments(bank_data)
-        gaps, overlaps = findGapsAndOverlaps(segments)
-
-        # TODO: print gaps and overlaps
+        segments = fillGaps(segments)
 
         print("{:}:".format(bank_filename))
         for segment in segments:
-            print("\t0x{:08X}-0x{:08X}\t{:}\t{:}".format(
-                segment.memory_range[0],
-                segment.memory_range[1],
+            seg_size = segment.memory_range[1] - segment.memory_range[0]
+            if seg_size == 1:
+                mem_str = "0x{:08X}\t".format(segment.memory_range[0])
+            elif seg_size == 0:
+                mem_str = "0x{:08X} (!!ZERO LENGTH ARRAY!!)".format(segment.memory_range[0])
+
+            else:
+                mem_str = "0x{:08X}-0x{:08X}".format(
+                    segment.memory_range[0],
+                    segment.memory_range[1],
+                )
+
+            if segment.dtype == "???":
+                padding = True
+                for addr in range(*segment.memory_range):
+                    if bank_data[addr] != 0:
+                        padding = False
+                        break
+                if padding:
+                    segment.dtype = "Padding"
+
+            print("\t{:}\t{:}\t{:}".format(
+                mem_str,
                 segment.dtype,
                 segment.name))
  

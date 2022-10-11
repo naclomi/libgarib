@@ -103,7 +103,7 @@ def dump_f3dex_dl(mesh, bank):
                 # Replace addresses into vertex buffers with
                 # an index into the TLV array
                 region_offset = args["address"]
-                region_size = args["length"]
+                region_size = args["length"] + 1
                 data_regions.append((region_offset, region_size))
                 args["address"] = len(data_regions)
                 output[offset:offset+8] = cmd.toBytes(args)
