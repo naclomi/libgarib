@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import dataclasses
+import io
 import json
 import os
 import sys
@@ -111,20 +112,40 @@ def scrapeBankSegments(bank_data):
     bank_map.sort(key=lambda s: s.memory_range[0])
     return bank_map
 
-def fillGaps(segments):
+def fillGaps(segments, bank_data):
     gaps = []
     activeSegments = []
+
+    def gapDtype(start, end):
+        padding = True
+        for addr in range(start, end):
+            if bank_data[addr] != 0:
+                padding = False
+                break
+        return "Padding" if padding else "???"
+
+
     for segment in segments:
         nextActiveSegments = [s for s in activeSegments if s.memory_range[1]  >= segment.memory_range[0]]
         if len(activeSegments) > 0 and len(nextActiveSegments) == 0:
             lastEnd = max(s.memory_range[1] for s in activeSegments)
+            gap_range = (lastEnd, segment.memory_range[0])
             gaps.append(BankSegment(
-                memory_range=(lastEnd, segment.memory_range[0]),
-                dtype="???",
+                memory_range=gap_range,
+                dtype=gapDtype(*gap_range),
                 name=""
             ))
         activeSegments = nextActiveSegments
         activeSegments.append(segment)
+
+    lastEnd = max(s.memory_range[1] for s in segments)
+    if lastEnd != len(bank_data):
+        gap_range = (lastEnd, len(bank_data))
+        gaps.append(BankSegment(
+            memory_range=gap_range,
+            dtype=gapDtype(*gap_range),
+            name=""
+        ))
 
     segments = segments + gaps
     segments.sort(key=lambda s: s.memory_range[0])
@@ -135,7 +156,7 @@ def bankmap(args):
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         segments = scrapeBankSegments(bank_data)
-        segments = fillGaps(segments)
+        segments = fillGaps(segments, bank_data)
 
         print("{:}:".format(bank_filename))
         for segment in segments:
@@ -143,6 +164,8 @@ def bankmap(args):
             if seg_size == 1:
                 mem_str = "0x{:08X}\t".format(segment.memory_range[0])
             elif seg_size == 0:
+                if not args.zla:
+                    continue
                 mem_str = "0x{:08X} (!!ZERO LENGTH ARRAY!!)".format(segment.memory_range[0])
 
             else:
@@ -150,15 +173,6 @@ def bankmap(args):
                     segment.memory_range[0],
                     segment.memory_range[1],
                 )
-
-            if segment.dtype == "???":
-                padding = True
-                for addr in range(*segment.memory_range):
-                    if bank_data[addr] != 0:
-                        padding = False
-                        break
-                if padding:
-                    segment.dtype = "Padding"
 
             print("\t{:}\t{:}\t{:}".format(
                 mem_str,
@@ -265,6 +279,8 @@ if __name__=="__main__":
     map_parser = subparsers.add_parser('map', help='Dump memory map of object banks')
     map_parser.add_argument("bank_file", type=str, nargs="+",
                         help="Object bank file (potentially FLA2-compressed)")
+    map_parser.add_argument("--zla", action="store_true",
+                        help="Print pointers to zero-length arrays")
 
 
     args = parser.parse_args()
