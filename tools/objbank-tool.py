@@ -12,6 +12,12 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 from libgarib.fla2 import compress, data_from_stream
 
 def bankmap(args):
+    # TODO! The "padding" at the end of each file seems
+    #   to almost always be (72b * total_meshses), or very
+    #   very slightly less than that. Investigate more what
+    #   this is for, why it's sometimes a little smaller
+    #   than that equation predicts, and if it needs to be
+    #   present when packing
     for bank_filename in args.bank_file:
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
