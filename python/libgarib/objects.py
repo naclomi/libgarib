@@ -17,24 +17,45 @@ from . import linkable
 ###############################################
 # Bank packing utlities
 
+class LinkableDirectory(linkable.LinkableBytes):
+    actors: typing.List[typing.Tuple[Linkable, GloverObjbank.ObjectRoot]] = dataclasses.field(default_factory=list)
+
+    def __init__(self):
+        self.data = b""
+        self.pointers = []
+
+    def finalize(self):
+        for actor, obj_root in self.actors:
+            self.data += struct.pack(">I", obj_root.obj_id)
+            self.pointers.append(linkable.LinkablePointer(
+                offset=len(self.data),
+                dtype=">I",
+                target=actor
+            ))
+            self.data +=  b"\0" * 4
+        self.data += b"\0" * 8
+
+
 class LinkableDisplayList(linkable.LinkableStruct):
     dl: linkable.LinkableBytes
     vertex_data: typing.List[linkable.LinkableBytes]
-    def flatten(self):
+    def finalize(self):
         self.data = [self.dl] + self.vertex_data
+        super().finalize()
 
 class LinkableGeometry(linkable.LinkableStruct):
     verts: linkable.LinkableBytes
     faces: linkable.LinkableBytes
     # TODO: what else?
     root: linkable.LinkableBytes
-    def flatten(self):
+    def finalize(self):
         self.data = []
         if len(self.verts) > 0:
             self.data.append(self.verts)
         if len(self.faces) > 0:
             self.data.append(self.verts)
         self.data.append(self.root)
+        super().finalize()
 
 class LinkableObjectBank(linkable.LinkableStruct):
     directory: linkable.LinkableBytes
@@ -47,7 +68,7 @@ class LinkableObjectBank(linkable.LinkableStruct):
     anim_props: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
     actors: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
 
-    def flatten(self):
+    def finalize(self):
         # TODO: make sure structs get padded
         self.data = (
             [self.directory] +
@@ -60,10 +81,7 @@ class LinkableObjectBank(linkable.LinkableStruct):
             self.anim_props
             # TODO: mysterious 72B*n_mesh end padding?
         )
-        for dl in self.display_lists:
-            dl.flatten()
-        for geo in self.geometries:
-            geo.flatten()
+        super().finalize()
 
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))

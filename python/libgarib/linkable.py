@@ -11,6 +11,9 @@ class Linkable(object):
         self._absolute_offset: typing.Union[None, int] = None
         self.parent: typing.Union[None, 'Linkable'] = None
 
+    def finalize(self):
+        pass
+
     def absolute_offset(self) -> int:
         if self.parent is None:
             return 0
@@ -57,6 +60,10 @@ class LinkableStruct(Linkable):
 
     def __len__(self):
         return sum(len(d) for d in self.data)
+
+    def finalize(self):
+        for linkable in self.data:
+            linkable.finalize()
 
     def field_offset(self, child):
         cursor = 0
