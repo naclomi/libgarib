@@ -12,39 +12,58 @@ import plyfile
 from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
+from . import linkable
 
 ###############################################
 # Bank packing utlities
 
-class LinkableData(object):
-    def __init__(self, segment, parent):
-        self.parent = parent
-        self.segment = segment
-        self.segment_offset = None
-        self.absolute_offset = None
+class LinkableDisplayList(linkable.LinkableStruct):
+    dl: linkable.LinkableBytes
+    vertex_data: typing.List[linkable.LinkableBytes]
+    def flatten(self):
+        self.data = [self.dl] + self.vertex_data
 
-    def len(self):
-        return 0
+class LinkableGeometry(linkable.LinkableStruct):
+    verts: linkable.LinkableBytes
+    faces: linkable.LinkableBytes
+    # TODO: what else?
+    root: linkable.LinkableBytes
+    def flatten(self):
+        self.data = []
+        if len(self.verts) > 0:
+            self.data.append(self.verts)
+        if len(self.faces) > 0:
+            self.data.append(self.verts)
+        self.data.append(self.root)
 
-    def link(self):
-        return b""
+class LinkableObjectBank(linkable.LinkableStruct):
+    directory: linkable.LinkableBytes
+    display_lists: typing.List[LinkableDisplayList] = dataclasses.field(default_factory=list)
+    geometries: typing.List[LinkableGeometry] = dataclasses.field(default_factory=list)
+    keyframes: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    sprites: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    meshes: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    anim_defs: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    anim_props: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    actors: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
 
-class CollatedDataFile(object):
-    def __init__(self, segments):
-        self.segments_by_name = {}
-        for segment_name in segments:
-            self.segments_by_name[segment_name] = []
-        self.segments = segments
-
-    def pushData(self, segment_name, linkable_data):
-        self.segments_by_name[segment_name].append(linkable_data)
-
-    def link(self):
-        raw = []
-        for segment_name in self.segments:
-            raw += self.segments_by_name[segment_name].link()
-        # TODO: need to find and link references somehow
-        return b"".join(raw)
+    def flatten(self):
+        # TODO: make sure structs get padded
+        self.data = (
+            [self.directory] +
+            self.display_lists +
+            self.geometries +
+            self.keyframes + 
+            self.sprites + 
+            self.meshes + 
+            self.anim_defs + 
+            self.anim_props
+            # TODO: mysterious 72B*n_mesh end padding?
+        )
+        for dl in self.display_lists:
+            dl.flatten()
+        for geo in self.geometries:
+            geo.flatten()
 
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
@@ -52,7 +71,7 @@ def parent_str(parents):
 def for_each_mesh(mesh, callback, parents=None):
     if parents is None:
         parents = []
-    cur_matrix = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1] # TODO
+    cur_matrix = None # TODO
     callback(mesh, parents, cur_matrix)
     if mesh.sibling is not None:
         for_each_mesh(mesh.sibling, callback, parents)
