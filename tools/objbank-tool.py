@@ -59,8 +59,20 @@ def unpack(args):
             if obj is None:
                 continue
 
-            # TODO: include animation data
-            actor = {}
+            animation_properties, animations = libgarib.objects.actorAnimationToJson(obj)
+            actor = {
+                "id": obj.obj_id,
+                "animation_properties": animation_properties,
+                "animations": animations
+            }
+
+            for defn in obj.animation.animation_definitions or []:
+                actor["animations"].append({
+                    "start": defn.start_time,
+                    "end": defn.end_time,
+                    "speed": defn.playback_speed,
+                    "flags": defn.u1, # TODO: what does this do??
+                })
 
             obj_output_dir = os.path.join(bank_output_dir, "0x{:08x} ({:})".format(obj.obj_id, obj.mesh.name.strip("\x00")))
             os.makedirs(obj_output_dir, exist_ok=True)
@@ -96,21 +108,16 @@ def unpack(args):
 
 
 def pack(args):
-    directory = []
 
-    # TODO: figure out the actual arrangement/enumeration
-    # TODO: EVERY segment is word-padded
-    data = libgarib.objects.CollatedDataFile([
-        "directory", "model_vtx", "dl_vtx", "dl",
-        "mesh", "sprite", "anim", "actor"
-    ])
+    root = libgarib.objects.LinkableObjectBank()
 
     for actor_filename in args.actor_file:
         with open(actor_filename, "r") as f:
             actor = json.load(f)
-            directory.append(str(actor))
+            # TODO
 
-    bank = data.link()
+    root.finalize()
+    bank = root.link()
 
     if args.compress:
         def compression_progress_callback(percent):
@@ -123,7 +130,7 @@ def pack(args):
     else:
         with open(args.output_file, "wb") as f:
             f.write(bank)
-    sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(directory), args.output_file))
+    sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(root.directory.actors), args.output_file))
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Tool to work with object bank archives from Glover (N64)")

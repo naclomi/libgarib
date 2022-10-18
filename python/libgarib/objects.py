@@ -18,11 +18,10 @@ from . import linkable
 # Bank packing utlities
 
 class LinkableDirectory(linkable.LinkableBytes):
-    actors: typing.List[typing.Tuple[Linkable, GloverObjbank.ObjectRoot]] = dataclasses.field(default_factory=list)
-
     def __init__(self):
         self.data = b""
         self.pointers = []
+        self.actors: typing.List[typing.Tuple[linkable.Linkable, GloverObjbank.ObjectRoot]] = []
 
     def finalize(self):
         for actor, obj_root in self.actors:
@@ -58,15 +57,16 @@ class LinkableGeometry(linkable.LinkableStruct):
         super().finalize()
 
 class LinkableObjectBank(linkable.LinkableStruct):
-    directory: linkable.LinkableBytes
-    display_lists: typing.List[LinkableDisplayList] = dataclasses.field(default_factory=list)
-    geometries: typing.List[LinkableGeometry] = dataclasses.field(default_factory=list)
-    keyframes: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
-    sprites: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
-    meshes: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
-    anim_defs: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
-    anim_props: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
-    actors: typing.List[linkable.LinkableBytes] = dataclasses.field(default_factory=list)
+    def __init__(self):
+        self.directory: LinkableDirectory = LinkableDirectory()
+        self.display_lists: typing.List[LinkableDisplayList] = []
+        self.geometries: typing.List[LinkableGeometry] = []
+        self.keyframes: typing.List[linkable.LinkableBytes] = []
+        self.sprites: typing.List[linkable.LinkableBytes] = []
+        self.meshes: typing.List[linkable.LinkableBytes] = []
+        self.anim_defs: typing.List[linkable.LinkableBytes] = []
+        self.anim_props: typing.List[linkable.LinkableBytes] = []
+        self.actors: typing.List[linkable.LinkableBytes] = []
 
     def finalize(self):
         # TODO: make sure structs get padded
@@ -81,6 +81,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
             self.anim_props
             # TODO: mysterious 72B*n_mesh end padding?
         )
+        for segment in self.data:
+            segment.parent = self
         super().finalize()
 
 def parent_str(parents):
@@ -97,6 +99,75 @@ def for_each_mesh(mesh, callback, parents=None):
         child_parents = parents[:]
         child_parents.append(mesh)
         for_each_mesh(mesh.child, callback, child_parents)
+
+def actorAnimationFromJson(actor):
+    raw_defs = b""
+    for anim_def in actor["animations"]:
+        raw_defs += objbank_writer.glover_objbank__animation_definition.build({
+            "start_time": anim_def["start"],
+            "end_time": anim_def["end"],
+            "playback_speed": anim_def["speed"],
+            "u1": anim_def["flags"],
+        })
+    defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
+
+    p = actor["animation_properties"]
+    raw_props = objbank_writer.glover_objbank__animation.build({
+        "num_animation_definitions": len(actor["animations"]),
+        "current_animation_idx": p["starting_props"]["idx"],
+        "is_playing": p["starting_props"]["is_playing"],
+        "time_delta": p["starting_props"]["time_delta"],
+        "next_anim_idx": [prop_set["idx"] for prop_set in p["prop_queue"]],
+        "next_is_playing": [prop_set["is_playing"] for prop_set in p["prop_queue"]],
+        "next_time_delta": [prop_set["time_delta"] for prop_set in p["prop_queue"]],
+        "next_anim_slot_idx": p["prop_queue_ptr"],
+        "cur_time": p["starting_time"],
+        "pad": 0,
+        "u3": p["unknown1"],
+        "u15": p["unknown2"],
+        "animation_definitions_ptr": 0xDEADBEEF
+    })
+    anim_ptr = linkable.LinkablePointer(
+        offset = ..., # TODO
+        dtype = ">I",
+        target = defs
+    )
+    props = linkable.LinkableBytes(data=raw_defs, pointers=[anim_ptr])
+    return props, defs
+
+
+def actorAnimationToJson(obj):
+    a = obj.animation
+    animations = []
+
+    def queue_idx_to_props(idx):
+        return {
+            "idx": a.next_anim_idx[idx],
+            "is_playing": a.next_is_playing[idx] == 1,
+            "time_delta": a.next_time_delta[idx],
+        }
+    properties = {
+        "starting_props": {
+            "idx": a.current_animation_idx,
+            "is_playing": a.is_playing == 1, 
+            "time_delta": a.time_delta,
+        },
+        "prop_queue": [
+            queue_idx_to_props(x) for x in range(5)
+        ],
+        "unknown1": a.u3, # TODO: what does this do??
+        "unknown2": a.u15, # TODO: what does this do??
+        "prop_queue_ptr": a.next_anim_slot_idx,
+        "starting_time": a.cur_time
+    }
+    for defn in obj.animation.animation_definitions or []:
+        animations.append({
+            "start": defn.start_time,
+            "end": defn.end_time,
+            "speed": defn.playback_speed,
+            "flags": defn.u1, # TODO: what does this do??
+        })
+    return properties, animations
 
 def dump_f3dex_dl(mesh, bank):
     # Libgarib display list format is a packed array
@@ -128,11 +199,11 @@ def dump_f3dex_dl(mesh, bank):
         metadata = json.dumps({
             "lgdl-version": 0.1,
             "microcode-version": "F3DEX",
-        })
-        metadata = struct.pack(">I", len(metadata)) + bytearray(metadata)
+        }).encode()
+        metadata = struct.pack(">I", len(metadata)) + metadata
         
         data_regions = []
-        output = metadata
+        output = bytearray(metadata)
 
         raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in mesh.display_list))
 

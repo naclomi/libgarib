@@ -61,6 +61,10 @@ class LinkableStruct(Linkable):
     def __len__(self):
         return sum(len(d) for d in self.data)
 
+    def append(self, child: Linkable):
+        self.data.append(child)
+        child.parent = self
+
     def finalize(self):
         for linkable in self.data:
             linkable.finalize()
