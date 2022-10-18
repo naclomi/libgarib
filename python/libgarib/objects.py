@@ -100,6 +100,15 @@ def for_each_mesh(mesh, callback, parents=None):
         child_parents.append(mesh)
         for_each_mesh(mesh.child, callback, child_parents)
 
+def getConstructFieldOffset(construct_struct, field_name):
+    offset = 0
+    for field in construct_struct.subcons:
+        if field.name == field_name:
+            return offset
+        offset += field.sizeof()
+    else:
+        raise Exception("Field not found")
+
 def actorAnimationFromJson(actor):
     raw_defs = b""
     for anim_def in actor["animations"]:
@@ -128,7 +137,7 @@ def actorAnimationFromJson(actor):
         "animation_definitions_ptr": 0xDEADBEEF
     })
     anim_ptr = linkable.LinkablePointer(
-        offset = ..., # TODO
+        offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
         dtype = ">I",
         target = defs
     )
