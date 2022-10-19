@@ -72,7 +72,6 @@ class LinkableObjectBank(linkable.LinkableStruct):
         self.actors: typing.List[linkable.LinkableBytes] = []
 
     def finalize(self):
-        # TODO: make sure structs get padded
         self.data = (
             [self.directory] +
             self.display_lists +
@@ -170,7 +169,6 @@ def packActor(actor, bank):
     bank.anim_defs.append(anim_defs)
     bank.anim_props.append(anim_props)
 
-    # TODO: root_mesh
     root_mesh = packMesh(actor["mesh"], bank)
     bank.meshes.append(root_mesh)
 
