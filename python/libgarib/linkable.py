@@ -13,7 +13,7 @@ def padBytes(data):
     if pad_len == 0:
         return data
     else:
-        pad = "\0" * pad_len
+        pad = b"\0" * pad_len
         return data + pad
 
 class Linkable(object):
