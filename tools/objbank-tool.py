@@ -114,8 +114,7 @@ def pack(args):
     for actor_filename in args.actor_file:
         with open(actor_filename, "r") as f:
             actor = json.load(f)
-            # TODO
-
+            libgarib.objects.packActor(actor, root)
     root.finalize()
     bank = root.link()
 

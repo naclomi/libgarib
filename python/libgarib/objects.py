@@ -19,13 +19,15 @@ from . import linkable
 
 class LinkableDirectory(linkable.LinkableBytes):
     def __init__(self):
-        self.data = b""
-        self.pointers = []
-        self.actors: typing.List[typing.Tuple[linkable.Linkable, GloverObjbank.ObjectRoot]] = []
+        super().__init__(
+            data = b"",
+            pointers = []
+        )
+        self.actors: typing.Dict[int, linkable.Linkable] = {}
 
     def finalize(self):
-        for actor, obj_root in self.actors:
-            self.data += struct.pack(">I", obj_root.obj_id)
+        for obj_id, actor in self.actors.items():
+            self.data += struct.pack(">I", obj_id)
             self.pointers.append(linkable.LinkablePointer(
                 offset=len(self.data),
                 dtype=">I",
@@ -58,6 +60,7 @@ class LinkableGeometry(linkable.LinkableStruct):
 
 class LinkableObjectBank(linkable.LinkableStruct):
     def __init__(self):
+        super().__init__()
         self.directory: LinkableDirectory = LinkableDirectory()
         self.display_lists: typing.List[LinkableDisplayList] = []
         self.geometries: typing.List[LinkableGeometry] = []
@@ -78,7 +81,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
             self.sprites + 
             self.meshes + 
             self.anim_defs + 
-            self.anim_props
+            self.anim_props +
+            self.actors
             # TODO: mysterious 72B*n_mesh end padding?
         )
         for segment in self.data:
@@ -109,6 +113,96 @@ def getConstructFieldOffset(construct_struct, field_name):
     else:
         raise Exception("Field not found")
 
+def packMesh(mesh, bank):
+    children = []
+    for child in mesh["children"]:
+        children.append(packMesh(child, bank))
+        if len(children) > 1:
+            children[-2].pointers.append(linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
+                dtype = ">I",
+                target = children[-1]
+            ))
+ 
+    # TODO
+    raw_mesh = b""
+    # raw_mesh = objbank_writer.glover_objbank__mesh.build({
+    #     # "id": , # / Int32ub,
+    #     # "name": , # / FixedSized(8, GreedyString(encoding='ASCII')),
+    #     # "unused": , # / Int8ub,
+    #     # "alpha": , # / Int8ub,
+    #     # "num_scale": , # / Int16ub,
+    #     # "num_translation": , # / Int16ub,
+    #     # "num_rotation": , # / Int16ub,
+    #     # "geometry_ptr": , # / Int32ub,
+    #     # "display_list_ptr": , # / Int32ub,
+    #     # "scale_ptr": , # / Int32ub,
+    #     # "translation_ptr": , # / Int32ub,
+    #     # "rotation_ptr": , # / Int32ub,
+    #     # "num_sprites": , # / Int32ub,
+    #     # "sprites_ptr": , # / Int32ub,
+    #     "num_children": len(children),
+    #     # "render_mode": , # / Int16ub,
+    #     "child_ptr": 0,
+    #     "sibling_ptr": 0,
+    #     # "runtime_collision_data_ptr": , # / Int32ub,
+    #     "rotation": None,
+    #     "geometry": None,
+    #     "scale": None,
+    #     "translation": None,
+    #     "child": None,
+    #     "sibling": None,
+    #     "display_list": None,
+    #     "sprites": None
+    # })
+
+    pointers = []
+    if len(children) > 0:
+        pointers.append(linkable.LinkablePointer(
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "child_ptr"),
+            dtype = ">I",
+            target = children[0]
+        ))
+    return linkable.LinkableBytes(data=raw_mesh, pointers=pointers) 
+
+def packActor(actor, bank):
+    anim_props, anim_defs = actorAnimationFromJson(actor)
+    bank.anim_defs.append(anim_defs)
+    bank.anim_props.append(anim_props)
+
+    # TODO: root_mesh
+    root_mesh = packMesh(actor["mesh"], bank)
+    bank.meshes.append(root_mesh)
+
+    root_actor_raw = objbank_writer.glover_objbank__object_root.build({
+        "obj_id": actor["id"],
+        "bank_base_addr": 0,
+        "u2": 0, # TODO: what does this do??
+        "mesh_ptr": 0,
+        "u3": 0, # TODO: what does this do??
+        "u4": 0, # TODO: what does this do??
+        "animation_ptr": 0,
+        "mesh": None,
+        "animation": None,
+    })
+    root_actor = linkable.LinkableBytes(
+        data=root_actor_raw,
+        pointers=[
+            linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
+                dtype = ">I",
+                target = anim_props
+            ),
+            linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
+                dtype = ">I",
+                target = root_mesh
+            ),
+        ]
+    )
+    bank.actors.append(root_actor)
+    bank.directory.actors[actor["id"]] = root_actor
+
 def actorAnimationFromJson(actor):
     raw_defs = b""
     for anim_def in actor["animations"]:
@@ -134,7 +228,8 @@ def actorAnimationFromJson(actor):
         "pad": 0,
         "u3": p["unknown1"],
         "u15": p["unknown2"],
-        "animation_definitions_ptr": 0xDEADBEEF
+        "animation_definitions_ptr": 0,
+        "animation_definitions": None
     })
     anim_ptr = linkable.LinkablePointer(
         offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),

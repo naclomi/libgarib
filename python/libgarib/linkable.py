@@ -5,6 +5,17 @@ import typing
 class LinkException(Exception):
     pass
 
+def padLen(size):
+    return size + (4 - size & 3)
+
+def padBytes(data):
+    pad_len = 4 - len(data) & 3
+    if pad_len == 0:
+        return data
+    else:
+        pad = "\0" * pad_len
+        return data + pad
+
 class Linkable(object):
     def __init__(self):
         self.parent_offset: int = 0
@@ -40,26 +51,29 @@ class LinkablePointer(object):
         absolute_dst = self.target.absolute_offset() + self.target_offset
         data[self.offset: self.offset+size] = struct.pack(self.dtype, absolute_dst)
 
-@dataclasses.dataclass
 class LinkableBytes(Linkable):
-    data: bytes
-    pointers: typing.List[LinkablePointer]
+    def __init__(self, data: bytearray, pointers: typing.List[LinkablePointer]=None):
+        super().__init__()
+        self.data = data
+        if type(self.data) is not bytearray:
+            self.data = bytearray(self.data)
+        self.pointers = pointers or list()
 
     def __len__(self):
-        return len(self.data)
+        return padLen(len(self.data))
 
     def link(self):
         for pointer in self.pointers:
             pointer.rewrite(self.data)
-        return self.data
+        return padBytes(self.data)
 
-@dataclasses.dataclass
 class LinkableStruct(Linkable):
-    data: typing.List[Linkable] = dataclasses.field(default_factory=list)
-    absolute_offset: int = None
+    def __init__(self, data: typing.List[Linkable] = None):
+        super().__init__()
+        self.data = data or list()
 
     def __len__(self):
-        return sum(len(d) for d in self.data)
+        return padLen(sum(len(d) for d in self.data))
 
     def append(self, child: Linkable):
         self.data.append(child)
@@ -82,5 +96,5 @@ class LinkableStruct(Linkable):
         raw = []
         for linkable in self.data:
             raw.append(linkable.link())
-        return b"".join(raw)
+        return padBytes(b"".join(raw))
 
