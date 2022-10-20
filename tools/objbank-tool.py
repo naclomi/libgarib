@@ -95,6 +95,17 @@ def unpack(args):
                     actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
                     with open(ply_filename, "wb") as f:
                         f.write(libgarib.objects.mesh_to_ply(mesh))
+                if mesh.num_sprites > 0:
+                    actor_node["sprites"] = []
+                    for sprite in mesh.sprites:
+                        actor_node["sprites"].append({
+                            "texture_id": sprite.texture_id,
+                            "position": [sprite.x, sprite.y, sprite.z],
+                            "size": [sprite.width, sprite.height],
+                            "unknown1": sprite.u5, # TODO: ???
+                            "unknown2": sprite.u6, # TODO: ???
+                            "flags": sprite.flags
+                        })
                 mesh.dump_actor_node = actor_node
                 if len(parents) > 0:
                     parents[-1].dump_actor_node["children"].append(actor_node)

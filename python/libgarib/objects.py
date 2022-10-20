@@ -113,6 +113,8 @@ def getConstructFieldOffset(construct_struct, field_name):
         raise Exception("Field not found")
 
 def packMesh(mesh, bank):
+    pointers = []
+
     children = []
     for child in mesh["children"]:
         children.append(packMesh(child, bank))
@@ -123,6 +125,28 @@ def packMesh(mesh, bank):
                 target = children[-1]
             ))
  
+    if len(mesh.get("sprites", [])) > 0:
+        raw_sprites = []
+        for sprite in mesh["sprites"]:
+            # {
+            #         "texture_id": sprite.texture_id,
+            #         "position": [sprite.x, sprite.y, sprite.z],
+            #         "size": [sprite.width, sprite.height],
+            #         "unknown1": sprite.u5, # TODO: ???
+            #         "unknown2": sprite.u6, # TODO: ???
+            #         "flags": sprite.flags
+            #     })
+            # TODO
+            pass
+        raw_sprites = b"".join(raw_sprites)
+        sprites = linkable.LinkableBytes(data=raw_sprites)
+        bank.sprites.append(sprites)
+        pointers.append(linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
+                dtype = ">I",
+                target = sprites
+        ))
+
     # TODO
     raw_mesh = b""
     # raw_mesh = objbank_writer.glover_objbank__mesh.build({
@@ -138,8 +162,8 @@ def packMesh(mesh, bank):
     #     # "scale_ptr": , # / Int32ub,
     #     # "translation_ptr": , # / Int32ub,
     #     # "rotation_ptr": , # / Int32ub,
-    #     # "num_sprites": , # / Int32ub,
-    #     # "sprites_ptr": , # / Int32ub,
+    #     "num_sprites": len(mesh.get("sprites", [])), # / Int32ub,
+    #     "sprites_ptr": 0,
     #     "num_children": len(children),
     #     # "render_mode": , # / Int16ub,
     #     "child_ptr": 0,
@@ -155,7 +179,6 @@ def packMesh(mesh, bank):
     #     "sprites": None
     # })
 
-    pointers = []
     if len(children) > 0:
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "child_ptr"),
