@@ -360,13 +360,19 @@ def dump_f3dex_dl(mesh, bank):
     else:
         return b""
 
+def transposeMap(fn, array):
+    results = []
+    for col_idx in range(len(array[0])):
+        results.append(fn(*(row[col_idx] for row in array)))
+    return results
+
 def mesh_to_gltf(mesh):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
     # Map texture/material to vertex attributes:
     primitives = {}
-    def primitivesForMaterial(material):
+    def getMaterial(material):
         if material in primitives:
             return primitives[material]
         else:
@@ -375,6 +381,7 @@ def mesh_to_gltf(mesh):
                 "positions": [],
                 "colors": [],
                 "uvs": [],
+                "norms": [],
                 "unknown": []
             }
             primitives[material] = new_prim
@@ -383,10 +390,10 @@ def mesh_to_gltf(mesh):
     geo = mesh.geometry
     for face_idx in range(geo.num_faces):
         if mesh.geometry.texture_ids is not None:
-            prims = primitivesForMaterial(mesh.geometry.texture_ids[face_idx])
+            prims = getMaterial(mesh.geometry.texture_ids[face_idx])
         else:
-            prims = primitivesForMaterial(0)
-        prims["indices"].append((len(prims["positions"])+x for x in range(3)))
+            prims = getMaterial(0)
+        prims["indices"] += (len(prims["positions"])+x for x in range(3))
         face = geo.faces[face_idx]
         for v_idx in (face.v0, face.v1, face.v2):
             v = geo.vertices[v_idx]
@@ -405,9 +412,9 @@ def mesh_to_gltf(mesh):
                              (uv.u3.value, uv.v3.value))
         if mesh.geometry.u1 is not None:
             norm = mesh.geometry.u1[face_idx]
-            prims["norms"] += (((norm & 0xff000000) >> 24,
-                                (norm & 0x00ff0000) >> 16,
-                                (norm & 0x0000ff00) >> 8),) * 3
+            prims["norms"] += ((((norm & 0xff000000) >> 24) / 255.0,
+                                ((norm & 0x00ff0000) >> 16) / 255.0,
+                                ((norm & 0x0000ff00) >> 8) / 255.0),) * 3
         if mesh.geometry.u5 is not None:
             # TODO: what is this data? how can we include it effectively?
             u5 = mesh.geometry.u5[face_idx]
@@ -417,45 +424,157 @@ def mesh_to_gltf(mesh):
     ###############################################
 
     data_blobs = []
+    def data_blob_offset():
+        return sum(len(b) for b in data_blobs)
     accessors = []
+    gltf_primitives = []
     bufferViews = []
     for material, prims in primitives.items():
-        # TODO:
-        #   - for each material, make a bufferView for
-        #     face indices and for vertex data
-        #   - pack attributes using struct
-        #   - record min/maxes
-        #   - append struct to data_blob 
-        #   - create GLTF accessors based on location
-        #     in data blob and interleaving information
-        #     from struct packing
+        indices_data = b"".join(struct.pack("B", i) for i in prims["indices"])
+        indices_bufferview_handle = len(bufferViews)
+        bufferViews.append(gltf.BufferView(
+            buffer=0,
+            byteOffset=data_blob_offset(),
+            byteLength=len(indices_data),
+            target=gltf.ELEMENT_ARRAY_BUFFER,
+        ))
+        data_blobs.append(indices_data)
 
-        # Accessors look like:
-        # gltf.Accessor(
-        #         bufferView=0,
-        #         componentType=gltf.UNSIGNED_BYTE,
-        #         count=triangles.size,
-        #         type=gltf.SCALAR,
-        #         max=[int(triangles.max())],
-        #         min=[int(triangles.min())],
-        #     )
-        #
-        # Buffer views look like:
-        # gltf.BufferView(
-        #     buffer=0,
-        #     byteLength=len(triangles_binary_blob),
-        #     target=gltf.ELEMENT_ARRAY_BUFFER,
-        # ),
-        # gltf.BufferView(
-        #     buffer=0,
-        #     byteOffset=len(triangles_binary_blob),
-        #     byteLength=len(points_binary_blob),
-        #     target=gltf.ARRAY_BUFFER,
-        # ),
+        indices_handle = len(accessors)
+        accessors.append(gltf.Accessor(
+            bufferView=indices_bufferview_handle,
+            componentType=gltf.UNSIGNED_BYTE,
+            count=len(prims["indices"]),
+            type=gltf.SCALAR,
+            max=[max(prims["indices"])],
+            min=[min(prims["indices"])],
+        ))
 
-    vertices_raw = vertices.tobytes()
-    faces_raw = faces.tobytes()
-    vertices_raw = vertices.tobytes()
+        # Built interleaved vertex data format
+        attributes_bufferview_handle = len(bufferViews)
+        vertex_struct_format = ""
+        vertex_struct_sources = []
+        gltf_attributes = {}
+
+        def addAttributeToFormat(attrName, values, sources, componentType, elementSize):
+            gltf_attributes[attrName] = len(accessors)
+            accessors.append(gltf.Accessor(
+                bufferView=attributes_bufferview_handle,
+                componentType=componentType,
+                count=len(values),
+                type=elementSize,
+                byteOffset=struct.calcsize(vertex_struct_format),
+                max=transposeMap(max, values),
+                min=transposeMap(min, values),
+            ))
+            vertex_struct_format += "{:}{:}".format(
+                {gltf.SCALAR : 1,
+                 gltf.VEC2 : 2,
+                 gltf.VEC3 : 3,
+                 gltf.VEC4 : 4}[elementSize],
+                {gltf.FLOAT: "f",
+                 gltf.SHORT: "h",
+                 gltf.UNSIGNED_SHORT: "H",
+                 gltf.BYTE: "b",
+                 gltf.UNSIGNED_BYTE: "B",
+                 gltf.UNSIGNED_INT: "I",
+                }[componentType]
+            )
+            vertex_struct_sources += sources
+
+        addAttributeToFormat(
+            attrName="POSITION",
+            values=prims["positions"],
+            sources=(
+                ("positions", ..., 0),
+                ("positions", ..., 1),
+                ("positions", ..., 2)
+            ),
+            componentType=gltf.FLOAT,
+            elementSize=gltf.VEC3
+        )
+
+        if len(prims["colors"]) > 0:
+            addAttributeToFormat(
+                attrName="COLOR_0",
+                values=prims["colors"],
+                sources=(
+                    ("colors", ..., 0),
+                    ("colors", ..., 1),
+                    ("colors", ..., 2)
+                ),
+                componentType=gltf.UNSIGNED_BYTE,
+                elementSize=gltf.VEC3
+            )
+
+        if len(prims["uvs"]) > 0:
+            addAttributeToFormat(
+                attrName="TEXCOORD_0",
+                values=prims["uvs"],
+                sources=(
+                    ("uvs", ..., 0),
+                    ("uvs", ..., 1),
+                ),
+                componentType=gltf.SHORT,
+                elementSize=gltf.VEC2
+            )
+
+        if len(prims["norms"]) > 0:
+            addAttributeToFormat(
+                attrName="NORMAL",
+                values=prims["norms"],
+                sources=(
+                    ("norms", ..., 0),
+                    ("norms", ..., 1),
+                    ("norms", ..., 2),
+                ),
+                componentType=gltf.FLOAT,
+                elementSize=gltf.VEC3
+            )
+
+        if len(prims["unknown"]) > 0:
+            addAttributeToFormat(
+                attrName="_GLOVER_FLAGS",
+                values=prims["unknown"],
+                sources=(
+                    ("unknown", ...),
+                ),
+                componentType=gltf.UNSIGNED_INT,
+                elementSize=gltf.SCALAR
+            )
+
+        # Pack binary data
+        vertex_data = []
+        for idx in range(len(prims["positions"])):
+            values = []
+            for path in vertex_struct_sources:
+                v = prims
+                for key in path:
+                    if key is ...:
+                        key = idx
+                    v = v.__getitem__(key)
+                values.append(v)
+            vertex_data.append(struct.pack(vertex_struct_format, *values))
+
+        vertex_data = b"".join(vertex_data)
+        bufferViews.append(gltf.BufferView(
+            buffer=0,
+            byteOffset=data_blob_offset(),
+            byteLength=len(vertex_data),
+            byteStride=struct.calcsize(vertex_struct_format),
+            target=gltf.ARRAY_BUFFER,
+        ))
+        data_blobs.append(indices_data)
+
+        # Build GLTF primitive
+
+        gltf_primitives.append(gltf.Primitive(
+            attributes=gltf.Attributes(
+                **gltf_attributes
+            ),
+            material=material,
+            indices=indices_handle
+        ))
 
     data_blob = b"".join(data_blobs)
 
@@ -466,14 +585,7 @@ def mesh_to_gltf(mesh):
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[gltf.Node(mesh=0)],
         meshes=[
-            gltf.Mesh(
-                primitives=[
-                    gltf.Primitive(
-                        attributes=gltf.Attributes(POSITION=1),
-                        indices=0
-                    )
-                ]
-            )
+            gltf.Mesh(primitives=gltf_primitives)
         ],
         accessors=accessors,
         bufferViews=bufferViews,
@@ -484,63 +596,6 @@ def mesh_to_gltf(mesh):
     file.set_binary_blob(data_blob)
 
     return b"".join(file.save_to_bytes())
-
-# TODO: remove:
-# def mesh_to_ply(mesh):
-#     # TODO: explore use of sausage64?
-#     # https://github.com/buu342/N64-Sausage64/wiki/2)-The-S64-format
-
-#     def vert_data(idx):
-#         v = mesh.geometry.vertices[idx]
-#         out = [v.x, v.y, v.z]
-#         if mesh.geometry.colors_norms is not None:
-#             c = mesh.geometry.colors_norms[idx]
-#             out += ((c & 0xFF000000) >> 24,
-#                     (c & 0x00FF0000) >> 16,
-#                     (c & 0x0000FF00) >> 8)
-#         return tuple(out)
-#     vert_data_struct = [('x', 'f4'), ('y', 'f4'), ('z', 'f4')]
-#     if mesh.geometry.colors_norms is not None:
-#         vert_data_struct += [('red', 'u4'), ('green', 'u4'), ('blue', 'u4')]
-
-#     vertices = np.array([vert_data(idx) for idx in range(mesh.geometry.num_vertices)],
-#                          dtype=vert_data_struct)
-#     ply_vertices = plyfile.PlyElement.describe(vertices, 'vertex')
-
-
-#     def face_data(idx):
-#         f = mesh.geometry.faces[idx]
-#         out = [(f.v0, f.v1, f.v2)]
-#         if mesh.geometry.texture_ids is not None:
-#             out.append(mesh.geometry.texture_ids[idx])
-#         if mesh.geometry.uvs is not None:
-#             uv = mesh.geometry.uvs[idx]
-#             out += (uv.u1.value, uv.v1.value,
-#                     uv.u2.value, uv.v2.value,
-#                     uv.u3.value, uv.v3.value)
-#         if mesh.geometry.u1 is not None:
-#             norm = mesh.geometry.u1[idx]
-#             out += ((norm & 0xff000000) >> 24,
-#                     (norm & 0x00ff0000) >> 16,
-#                     (norm & 0x0000ff00) >> 8)
-#         return tuple(out)
-#     face_data_struct = [('vertex_indices', 'i4', (3,))]
-#     if mesh.geometry.texture_ids is not None:
-#         face_data_struct.append(('texture', 'u4'))
-#     if mesh.geometry.uvs is not None:
-#         face_data_struct += [('u1', 'f4'), ('v1', 'f4'),
-#                              ('u2', 'f4'), ('v2', 'f4'),
-#                              ('u3', 'f4'), ('v3', 'f4'),]
-#     if mesh.geometry.u1 is not None:
-#         face_data_struct += [('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4')]
-
-#     faces = np.array([face_data(idx) for idx in range(mesh.geometry.num_faces)],
-#                          dtype=face_data_struct)
-#     ply_faces = plyfile.PlyElement.describe(faces, 'face')
-
-#     ply_file = io.BytesIO()
-#     plyfile.PlyData([ply_vertices, ply_faces], text=True).write(ply_file)
-#     return ply_file.getvalue()
 
 ###############################################
 # Bank mapping utlities
