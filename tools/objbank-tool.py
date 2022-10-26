@@ -91,10 +91,10 @@ def unpack(args):
                     with open(dl_filename, "wb") as f:
                         f.write(dl)
                 if mesh.geometry.num_faces > 0:
-                    ply_filename = os.path.join(obj_output_dir, name_str + ".ply")
-                    actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
-                    with open(ply_filename, "wb") as f:
-                        f.write(libgarib.objects.mesh_to_ply(mesh))
+                    # ply_filename = os.path.join(obj_output_dir, name_str + ".ply")
+                    # actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
+                    # with open(ply_filename, "wb") as f:
+                    #     f.write(libgarib.objects.mesh_to_ply(mesh))
                     gltf_filename = os.path.join(obj_output_dir, name_str + ".glb")
                     with open(gltf_filename, "wb") as f:
                         f.write(libgarib.objects.mesh_to_gltf(mesh))

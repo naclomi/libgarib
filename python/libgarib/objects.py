@@ -430,7 +430,7 @@ def mesh_to_gltf(mesh):
     gltf_primitives = []
     bufferViews = []
     for material, prims in primitives.items():
-        indices_data = b"".join(struct.pack("B", i) for i in prims["indices"])
+        indices_data = b"".join(struct.pack("H", i) for i in prims["indices"])
         indices_bufferview_handle = len(bufferViews)
         bufferViews.append(gltf.BufferView(
             buffer=0,
@@ -443,7 +443,7 @@ def mesh_to_gltf(mesh):
         indices_handle = len(accessors)
         accessors.append(gltf.Accessor(
             bufferView=indices_bufferview_handle,
-            componentType=gltf.UNSIGNED_BYTE,
+            componentType=gltf.UNSIGNED_SHORT,
             count=len(prims["indices"]),
             type=gltf.SCALAR,
             max=[max(prims["indices"])],
@@ -456,16 +456,24 @@ def mesh_to_gltf(mesh):
         vertex_struct_sources = []
         gltf_attributes = {}
 
-        def addAttributeToFormat(attrName, values, sources, componentType, elementSize):
+        def addAttributeToFormat(attrName, values, sources, componentType, elementSize, calcExtrema=True):
+            nonlocal vertex_struct_format
+            nonlocal vertex_struct_sources
             gltf_attributes[attrName] = len(accessors)
+            if calcExtrema:
+                extrema = {
+                    "max": transposeMap(max, values),
+                    "min": transposeMap(min, values)
+                }
+            else:
+                extrema = {}
             accessors.append(gltf.Accessor(
                 bufferView=attributes_bufferview_handle,
                 componentType=componentType,
                 count=len(values),
                 type=elementSize,
                 byteOffset=struct.calcsize(vertex_struct_format),
-                max=transposeMap(max, values),
-                min=transposeMap(min, values),
+                **extrema
             ))
             vertex_struct_format += "{:}{:}".format(
                 {gltf.SCALAR : 1,
@@ -515,7 +523,7 @@ def mesh_to_gltf(mesh):
                     ("uvs", ..., 0),
                     ("uvs", ..., 1),
                 ),
-                componentType=gltf.SHORT,
+                componentType=gltf.FLOAT,
                 elementSize=gltf.VEC2
             )
 
@@ -540,7 +548,8 @@ def mesh_to_gltf(mesh):
                     ("unknown", ...),
                 ),
                 componentType=gltf.UNSIGNED_INT,
-                elementSize=gltf.SCALAR
+                elementSize=gltf.SCALAR,
+                calcExtrema=False
             )
 
         # Pack binary data
@@ -564,7 +573,7 @@ def mesh_to_gltf(mesh):
             byteStride=struct.calcsize(vertex_struct_format),
             target=gltf.ARRAY_BUFFER,
         ))
-        data_blobs.append(indices_data)
+        data_blobs.append(vertex_data)
 
         # Build GLTF primitive
 
@@ -572,7 +581,7 @@ def mesh_to_gltf(mesh):
             attributes=gltf.Attributes(
                 **gltf_attributes
             ),
-            material=material,
+            # material=material, # TODO
             indices=indices_handle
         ))
 
@@ -580,6 +589,7 @@ def mesh_to_gltf(mesh):
 
     # TODO: this superstruct eventually needs to be
     #       per-actor, not per-mesh
+    # TODO: need to dump materials
     file = gltf.GLTF2(
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
