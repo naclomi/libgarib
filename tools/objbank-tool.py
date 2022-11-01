@@ -95,7 +95,7 @@ def unpack(args):
                     # actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
                     # with open(ply_filename, "wb") as f:
                     #     f.write(libgarib.objects.mesh_to_ply(mesh))
-                    gltf_filename = os.path.join(obj_output_dir, name_str + ".glb")
+                    gltf_filename = os.path.join(bank_output_dir, name_str + ".glb")
                     with open(gltf_filename, "wb") as f:
                         f.write(libgarib.objects.mesh_to_gltf(mesh))
 

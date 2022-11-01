@@ -435,6 +435,9 @@ def mesh_to_gltf(mesh):
     accessors = []
     gltf_primitives = []
     bufferViews = []
+    materials = []
+    textures = []
+    images = []
     for material, prims in primitives.items():
         indices_data = b"".join(struct.pack("H", i) for i in prims["indices"])
         indices_bufferview_handle = len(bufferViews)
@@ -587,9 +590,28 @@ def mesh_to_gltf(mesh):
             attributes=gltf.Attributes(
                 **gltf_attributes
             ),
-            # material=material, # TODO
+            material=len(materials),
             indices=indices_handle
         ))
+
+        materials.append(gltf.Material(
+            pbrMetallicRoughness = gltf.PbrMetallicRoughness(
+                baseColorTexture=gltf.TextureInfo(
+                    index=len(textures)
+                )
+            ),
+        ))
+
+        textures.append(gltf.Texture(
+            sampler=0,
+            source=len(images)
+        ))
+
+        images.append(gltf.Image(
+            uri="0x{:08X}.png".format(material),
+        ))
+
+
 
     data_blob = b"".join(data_blobs)
 
@@ -603,8 +625,19 @@ def mesh_to_gltf(mesh):
         meshes=[
             gltf.Mesh(primitives=gltf_primitives)
         ],
+        materials=materials,
         accessors=accessors,
         bufferViews=bufferViews,
+        textures=textures,
+        images=images,
+        samplers=[
+            gltf.Sampler(
+                magFilter=gltf.LINEAR,
+                minFilter=gltf.LINEAR,
+                wrapS=gltf.REPEAT,
+                wrapT=gltf.REPEAT
+            )
+        ],
         buffers=[
             gltf.Buffer(byteLength=len(data_blob))
         ],
