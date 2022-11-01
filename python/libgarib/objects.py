@@ -296,6 +296,11 @@ def actorAnimationToJson(obj):
     return properties, animations
 
 def dump_f3dex_dl(mesh, bank):
+    # TODO: can we just import/export fast64 insertable binary
+    #       format? it's undocumented but implemented here:
+    #       https://github.com/projectcomet64/cometfast64/blob/797b07fa8f26e4101eec22ed5ba5ab037047679b/fast64_internal/utility.py#L414
+    # TODO: or, maybe use this:
+    #       https://github.com/engerb/Blender64
     # Libgarib display list format is a packed array
     # of {uint32_t n_bytes, uint8_t body[n_bytes]} records.
     #
@@ -401,9 +406,9 @@ def mesh_to_gltf(mesh):
             if mesh.geometry.colors_norms is not None:
                 c = mesh.geometry.colors_norms[v_idx]
                 prims["colors"].append((
-                    (c & 0xFF000000) >> 24,
-                    (c & 0x00FF0000) >> 16,
-                    (c & 0x0000FF00) >> 8
+                    ((c & 0xFF000000) >> 24) / 255,
+                    ((c & 0x00FF0000) >> 16) / 255,
+                    ((c & 0x0000FF00) >> 8) / 255
                 ))
         if mesh.geometry.uvs is not None:
             uv = mesh.geometry.uvs[face_idx]
@@ -411,10 +416,11 @@ def mesh_to_gltf(mesh):
                              (uv.u2.value, uv.v2.value),
                              (uv.u3.value, uv.v3.value))
         if mesh.geometry.u1 is not None:
-            norm = mesh.geometry.u1[face_idx]
-            prims["norms"] += ((((norm & 0xff000000) >> 24) / 255.0,
-                                ((norm & 0x00ff0000) >> 16) / 255.0,
-                                ((norm & 0x0000ff00) >> 8) / 255.0),) * 3
+            norm_raw = mesh.geometry.u1[face_idx]
+            norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
+            norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
+            norm_norm = tuple(coord / norm_mag for coord in norm_byte)
+            prims["norms"] += (norm_norm,) * 3
         if mesh.geometry.u5 is not None:
             # TODO: what is this data? how can we include it effectively?
             u5 = mesh.geometry.u5[face_idx]
@@ -450,7 +456,7 @@ def mesh_to_gltf(mesh):
             min=[min(prims["indices"])],
         ))
 
-        # Built interleaved vertex data format
+        # Build interleaved vertex data format
         attributes_bufferview_handle = len(bufferViews)
         vertex_struct_format = ""
         vertex_struct_sources = []
@@ -509,9 +515,9 @@ def mesh_to_gltf(mesh):
                 sources=(
                     ("colors", ..., 0),
                     ("colors", ..., 1),
-                    ("colors", ..., 2)
+                    ("colors", ..., 2),
                 ),
-                componentType=gltf.UNSIGNED_BYTE,
+                componentType=gltf.FLOAT,
                 elementSize=gltf.VEC3
             )
 
