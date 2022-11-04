@@ -412,6 +412,13 @@ def mesh_to_gltf(mesh):
                 ))
         if mesh.geometry.uvs is not None:
             uv = mesh.geometry.uvs[face_idx]
+            # TODO: these texture coordinates need
+            #       to be normalized based on texture size,
+            #       which is......unfortunate.
+            #
+            #       does that mean we need texture
+            #       bank data to accurately dump object
+            #       banks? shit.....
             prims["uvs"] += ((uv.u1.value, uv.v1.value),
                              (uv.u2.value, uv.v2.value),
                              (uv.u3.value, uv.v3.value))
@@ -550,6 +557,9 @@ def mesh_to_gltf(mesh):
             )
 
         if len(prims["unknown"]) > 0:
+            # TODO: this is hard to transfer
+            #       to blender as a custom attribure;
+            #       instead, encode as a color channel
             addAttributeToFormat(
                 attrName="_GLOVER_FLAGS",
                 values=prims["unknown"],
@@ -617,13 +627,18 @@ def mesh_to_gltf(mesh):
 
     # TODO: this superstruct eventually needs to be
     #       per-actor, not per-mesh
-    # TODO: need to dump materials
     file = gltf.GLTF2(
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[gltf.Node(mesh=0)],
         meshes=[
-            gltf.Mesh(primitives=gltf_primitives)
+            gltf.Mesh(
+                primitives=gltf_primitives,
+                extras={
+                    "name": mesh.name.strip("\0"),
+                    "render_mode": "0x{:X}".format(mesh.render_mode)
+                }
+            )
         ],
         materials=materials,
         accessors=accessors,
