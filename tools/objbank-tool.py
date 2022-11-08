@@ -7,6 +7,7 @@ import sys
 
 import _prefer_local_implementation
 import libgarib.objects
+import libgarib.display_lists
 from libgarib.parsers.glover_objbank import GloverObjbank
 
 from libgarib.fla2 import compress, data_from_stream
@@ -84,7 +85,7 @@ def unpack(args):
                 }
                 if len(parents) > 0:
                     name_str = libgarib.objects.parent_str(parents) + "." + name_str
-                dl = libgarib.objects.dump_f3dex_dl(mesh, bank_data)
+                dl = libgarib.display_lists.dump_f3dex_dl(mesh, bank_data)
                 if len(dl) > 0:
                     dl_filename = os.path.join(obj_output_dir, name_str + ".f3dex.lgdl")
                     actor_node["dl"] = os.path.relpath(dl_filename, bank_output_dir)
