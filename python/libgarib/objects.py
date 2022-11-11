@@ -92,17 +92,17 @@ class LinkableObjectBank(linkable.LinkableStruct):
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
-def for_each_mesh(mesh, callback, parents=None):
+def for_each_mesh(mesh, callback, parents=None, **kwargs):
     if parents is None:
         parents = []
     cur_matrix = None # TODO
-    callback(mesh, parents, cur_matrix)
+    callback(mesh, parents, cur_matrix, **kwargs)
     if mesh.sibling is not None:
-        for_each_mesh(mesh.sibling, callback, parents)
+        for_each_mesh(mesh.sibling, callback, parents, **kwargs)
     if mesh.child is not None:
         child_parents = parents[:]
         child_parents.append(mesh)
-        for_each_mesh(mesh.child, callback, child_parents)
+        for_each_mesh(mesh.child, callback, child_parents, **kwargs)
 
 def getConstructFieldOffset(construct_struct, field_name):
     offset = 0
@@ -301,7 +301,33 @@ def transposeMap(fn, array):
         results.append(fn(*(row[col_idx] for row in array)))
     return results
 
-def mesh_to_gltf(mesh):
+def actor_to_gltf(obj_root):
+    data = bytearray()
+    root_node = gltf.Node()
+    file = gltf.GLTF2(
+        scene=0,
+        scenes=[gltf.Scene(nodes=[0])],
+        nodes=[root_node],
+        samplers=[
+            gltf.Sampler(
+                magFilter=gltf.LINEAR,
+                minFilter=gltf.LINEAR,
+                wrapS=gltf.REPEAT,
+                wrapT=gltf.REPEAT
+            )
+        ],
+    )
+
+    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data)
+
+    file.buffers.append(gltf.Buffer(byteLength=len(data)))
+    file.set_binary_blob(bytes(data))
+    print("")
+    print(file)
+    return b"".join(file.save_to_bytes())
+
+
+def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
@@ -365,29 +391,28 @@ def mesh_to_gltf(mesh):
 
 
     ###############################################
+    # Build actual GLTF structures:
 
-    data_blobs = []
-    def data_blob_offset():
-        return sum(len(b) for b in data_blobs)
-    accessors = []
-    gltf_primitives = []
-    bufferViews = []
-    materials = []
-    textures = []
-    images = []
+    gltf_mesh = gltf.Mesh(
+        name = mesh.name.strip("\0"),
+        extras={
+            "id": "0x{:08X}".format(mesh.id),
+            "render_mode": "0x{:X}".format(mesh.render_mode)
+        }
+    )
     for material, prims in primitives.items():
         indices_data = b"".join(struct.pack("H", i) for i in prims["indices"])
-        indices_bufferview_handle = len(bufferViews)
-        bufferViews.append(gltf.BufferView(
+        indices_bufferview_handle = len(file.bufferViews)
+        file.bufferViews.append(gltf.BufferView(
             buffer=0,
-            byteOffset=data_blob_offset(),
+            byteOffset=len(data),
             byteLength=len(indices_data),
             target=gltf.ELEMENT_ARRAY_BUFFER,
         ))
-        data_blobs.append(indices_data)
+        data.extend(indices_data)
 
-        indices_handle = len(accessors)
-        accessors.append(gltf.Accessor(
+        indices_handle = len(file.accessors)
+        file.accessors.append(gltf.Accessor(
             bufferView=indices_bufferview_handle,
             componentType=gltf.UNSIGNED_SHORT,
             count=len(prims["indices"]),
@@ -397,7 +422,7 @@ def mesh_to_gltf(mesh):
         ))
 
         # Build interleaved vertex data format
-        attributes_bufferview_handle = len(bufferViews)
+        attributes_bufferview_handle = len(file.bufferViews)
         vertex_struct_format = ""
         vertex_struct_sources = []
         gltf_attributes = {}
@@ -405,7 +430,7 @@ def mesh_to_gltf(mesh):
         def addAttributeToFormat(attrName, values, sources, componentType, elementSize, calcExtrema=True):
             nonlocal vertex_struct_format
             nonlocal vertex_struct_sources
-            gltf_attributes[attrName] = len(accessors)
+            gltf_attributes[attrName] = len(file.accessors)
             if calcExtrema:
                 extrema = {
                     "max": transposeMap(max, values),
@@ -413,7 +438,7 @@ def mesh_to_gltf(mesh):
                 }
             else:
                 extrema = {}
-            accessors.append(gltf.Accessor(
+            file.accessors.append(gltf.Accessor(
                 bufferView=attributes_bufferview_handle,
                 componentType=componentType,
                 count=len(values),
@@ -515,81 +540,50 @@ def mesh_to_gltf(mesh):
             vertex_data.append(struct.pack(vertex_struct_format, *values))
 
         vertex_data = b"".join(vertex_data)
-        bufferViews.append(gltf.BufferView(
+        file.bufferViews.append(gltf.BufferView(
             buffer=0,
-            byteOffset=data_blob_offset(),
+            byteOffset=len(data),
             byteLength=len(vertex_data),
             byteStride=struct.calcsize(vertex_struct_format),
             target=gltf.ARRAY_BUFFER,
         ))
-        data_blobs.append(vertex_data)
+        data.extend(vertex_data)
 
         # Build GLTF primitive
 
-        gltf_primitives.append(gltf.Primitive(
+        gltf_mesh.primitives.append(gltf.Primitive(
             attributes=gltf.Attributes(
                 **gltf_attributes
             ),
-            material=len(materials),
+            material=len(file.materials),
             indices=indices_handle
         ))
 
-        materials.append(gltf.Material(
+        file.materials.append(gltf.Material(
             pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                 baseColorTexture=gltf.TextureInfo(
-                    index=len(textures)
+                    index=len(file.textures)
                 )
             ),
         ))
 
-        textures.append(gltf.Texture(
+        file.textures.append(gltf.Texture(
             sampler=0,
-            source=len(images)
+            source=len(file.images)
         ))
 
-        images.append(gltf.Image(
+        file.images.append(gltf.Image(
             uri="0x{:08X}.png".format(material),
         ))
 
+        mesh_node = gltf.Node(
+            mesh=len(file.meshes)
+            # TODO: do matrix transforms with cur_matrix
+        )
+        gltf_parent.children.append(len(file.nodes))
+        file.nodes.append(mesh_node)
+        file.meshes.append(gltf_mesh)
 
-
-    data_blob = b"".join(data_blobs)
-
-    # TODO: this superstruct eventually needs to be
-    #       per-actor, not per-mesh
-    file = gltf.GLTF2(
-        scene=0,
-        scenes=[gltf.Scene(nodes=[0])],
-        nodes=[gltf.Node(mesh=0)],
-        meshes=[
-            gltf.Mesh(
-                primitives=gltf_primitives,
-                extras={
-                    "name": mesh.name.strip("\0"),
-                    "render_mode": "0x{:X}".format(mesh.render_mode)
-                }
-            )
-        ],
-        materials=materials,
-        accessors=accessors,
-        bufferViews=bufferViews,
-        textures=textures,
-        images=images,
-        samplers=[
-            gltf.Sampler(
-                magFilter=gltf.LINEAR,
-                minFilter=gltf.LINEAR,
-                wrapS=gltf.REPEAT,
-                wrapT=gltf.REPEAT
-            )
-        ],
-        buffers=[
-            gltf.Buffer(byteLength=len(data_blob))
-        ],
-    )
-    file.set_binary_blob(data_blob)
-
-    return b"".join(file.save_to_bytes())
 
 ###############################################
 # Bank mapping utlities

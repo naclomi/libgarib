@@ -60,68 +60,67 @@ def unpack(args):
             if obj is None:
                 continue
 
-            animation_properties, animations = libgarib.objects.actorAnimationToJson(obj)
-            actor = {
-                "id": obj.obj_id,
-                "animation_properties": animation_properties,
-                "animations": animations
-            }
+            # animation_properties, animations = libgarib.objects.actorAnimationToJson(obj)
+            # actor = {
+            #     "id": obj.obj_id,
+            #     "animation_properties": animation_properties,
+            #     "animations": animations
+            # }
 
-            for defn in obj.animation.animation_definitions or []:
-                actor["animations"].append({
-                    "start": defn.start_time,
-                    "end": defn.end_time,
-                    "speed": defn.playback_speed,
-                    "flags": defn.u1, # TODO: what does this do??
-                })
+            # for defn in obj.animation.animation_definitions or []:
+            #     actor["animations"].append({
+            #         "start": defn.start_time,
+            #         "end": defn.end_time,
+            #         "speed": defn.playback_speed,
+            #         "flags": defn.u1, # TODO: what does this do??
+            #     })
 
-            obj_output_dir = os.path.join(bank_output_dir, "0x{:08x} ({:})".format(obj.obj_id, obj.mesh.name.strip("\x00")))
-            os.makedirs(obj_output_dir, exist_ok=True)
-            def mesh_dump_callback(mesh, parents, cur_matrix):
-                name_str = mesh.name.strip("\x00")
-                actor_node = {
-                    "id": mesh.id,
-                    "children": []
-                }
-                if len(parents) > 0:
-                    name_str = libgarib.objects.parent_str(parents) + "." + name_str
-                dl = libgarib.display_lists.dump_f3dex_dl(mesh, bank_data)
-                if len(dl) > 0:
-                    dl_filename = os.path.join(obj_output_dir, name_str + ".f3dex.lgdl")
-                    actor_node["dl"] = os.path.relpath(dl_filename, bank_output_dir)
-                    with open(dl_filename, "wb") as f:
-                        f.write(dl)
-                if mesh.geometry.num_faces > 0:
-                    # ply_filename = os.path.join(obj_output_dir, name_str + ".ply")
-                    # actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
-                    # with open(ply_filename, "wb") as f:
-                    #     f.write(libgarib.objects.mesh_to_ply(mesh))
-                    gltf_filename = os.path.join(bank_output_dir, name_str + ".glb")
-                    with open(gltf_filename, "wb") as f:
-                        f.write(libgarib.objects.mesh_to_gltf(mesh))
+            # obj_output_dir = os.path.join(bank_output_dir, "0x{:08x} ({:})".format(obj.obj_id, obj.mesh.name.strip("\x00")))
+            # os.makedirs(obj_output_dir, exist_ok=True)
+            # def mesh_dump_callback(mesh, parents, cur_matrix):
+            #     name_str = mesh.name.strip("\x00")
+            #     actor_node = {
+            #         "id": mesh.id,
+            #         "children": []
+            #     }
+            #     if len(parents) > 0:
+            #         name_str = libgarib.objects.parent_str(parents) + "." + name_str
+            #     dl = libgarib.display_lists.dump_f3dex_dl(mesh, bank_data)
+            #     if len(dl) > 0:
+            #         dl_filename = os.path.join(obj_output_dir, name_str + ".f3dex.lgdl")
+            #         actor_node["dl"] = os.path.relpath(dl_filename, bank_output_dir)
+            #         with open(dl_filename, "wb") as f:
+            #             f.write(dl)
+            #     # if mesh.geometry.num_faces > 0:
+            #     #     ply_filename = os.path.join(obj_output_dir, name_str + ".ply")
+            #     #     actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
+            #     #     with open(ply_filename, "wb") as f:
+            #     #         f.write(libgarib.objects.mesh_to_ply(mesh))
 
 
-                if mesh.num_sprites > 0:
-                    actor_node["sprites"] = []
-                    for sprite in mesh.sprites:
-                        actor_node["sprites"].append({
-                            "texture_id": sprite.texture_id,
-                            "position": [sprite.x, sprite.y, sprite.z],
-                            "size": [sprite.width, sprite.height],
-                            "unknown1": sprite.u5, # TODO: ???
-                            "unknown2": sprite.u6, # TODO: ???
-                            "flags": sprite.flags
-                        })
-                mesh.dump_actor_node = actor_node
-                if len(parents) > 0:
-                    parents[-1].dump_actor_node["children"].append(actor_node)
+            #     if mesh.num_sprites > 0:
+            #         actor_node["sprites"] = []
+            #         for sprite in mesh.sprites:
+            #             actor_node["sprites"].append({
+            #                 "texture_id": sprite.texture_id,
+            #                 "position": [sprite.x, sprite.y, sprite.z],
+            #                 "size": [sprite.width, sprite.height],
+            #                 "unknown1": sprite.u5, # TODO: ???
+            #                 "unknown2": sprite.u6, # TODO: ???
+            #                 "flags": sprite.flags
+            #             })
+            #     mesh.dump_actor_node = actor_node
+            #     if len(parents) > 0:
+            #         parents[-1].dump_actor_node["children"].append(actor_node)
 
 
-            libgarib.objects.for_each_mesh(obj.mesh, mesh_dump_callback)
-            actor["mesh"] = obj.mesh.dump_actor_node
+            # libgarib.objects.for_each_mesh(obj.mesh, mesh_dump_callback)
+            # actor["mesh"] = obj.mesh.dump_actor_node
+            # with open(os.path.join(bank_output_dir, "0x{:08x}.actor.json".format(obj.obj_id)), "w") as f:
+            #     json.dump(actor, f, indent=2, sort_keys=True)
 
-            with open(os.path.join(bank_output_dir, "0x{:08x}.actor.json".format(obj.obj_id)), "w") as f:
-                json.dump(actor, f, indent=2, sort_keys=True)
+            with open(os.path.join(bank_output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
+                f.write(libgarib.objects.actor_to_gltf(obj))
 
 
 def pack(args):
