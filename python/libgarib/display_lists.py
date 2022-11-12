@@ -2,10 +2,12 @@ import json
 import struct
 from .gbi import F3DEX, Vertex as GbiVertex
 
-def f3dexToGltf(display_list, bank):
+def f3dexToGltf(display_list, bank, file):
     raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in mesh.display_list)
 
     vertex_buffer = [GbiVertex() for _ in range(32)]
+
+    # TODO: materials
 
     for cmd, args in F3DEX.parseList(raw_dl):
         if cmd is F3DEX.byName["G_VTX"]:

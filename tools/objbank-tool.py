@@ -12,6 +12,8 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 
 from libgarib.fla2 import compress, data_from_stream
 
+import pygltflib as gltf
+
 def bankmap(args):
     # TODO! The "padding" at the end of each file seems
     #   to almost always be (72b * total_meshses), or very

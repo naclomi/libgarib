@@ -1,19 +1,21 @@
 import dataclasses
+import io
 import json
 import math
 import struct
 import sys
 import typing
 
-import io
 import numpy as np
 import plyfile
 import pygltflib as gltf
+import pyrr
 
 from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
 from . import linkable
+from . import gltf_helper
 
 ###############################################
 # Bank packing utlities
@@ -92,17 +94,19 @@ class LinkableObjectBank(linkable.LinkableStruct):
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
-def for_each_mesh(mesh, callback, parents=None, **kwargs):
+def for_each_mesh(mesh, callback, parents=None, cur_matrix=None, **kwargs):
     if parents is None:
         parents = []
-    cur_matrix = None # TODO
+    if cur_matrix is None:
+        cur_matrix = pyrr.matrix44.Matrix44.identity()
+    # TODO: matrix xforms
     callback(mesh, parents, cur_matrix, **kwargs)
     if mesh.sibling is not None:
-        for_each_mesh(mesh.sibling, callback, parents, **kwargs)
+        for_each_mesh(mesh.sibling, callback, parents, cur_matrix, **kwargs)
     if mesh.child is not None:
         child_parents = parents[:]
         child_parents.append(mesh)
-        for_each_mesh(mesh.child, callback, child_parents, **kwargs)
+        for_each_mesh(mesh.child, callback, child_parents, cur_matrix, **kwargs)
 
 def getConstructFieldOffset(construct_struct, field_name):
     offset = 0
@@ -295,11 +299,6 @@ def actorAnimationToJson(obj):
         })
     return properties, animations
 
-def transposeMap(fn, array):
-    results = []
-    for col_idx in range(len(array[0])):
-        results.append(fn(*(row[col_idx] for row in array)))
-    return results
 
 def actor_to_gltf(obj_root):
     data = bytearray()
@@ -322,52 +321,38 @@ def actor_to_gltf(obj_root):
 
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
-    print("")
-    print(file)
     return b"".join(file.save_to_bytes())
 
-
-def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
+def mesh_geo_to_prims(geo):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
     # Map texture/material to vertex attributes:
     primitives = {}
     def getMaterial(material):
-        if material in primitives:
-            return primitives[material]
-        else:
-            new_prim = {
-                "indices": [],
-                "positions": [],
-                "colors": [],
-                "uvs": [],
-                "norms": [],
-                "unknown": []
-            }
-            primitives[material] = new_prim
-            return new_prim
+        if material not in primitives:
+            primitives[material] = gltf_helper.MeshData()
+        return primitives[material]
 
-    geo = mesh.geometry
     for face_idx in range(geo.num_faces):
-        if mesh.geometry.texture_ids is not None:
-            prims = getMaterial(mesh.geometry.texture_ids[face_idx])
+        if geo.texture_ids is not None:
+            prims = getMaterial(geo.texture_ids[face_idx])
         else:
-            prims = getMaterial(0)
-        prims["indices"] += (len(prims["positions"])+x for x in range(3))
+            prims = getMaterial(None)
+        prims.indices += (len(prims.positions)+x for x in range(3))
         face = geo.faces[face_idx]
         for v_idx in (face.v0, face.v1, face.v2):
             v = geo.vertices[v_idx]
-            prims["positions"].append((v.x, v.y, v.z))
-            if mesh.geometry.colors_norms is not None:
-                c = mesh.geometry.colors_norms[v_idx]
-                prims["colors"].append((
+            prims.positions.append((v.x, v.y, v.z))
+            if geo.colors_norms is not None:
+                c = geo.colors_norms[v_idx]
+                prims.colors.append((
                     ((c & 0xFF000000) >> 24) / 255,
                     ((c & 0x00FF0000) >> 16) / 255,
                     ((c & 0x0000FF00) >> 8) / 255
                 ))
-        if mesh.geometry.uvs is not None:
-            uv = mesh.geometry.uvs[face_idx]
+        if geo.uvs is not None:
+            uv = geo.uvs[face_idx]
             # TODO: these texture coordinates need
             #       to be normalized based on texture size,
             #       which is......unfortunate.
@@ -375,24 +360,30 @@ def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
             #       does that mean we need texture
             #       bank data to accurately dump object
             #       banks? shit.....
-            prims["uvs"] += ((uv.u1.value, uv.v1.value),
+            prims.uvs += ((uv.u1.value, uv.v1.value),
                              (uv.u2.value, uv.v2.value),
                              (uv.u3.value, uv.v3.value))
-        if mesh.geometry.u1 is not None:
-            norm_raw = mesh.geometry.u1[face_idx]
+        if geo.u1 is not None:
+            norm_raw = geo.u1[face_idx]
             norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
             norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
             norm_norm = tuple(coord / norm_mag for coord in norm_byte)
-            prims["norms"] += (norm_norm,) * 3
-        if mesh.geometry.u5 is not None:
+            prims.norms += (norm_norm,) * 3
+        if geo.u5 is not None:
             # TODO: what is this data? how can we include it effectively?
-            u5 = mesh.geometry.u5[face_idx]
-            prims["unknown"] += ((u5,) * 3)
+            u5 = geo.u5[face_idx]
+            prims.unknown += ((u5,) * 3)
+
+    return primitives
+
+def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
 
 
-    ###############################################
-    # Build actual GLTF structures:
+    # TODO: based on export strategy, get primitives from display list
+    #       rather than mesh.geometry:
+    primitives = mesh_geo_to_prims(mesh.geometry)
 
+    # TODO: link in display list binary URI, if applicable:
     gltf_mesh = gltf.Mesh(
         name = mesh.name.strip("\0"),
         extras={
@@ -400,189 +391,24 @@ def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
             "render_mode": "0x{:X}".format(mesh.render_mode)
         }
     )
-    for material, prims in primitives.items():
-        indices_data = b"".join(struct.pack("H", i) for i in prims["indices"])
-        indices_bufferview_handle = len(file.bufferViews)
-        file.bufferViews.append(gltf.BufferView(
-            buffer=0,
-            byteOffset=len(data),
-            byteLength=len(indices_data),
-            target=gltf.ELEMENT_ARRAY_BUFFER,
-        ))
-        data.extend(indices_data)
 
-        indices_handle = len(file.accessors)
-        file.accessors.append(gltf.Accessor(
-            bufferView=indices_bufferview_handle,
-            componentType=gltf.UNSIGNED_SHORT,
-            count=len(prims["indices"]),
-            type=gltf.SCALAR,
-            max=[max(prims["indices"])],
-            min=[min(prims["indices"])],
-        ))
+    gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
 
-        # Build interleaved vertex data format
-        attributes_bufferview_handle = len(file.bufferViews)
-        vertex_struct_format = ""
-        vertex_struct_sources = []
-        gltf_attributes = {}
-
-        def addAttributeToFormat(attrName, values, sources, componentType, elementSize, calcExtrema=True):
-            nonlocal vertex_struct_format
-            nonlocal vertex_struct_sources
-            gltf_attributes[attrName] = len(file.accessors)
-            if calcExtrema:
-                extrema = {
-                    "max": transposeMap(max, values),
-                    "min": transposeMap(min, values)
-                }
-            else:
-                extrema = {}
-            file.accessors.append(gltf.Accessor(
-                bufferView=attributes_bufferview_handle,
-                componentType=componentType,
-                count=len(values),
-                type=elementSize,
-                byteOffset=struct.calcsize(vertex_struct_format),
-                **extrema
-            ))
-            vertex_struct_format += "{:}{:}".format(
-                {gltf.SCALAR : 1,
-                 gltf.VEC2 : 2,
-                 gltf.VEC3 : 3,
-                 gltf.VEC4 : 4}[elementSize],
-                {gltf.FLOAT: "f",
-                 gltf.SHORT: "h",
-                 gltf.UNSIGNED_SHORT: "H",
-                 gltf.BYTE: "b",
-                 gltf.UNSIGNED_BYTE: "B",
-                 gltf.UNSIGNED_INT: "I",
-                }[componentType]
-            )
-            vertex_struct_sources += sources
-
-        addAttributeToFormat(
-            attrName="POSITION",
-            values=prims["positions"],
-            sources=(
-                ("positions", ..., 0),
-                ("positions", ..., 1),
-                ("positions", ..., 2)
-            ),
-            componentType=gltf.FLOAT,
-            elementSize=gltf.VEC3
-        )
-
-        if len(prims["colors"]) > 0:
-            addAttributeToFormat(
-                attrName="COLOR_0",
-                values=prims["colors"],
-                sources=(
-                    ("colors", ..., 0),
-                    ("colors", ..., 1),
-                    ("colors", ..., 2),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC3
-            )
-
-        if len(prims["uvs"]) > 0:
-            addAttributeToFormat(
-                attrName="TEXCOORD_0",
-                values=prims["uvs"],
-                sources=(
-                    ("uvs", ..., 0),
-                    ("uvs", ..., 1),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC2
-            )
-
-        if len(prims["norms"]) > 0:
-            addAttributeToFormat(
-                attrName="NORMAL",
-                values=prims["norms"],
-                sources=(
-                    ("norms", ..., 0),
-                    ("norms", ..., 1),
-                    ("norms", ..., 2),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC3
-            )
-
-        if len(prims["unknown"]) > 0:
-            # TODO: this is hard to transfer
-            #       to blender as a custom attribure;
-            #       instead, encode as a color channel
-            addAttributeToFormat(
-                attrName="_GLOVER_FLAGS",
-                values=prims["unknown"],
-                sources=(
-                    ("unknown", ...),
-                ),
-                componentType=gltf.UNSIGNED_INT,
-                elementSize=gltf.SCALAR,
-                calcExtrema=False
-            )
-
-        # Pack binary data
-        vertex_data = []
-        for idx in range(len(prims["positions"])):
-            values = []
-            for path in vertex_struct_sources:
-                v = prims
-                for key in path:
-                    if key is ...:
-                        key = idx
-                    v = v.__getitem__(key)
-                values.append(v)
-            vertex_data.append(struct.pack(vertex_struct_format, *values))
-
-        vertex_data = b"".join(vertex_data)
-        file.bufferViews.append(gltf.BufferView(
-            buffer=0,
-            byteOffset=len(data),
-            byteLength=len(vertex_data),
-            byteStride=struct.calcsize(vertex_struct_format),
-            target=gltf.ARRAY_BUFFER,
-        ))
-        data.extend(vertex_data)
-
-        # Build GLTF primitive
-
-        gltf_mesh.primitives.append(gltf.Primitive(
-            attributes=gltf.Attributes(
-                **gltf_attributes
-            ),
-            material=len(file.materials),
-            indices=indices_handle
-        ))
-
-        file.materials.append(gltf.Material(
-            pbrMetallicRoughness = gltf.PbrMetallicRoughness(
-                baseColorTexture=gltf.TextureInfo(
-                    index=len(file.textures)
-                )
-            ),
-        ))
-
-        file.textures.append(gltf.Texture(
-            sampler=0,
-            source=len(file.images)
-        ))
-
-        file.images.append(gltf.Image(
-            uri="0x{:08X}.png".format(material),
-        ))
-
-        mesh_node = gltf.Node(
-            mesh=len(file.meshes)
-            # TODO: do matrix transforms with cur_matrix
-        )
-        gltf_parent.children.append(len(file.nodes))
-        file.nodes.append(mesh_node)
-        file.meshes.append(gltf_mesh)
+    # TODO: to accomplish correct skeletal transforms we need some node
+    #       nesting trickery here --
+    #       - a root node that contains the mesh's rot+xlate but no geometry,
+    #       - a child node that contains the mesh's scale and geometry,
+    #       - and then the rest of the ACTUAL children nodes
+    #       big Q though is how to scale the children's translations
+    #       based on the current scale, without scaling the geo
+    #       gross.
+    mesh_node = gltf.Node(
+        mesh=len(file.meshes)
+        # TODO: do matrix transforms with cur_matrix
+    )
+    gltf_parent.children.append(len(file.nodes))
+    file.nodes.append(mesh_node)
+    file.meshes.append(gltf_mesh)
 
 
 ###############################################
