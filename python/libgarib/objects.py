@@ -16,6 +16,8 @@ from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
 from . import linkable
 from . import gltf_helper
+from . import display_lists
+
 
 ###############################################
 # Bank packing utlities
@@ -308,6 +310,7 @@ def actor_to_gltf(obj_root):
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[root_node],
         samplers=[
+            # TODO: eventually, we'll need to generate samplers based on f3dex wrapping flags
             gltf.Sampler(
                 magFilter=gltf.LINEAR,
                 minFilter=gltf.LINEAR,
@@ -378,10 +381,17 @@ def mesh_geo_to_prims(geo):
 
 def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
 
+    # TODO: choose based on selectable export strategy:
+    if mesh.geometry.num_faces > 0:
+        primitives = mesh_geo_to_prims(mesh.geometry)
+    elif mesh.display_list is not None:
+        lighting = (mesh.render_mode & 0x8) == 0 
+        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting)
+    else:
+        primitives = {}
+        # TODO: dump animation and billboards anyway
+        print("WARNING: No geometry for mesh {:}".format(mesh.name.strip("\0")))
 
-    # TODO: based on export strategy, get primitives from display list
-    #       rather than mesh.geometry:
-    primitives = mesh_geo_to_prims(mesh.geometry)
 
     # TODO: link in display list binary URI, if applicable:
     gltf_mesh = gltf.Mesh(
@@ -401,10 +411,12 @@ def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
     #       - and then the rest of the ACTUAL children nodes
     #       big Q though is how to scale the children's translations
     #       based on the current scale, without scaling the geo
+    #       maybe we need to do, like, skinning? so that we can do full transforms
+    #       on the skeletal node tree, and then "skin" each body part to the skeleton?
+    #       idk investigate
     #       gross.
     mesh_node = gltf.Node(
         mesh=len(file.meshes)
-        # TODO: do matrix transforms with cur_matrix
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)

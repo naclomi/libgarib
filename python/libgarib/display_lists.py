@@ -1,17 +1,26 @@
 import json
 import struct
+
+from . import gltf_helper
+
 from .gbi import F3DEX, Vertex as GbiVertex
 
-def f3dexToGltf(display_list, bank, file):
-    raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in mesh.display_list)
+def f3dex_to_prims(display_list, bank, lighting):
+    primitives = {}
+    def getMaterial(material):
+        if material not in primitives:
+            primitives[material] = gltf_helper.MeshData()
+        return primitives[material]
+
+    raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list)
 
     vertex_buffer = [GbiVertex() for _ in range(32)]
 
     # TODO: materials
+    prims = getMaterial(None)    
 
     for cmd, args in F3DEX.parseList(raw_dl):
         if cmd is F3DEX.byName["G_VTX"]:
-            n_dma_bytes = GbiVertex.LENGTH * args["n"]
             write_idx = args["v0"]
             for read_idx in range(args["n"]):
                 vertex_bytes = bank[args["address"] + read_idx*GbiVertex.LENGTH:
@@ -30,43 +39,56 @@ def f3dexToGltf(display_list, bank, file):
                 v.setZ(args["val"])
             else:
                 raise Exception("Bad G_MODIFYVTX 'where'")
-        elif cmd is F3DEX.byName["G_TRI1"]:
-            # v0, v1, v2
-            # buffer = (
-            #     self.vertices[v0].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v1].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v2].asGLBytes(self.lightingEnabled))
-            # if self.renderBackfaces:
-            #     self.ctx.disable(moderngl.CULL_FACE)
-            # self.vbo.write(buffer)
-            # self.configureTextures()
-            # self.vao.render(vertices=3)
-            # return True
-
-            # TODO
-            ...
-        elif cmd is F3DEX.byName["G_TRI2"]:
-            # v00, v01, v02, v10, v11, v12
-            # buffer = (
-            #     self.vertices[v00].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v01].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v02].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v10].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v11].asGLBytes(self.lightingEnabled) +
-            #     self.vertices[v12].asGLBytes(self.lightingEnabled))
-            # if self.renderBackfaces:
-            #     self.ctx.disable(moderngl.CULL_FACE)
-            # self.vbo.write(buffer)
-            # self.configureTextures()
-            # self.vao.render(vertices=6)
-
-            # TODO
-            ...
+        elif cmd in (F3DEX.byName["G_TRI1"], F3DEX.byName["G_TRI2"]):
+            if cmd is F3DEX.byName["G_TRI1"]:
+                idx_list = (args["v0"], args["v1"], args["v2"])
+            elif cmd is F3DEX.byName["G_TRI2"]:
+                idx_list = (args["v00"], args["v01"], args["v02"],
+                            args["v10"], args["v11"], args["v12"])
+            for v_idx in idx_list:
+                v = vertex_buffer[v_idx]
+                prims.indices.append(len(prims.positions))
+                prims.positions.append((v.x, v.y, v.z))
+                prims.uvs.append((v.u, v.v))
+                # TODO: choose between these two:
+                if lighting is True:
+                    prims.norms.append((v.nx, v.ny, v.nz)) 
+                else:
+                    prims.colors.append((v.r, v.g, v.b))
+        elif cmd is F3DEX.byName["G_SETGEOMETRYMODE"]:
+                # TODO: G_SHADING_SMOOTH
+            if args["G_LIGHTING"] is True:
+                lighting = True
+        elif cmd is F3DEX.byName["G_CLEARGEOMETRYMODE"]:
+            if args["G_LIGHTING"] is True:
+                lighting = False
         elif cmd is F3DEX.byName["G_ENDDL"]:
             break
+        elif cmd is F3DEX.byName["G_SETTIMG"]:
+            # TODO
+            pass
+        elif cmd is F3DEX.byName["G_SETTILE"]:
+            # TODO
+            pass
+        elif cmd is F3DEX.byName["G_SETTILESIZE"]:
+            # TODO
+            pass
+        elif cmd is F3DEX.byName["G_LOADTLUT"]:
+            # TODO
+            pass
+        elif cmd is F3DEX.byName["G_LOADBLOCK"]:
+            # TODO
+            pass
+        elif cmd in (F3DEX.byName["G_CULLDL"],
+                     F3DEX.byName["G_RDPLOADSYNC"],
+                     F3DEX.byName["G_RDPTILESYNC"],
+                     F3DEX.byName["G_RDPPIPESYNC"],
+                     F3DEX.byName["G_SETOTHERMODE_H"]):
+            pass
         else:
             raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
-        offset += 8
+
+    return primitives
 
 
 
