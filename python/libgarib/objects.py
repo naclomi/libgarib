@@ -362,8 +362,8 @@ def mesh_geo_to_prims(geo):
             #       bank data to accurately dump object
             #       banks? shit.....
             prims.uvs += ((uv.u1.value, uv.v1.value),
-                             (uv.u2.value, uv.v2.value),
-                             (uv.u3.value, uv.v3.value))
+                          (uv.u2.value, uv.v2.value),
+                          (uv.u3.value, uv.v3.value))
         if geo.u1 is not None:
             norm_raw = geo.u1[face_idx]
             norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
@@ -408,7 +408,6 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
 
     gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
 
-    # TODO: this foreachmesh construct doesn't allow us to pass data down to children...
     # TODO: to accomplish correct skeletal transforms we need some node
     #       nesting trickery here --
     #       - a root node that contains the mesh's rot+xlate but no geometry,
@@ -420,8 +419,14 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
     #       on the skeletal node tree, and then "skin" each body part to the skeleton?
     #       idk investigate
     #       gross.
+    t = mesh.translation[0]
+    r = mesh.rotation[0]
+    s = mesh.scale[0]
     mesh_node = gltf.Node(
-        mesh=len(file.meshes)
+        mesh=len(file.meshes),
+        translation=(t.v1, t.v2, t.v3),
+        rotation=(r.v1, r.v2, r.v3, r.v4),
+        scale=(s.v1, s.v2, s.v3)
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
