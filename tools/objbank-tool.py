@@ -79,7 +79,7 @@ def unpack(args):
 
             # obj_output_dir = os.path.join(bank_output_dir, "0x{:08x} ({:})".format(obj.obj_id, obj.mesh.name.strip("\x00")))
             # os.makedirs(obj_output_dir, exist_ok=True)
-            # def mesh_dump_callback(mesh, parents, cur_matrix):
+            # def mesh_dump_callback(mesh, cur_matrix, parents):
             #     name_str = mesh.name.strip("\x00")
             #     actor_node = {
             #         "id": mesh.id,
@@ -114,7 +114,7 @@ def unpack(args):
             #     mesh.dump_actor_node = actor_node
             #     if len(parents) > 0:
             #         parents[-1].dump_actor_node["children"].append(actor_node)
-
+            #     return {"parents": parents + [mesh]}
 
             # libgarib.objects.for_each_mesh(obj.mesh, mesh_dump_callback)
             # actor["mesh"] = obj.mesh.dump_actor_node

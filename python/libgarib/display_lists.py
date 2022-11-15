@@ -50,7 +50,6 @@ def f3dex_to_prims(display_list, bank, lighting):
                 prims.indices.append(len(prims.positions))
                 prims.positions.append((v.x, v.y, v.z))
                 prims.uvs.append((v.u, v.v))
-                # TODO: choose between these two:
                 if lighting is True:
                     prims.norms.append((v.nx, v.ny, v.nz)) 
                 else:

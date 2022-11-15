@@ -96,19 +96,17 @@ class LinkableObjectBank(linkable.LinkableStruct):
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
-def for_each_mesh(mesh, callback, parents=None, cur_matrix=None, **kwargs):
-    if parents is None:
-        parents = []
+def for_each_mesh(mesh, callback, cur_matrix=None, **kwargs):
     if cur_matrix is None:
         cur_matrix = pyrr.matrix44.Matrix44.identity()
     # TODO: matrix xforms
-    callback(mesh, parents, cur_matrix, **kwargs)
+    updated_kwargs = callback(mesh, cur_matrix, **kwargs)
     if mesh.sibling is not None:
-        for_each_mesh(mesh.sibling, callback, parents, cur_matrix, **kwargs)
+        for_each_mesh(mesh.sibling, callback, cur_matrix, **kwargs)
     if mesh.child is not None:
-        child_parents = parents[:]
-        child_parents.append(mesh)
-        for_each_mesh(mesh.child, callback, child_parents, cur_matrix, **kwargs)
+        child_kwargs = kwargs.copy()
+        child_kwargs.update(updated_kwargs)
+        for_each_mesh(mesh.child, callback, cur_matrix, **child_kwargs)
 
 def getConstructFieldOffset(construct_struct, field_name):
     offset = 0
@@ -374,12 +372,18 @@ def mesh_geo_to_prims(geo):
             prims.norms += (norm_norm,) * 3
         if geo.u5 is not None:
             # TODO: what is this data? how can we include it effectively?
+            # (11/13/22) This is more than likely the clamp and mirror flags
+            #   for the texture face. They go unused in-game, because loadF3DEXTexture
+            #   takes those settings directly from the texture file, rather
+            #   than the mesh data. Format from GBI is {clamp bit, mirror bit},
+            #   and because they go unused we can't tell which is S and which is T.
+            #   Disappointing. /shrug
             u5 = geo.u5[face_idx]
             prims.unknown += ((u5,) * 3)
 
     return primitives
 
-def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
+def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
 
     # TODO: choose based on selectable export strategy:
     if mesh.geometry.num_faces > 0:
@@ -404,6 +408,7 @@ def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
 
     gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
 
+    # TODO: this foreachmesh construct doesn't allow us to pass data down to children...
     # TODO: to accomplish correct skeletal transforms we need some node
     #       nesting trickery here --
     #       - a root node that contains the mesh's rot+xlate but no geometry,
@@ -421,6 +426,7 @@ def mesh_to_gltf(mesh, parents, cur_matrix, file, gltf_parent, data):
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
     file.meshes.append(gltf_mesh)
+    return {"gltf_parent": mesh_node}
 
 
 ###############################################
@@ -471,7 +477,7 @@ def scrapeBankSegments(bank_data):
         bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
         if actor.mesh is not None:
 
-            def scrape_mesh(mesh, parents, cur_matrix):
+            def scrape_mesh(mesh, cur_matrix, parents):
                 name = "{:08X}.".format(dir_entry.obj_id) + parent_str(parents + [mesh])
                 bank_push(mesh, None, "Mesh", name)
 
@@ -514,9 +520,10 @@ def scrapeBankSegments(bank_data):
                              or cmd is F3DEX.byName["G_BRANCH_Z"]):
                                 raise Exception("TODO: Not yet implemented: Scrape F3DEX command {:}".format(cmd))
                     scrape_dl(bank_data, mesh._debug["_m_display_list"]["start"])
+                return {"parents": parents + [mesh]}
 
 
-            for_each_mesh(actor.mesh, scrape_mesh)
+            for_each_mesh(actor.mesh, scrape_mesh, parents=[])
         if actor.animation is not None:
             bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
             bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
