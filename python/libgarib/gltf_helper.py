@@ -1,11 +1,20 @@
 import struct
 import pygltflib as gltf
+from dataclasses import dataclass
 
 def transposeMap(fn, array):
     results = []
     for col_idx in range(len(array[0])):
         results.append(fn(*(row[col_idx] for row in array)))
     return results
+
+@dataclass(frozen=True)
+class Material(object):
+    texture_id: int = None
+    clamp_s: bool = False
+    clamp_t: bool = False
+    mirror_s: bool = False
+    mirror_t: bool = False
 
 class MeshData(object):
     def __init__(self):

@@ -386,11 +386,11 @@ def mesh_geo_to_prims(geo):
 def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
 
     # TODO: choose based on selectable export strategy:
-    if mesh.geometry.num_faces > 0:
-        primitives = mesh_geo_to_prims(mesh.geometry)
-    elif mesh.display_list is not None:
+    if mesh.display_list is not None:
         lighting = (mesh.render_mode & 0x8) == 0 
         primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting)
+    elif mesh.geometry.num_faces > 0:
+        primitives = mesh_geo_to_prims(mesh.geometry)
     else:
         primitives = {}
         # TODO: dump animation and billboards anyway

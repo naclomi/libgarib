@@ -1,5 +1,6 @@
 import json
 import struct
+import dataclasses
 
 from . import gltf_helper
 
@@ -17,9 +18,14 @@ def f3dex_to_prims(display_list, bank, lighting):
     vertex_buffer = [GbiVertex() for _ in range(32)]
 
     # TODO: materials
-    prims = getMaterial(None)    
+    prims = getMaterial(None)
 
+    next_material = gltf_helper.Material()
+
+    print("\n\n\n------------------")
+    print(display_list[0]._parent.name.strip("\0"))
     for cmd, args in F3DEX.parseList(raw_dl):
+        print(cmd.name, args)
         if cmd is F3DEX.byName["G_VTX"]:
             write_idx = args["v0"]
             for read_idx in range(args["n"]):
@@ -64,24 +70,23 @@ def f3dex_to_prims(display_list, bank, lighting):
         elif cmd is F3DEX.byName["G_ENDDL"]:
             break
         elif cmd is F3DEX.byName["G_SETTIMG"]:
-            # TODO
-            pass
+            next_material = dataclasses.replace(next_material, texture_id = args["i"])
         elif cmd is F3DEX.byName["G_SETTILE"]:
-            # TODO
-            pass
+            next_material = dataclasses.replace(next_material,
+                clamp_s=args["clamps"] == 1,
+                mirror_s=args["mirrors"] == 1,
+                clamp_t=args["clampt"] == 1,
+                mirror_t=args["mirrort"] == 1
+            )
         elif cmd is F3DEX.byName["G_SETTILESIZE"]:
-            # TODO
-            pass
-        elif cmd is F3DEX.byName["G_LOADTLUT"]:
-            # TODO
-            pass
-        elif cmd is F3DEX.byName["G_LOADBLOCK"]:
-            # TODO
+            # TODO: use these coords to normalize texture coordinates
             pass
         elif cmd in (F3DEX.byName["G_CULLDL"],
                      F3DEX.byName["G_RDPLOADSYNC"],
                      F3DEX.byName["G_RDPTILESYNC"],
                      F3DEX.byName["G_RDPPIPESYNC"],
+                     F3DEX.byName["G_LOADBLOCK"],
+                     F3DEX.byName["G_LOADTLUT"],
                      F3DEX.byName["G_SETOTHERMODE_H"]):
             pass
         else:
