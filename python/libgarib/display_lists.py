@@ -1,6 +1,5 @@
 import json
 import struct
-import dataclasses
 
 from . import gltf_helper
 
@@ -8,24 +7,17 @@ from .gbi import F3DEX, Vertex as GbiVertex
 
 def f3dex_to_prims(display_list, bank, lighting):
     primitives = {}
-    def getMaterial(material):
-        if material not in primitives:
-            primitives[material] = gltf_helper.MeshData()
-        return primitives[material]
 
     raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list)
 
     vertex_buffer = [GbiVertex() for _ in range(32)]
 
-    # TODO: materials
-    prims = getMaterial(None)
-
     next_material = gltf_helper.Material()
 
-    print("\n\n\n------------------")
-    print(display_list[0]._parent.name.strip("\0"))
+    # print("\n\n\n------------------")
+    # print(display_list[0]._parent.name.strip("\0"))
     for cmd, args in F3DEX.parseList(raw_dl):
-        print(cmd.name, args)
+        # print(cmd.name, args)
         if cmd is F3DEX.byName["G_VTX"]:
             write_idx = args["v0"]
             for read_idx in range(args["n"]):
@@ -51,6 +43,8 @@ def f3dex_to_prims(display_list, bank, lighting):
             elif cmd is F3DEX.byName["G_TRI2"]:
                 idx_list = (args["v00"], args["v01"], args["v02"],
                             args["v10"], args["v11"], args["v12"])
+            prims = primitives.get(next_material, gltf_helper.MeshData())
+            primitives[next_material] = prims
             for v_idx in idx_list:
                 v = vertex_buffer[v_idx]
                 prims.indices.append(len(prims.positions))
@@ -70,9 +64,11 @@ def f3dex_to_prims(display_list, bank, lighting):
         elif cmd is F3DEX.byName["G_ENDDL"]:
             break
         elif cmd is F3DEX.byName["G_SETTIMG"]:
-            next_material = dataclasses.replace(next_material, texture_id = args["i"])
+            next_material = next_material.mutate(
+                texture_id = args["i"]
+            )
         elif cmd is F3DEX.byName["G_SETTILE"]:
-            next_material = dataclasses.replace(next_material,
+            next_material = next_material.mutate(
                 clamp_s=args["clamps"] == 1,
                 mirror_s=args["mirrors"] == 1,
                 clamp_t=args["clampt"] == 1,

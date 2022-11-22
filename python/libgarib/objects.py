@@ -330,16 +330,15 @@ def mesh_geo_to_prims(geo):
 
     # Map texture/material to vertex attributes:
     primitives = {}
-    def getMaterial(material):
-        if material not in primitives:
-            primitives[material] = gltf_helper.MeshData()
-        return primitives[material]
-
+ 
     for face_idx in range(geo.num_faces):
+        material = gltf_helper.Material()
         if geo.texture_ids is not None:
-            prims = getMaterial(geo.texture_ids[face_idx])
-        else:
-            prims = getMaterial(None)
+            material = material.mutate(
+                texture_id=geo.texture_ids[face_idx]
+            )
+        prims = primitives.get(material, gltf_helper.MeshData())
+        primitives[material] = prims
         prims.indices += (len(prims.positions)+x for x in range(3))
         face = geo.faces[face_idx]
         for v_idx in (face.v0, face.v1, face.v2):
@@ -395,7 +394,6 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
         primitives = {}
         # TODO: dump animation and billboards anyway
         print("WARNING: No geometry for mesh {:}".format(mesh.name.strip("\0")))
-
 
     # TODO: link in display list binary URI, if applicable:
     gltf_mesh = gltf.Mesh(

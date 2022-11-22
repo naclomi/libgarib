@@ -1,6 +1,6 @@
 import struct
 import pygltflib as gltf
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 def transposeMap(fn, array):
     results = []
@@ -15,6 +15,9 @@ class Material(object):
     clamp_t: bool = False
     mirror_s: bool = False
     mirror_t: bool = False
+
+    def mutate(self, **kwargs):
+        return replace(self, **kwargs)
 
 class MeshData(object):
     def __init__(self):
@@ -202,7 +205,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             indices=indices_handle
         ))
 
-        if material is not None:
+        if material.texture_id is not None:
             file.materials.append(gltf.Material(
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorTexture=gltf.TextureInfo(
@@ -217,7 +220,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             ))
 
             file.images.append(gltf.Image(
-                uri="0x{:08X}.png".format(material),
+                uri="textures/0x{:08X}.png".format(material.texture_id),
             ))
         else:
             file.materials.append(gltf.Material(
