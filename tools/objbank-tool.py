@@ -122,11 +122,11 @@ def unpack(args):
             #     json.dump(actor, f, indent=2, sort_keys=True)
 
             with open(os.path.join(bank_output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
-                f.write(libgarib.objects.actor_to_gltf(obj))
+                # TODO: load texture sizes:
+                f.write(libgarib.objects.actor_to_gltf(obj, {}))
 
 
 def pack(args):
-
     root = libgarib.objects.LinkableObjectBank()
 
     for actor_filename in args.actor_file:

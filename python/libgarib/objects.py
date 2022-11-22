@@ -300,7 +300,7 @@ def actorAnimationToJson(obj):
     return properties, animations
 
 
-def actor_to_gltf(obj_root):
+def actor_to_gltf(obj_root, texture_sizes):
     data = bytearray()
     root_node = gltf.Node()
     file = gltf.GLTF2(
@@ -308,7 +308,6 @@ def actor_to_gltf(obj_root):
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[root_node],
         samplers=[
-            # TODO: eventually, we'll need to generate samplers based on f3dex wrapping flags
             gltf.Sampler(
                 magFilter=gltf.LINEAR,
                 minFilter=gltf.LINEAR,
@@ -318,13 +317,13 @@ def actor_to_gltf(obj_root):
         ],
     )
 
-    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data)
+    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_sizes=texture_sizes)
 
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
     return b"".join(file.save_to_bytes())
 
-def mesh_geo_to_prims(geo):
+def mesh_geo_to_prims(geo, texture_sizes):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
@@ -382,14 +381,14 @@ def mesh_geo_to_prims(geo):
 
     return primitives
 
-def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data):
+def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
 
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
         lighting = (mesh.render_mode & 0x8) == 0 
-        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting)
+        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_sizes)
     elif mesh.geometry.num_faces > 0:
-        primitives = mesh_geo_to_prims(mesh.geometry)
+        primitives = mesh_geo_to_prims(mesh.geometry, texture_sizes)
     else:
         primitives = {}
         # TODO: dump animation and billboards anyway

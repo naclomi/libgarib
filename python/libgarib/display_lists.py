@@ -5,14 +5,15 @@ from . import gltf_helper
 
 from .gbi import F3DEX, Vertex as GbiVertex
 
-def f3dex_to_prims(display_list, bank, lighting):
+def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
     primitives = {}
 
     raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list)
 
     vertex_buffer = [GbiVertex() for _ in range(32)]
 
-    next_material = gltf_helper.Material()
+    material = gltf_helper.Material()
+    texture_size = (1,1)
 
     # print("\n\n\n------------------")
     # print(display_list[0]._parent.name.strip("\0"))
@@ -43,13 +44,13 @@ def f3dex_to_prims(display_list, bank, lighting):
             elif cmd is F3DEX.byName["G_TRI2"]:
                 idx_list = (args["v00"], args["v01"], args["v02"],
                             args["v10"], args["v11"], args["v12"])
-            prims = primitives.get(next_material, gltf_helper.MeshData())
-            primitives[next_material] = prims
+            prims = primitives.get(material, gltf_helper.MeshData())
+            primitives[material] = prims
             for v_idx in idx_list:
                 v = vertex_buffer[v_idx]
                 prims.indices.append(len(prims.positions))
                 prims.positions.append((v.x, v.y, v.z))
-                prims.uvs.append((v.u, v.v))
+                prims.uvs.append((v.u/texture_size[0], v.v/texture_size[1]))
                 if lighting is True:
                     prims.norms.append((v.nx, v.ny, v.nz)) 
                 else:
@@ -64,19 +65,19 @@ def f3dex_to_prims(display_list, bank, lighting):
         elif cmd is F3DEX.byName["G_ENDDL"]:
             break
         elif cmd is F3DEX.byName["G_SETTIMG"]:
-            next_material = next_material.mutate(
+            material = material.mutate(
                 texture_id = args["i"]
             )
         elif cmd is F3DEX.byName["G_SETTILE"]:
-            next_material = next_material.mutate(
+            material = material.mutate(
                 clamp_s=args["clamps"] == 1,
                 mirror_s=args["mirrors"] == 1,
                 clamp_t=args["clampt"] == 1,
                 mirror_t=args["mirrort"] == 1
             )
         elif cmd is F3DEX.byName["G_SETTILESIZE"]:
-            # TODO: use these coords to normalize texture coordinates
-            pass
+            # TODO: use uls and ult?
+            texture_size = (args["lrs"], args["lrt"])
         elif cmd in (F3DEX.byName["G_CULLDL"],
                      F3DEX.byName["G_RDPLOADSYNC"],
                      F3DEX.byName["G_RDPTILESYNC"],

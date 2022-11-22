@@ -95,6 +95,33 @@ class PackedVertexData(object):
 
 def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
 
+    def findSampler(material):
+        if material.clamp_s:
+            key_s = gltf.CLAMP_TO_EDGE
+        elif material.mirror_s:
+            key_s = gltf.MIRRORED_REPEAT
+        else:
+            key_s = gltf.REPEAT
+
+        if material.clamp_t:
+            key_t = gltf.CLAMP_TO_EDGE
+        elif material.mirror_t:
+            key_t = gltf.MIRRORED_REPEAT
+        else:
+            key_t = gltf.REPEAT
+
+        for idx, sampler in enumerate(file.samplers):
+            if sampler.wrapS == key_s and sampler.wrapT == key_t:
+                return idx
+        file.samplers.append(gltf.Sampler(
+            magFilter=gltf.LINEAR,
+            minFilter=gltf.LINEAR,
+            wrapS=key_s,
+            wrapT=key_t
+        ))
+        return len(file.samplers) - 1
+        
+
     ###############################################
     # Build actual GLTF structures:
 
@@ -215,7 +242,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             ))
 
             file.textures.append(gltf.Texture(
-                sampler=0,
+                sampler=findSampler(material),
                 source=len(file.images)
             ))
 
@@ -228,4 +255,3 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                     baseColorFactor=[1, 1, 1, 1]
                 ),
             ))
-
