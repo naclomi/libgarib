@@ -319,6 +319,13 @@ def actor_to_gltf(obj_root, texture_sizes):
 
     for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_sizes=texture_sizes)
 
+    file.skins.append(
+        gltf.Skin(
+            skeleton=0,
+            joints=list(range(len(file.nodes)))
+        )
+    )
+
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
     return b"".join(file.save_to_bytes())
@@ -396,7 +403,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
 
     # TODO: link in display list binary URI, if applicable:
     gltf_mesh = gltf.Mesh(
-        name = mesh.name.strip("\0"),
+        name=mesh.name.strip("\0"),
         extras={
             "id": "0x{:08X}".format(mesh.id),
             "render_mode": "0x{:X}".format(mesh.render_mode)
@@ -405,25 +412,21 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
 
     gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
 
-    # TODO: to accomplish correct skeletal transforms we need some node
-    #       nesting trickery here --
-    #       - a root node that contains the mesh's rot+xlate but no geometry,
-    #       - a child node that contains the mesh's scale and geometry,
-    #       - and then the rest of the ACTUAL children nodes
-    #       big Q though is how to scale the children's translations
-    #       based on the current scale, without scaling the geo
-    #       maybe we need to do, like, skinning? so that we can do full transforms
-    #       on the skeletal node tree, and then "skin" each body part to the skeleton?
-    #       idk investigate
-    #       gross.
+    # TODO: GLTF xform order is S->R->T, engine is R->T->S
+    #       Figure out how to compensate for this
+    #       Possibly an R->T node, followed by an S node with the actual mesh?
     t = mesh.translation[0]
     r = mesh.rotation[0]
     s = mesh.scale[0]
     mesh_node = gltf.Node(
+        name=gltf_mesh.name,
         mesh=len(file.meshes),
         translation=(t.v1, t.v2, t.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
-        scale=(s.v1, s.v2, s.v3)
+        scale=(s.v1, s.v2, s.v3),
+        extensions={
+            "EXT_transformation_inheritance": {"scale": False}
+        }
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
