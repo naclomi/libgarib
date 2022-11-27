@@ -2,6 +2,9 @@ import struct
 import pygltflib as gltf
 from dataclasses import dataclass, replace
 
+# TODO: move this into another module that's not-gltf-specific:
+FRAME_TO_SEC = 1/29.97
+
 def transposeMap(fn, array):
     results = []
     for col_idx in range(len(array[0])):
@@ -288,7 +291,7 @@ def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
             output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in frames]
         else:
             raise ValueError("Bad type")
-        input_series = tuple(frame.t for frame in frames)
+        input_series = tuple(frame.t*FRAME_TO_SEC for frame in frames)
 
         encoded_output = b"".join(output_struct.pack(*frame) for frame in output_tuples)
         encoded_input = b"".join(struct.pack("<f",t) for t in input_series)
