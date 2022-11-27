@@ -255,3 +255,79 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                     baseColorFactor=[1, 1, 1, 1]
                 ),
             ))
+
+
+def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
+
+    def addChannel(frames, output_type, channel_name):
+        if len(file.animations) == 0:
+            anim_root = gltf.Animation(name="Global timeline")
+            file.animations.append(anim_root)
+        else:
+            anim_root = file.animations[0]
+
+        # Build high-level animation structures
+        anim_root.channels.append(gltf.AnimationChannel(
+            sampler=len(anim_root.samplers),
+            target=gltf.AnimationChannelTarget(
+                node=file.nodes.index(channel_nodes[channel_name]),
+                path=channel_name
+            )
+        ))
+        anim_root.samplers.append(gltf.AnimationSampler(
+            input=len(file.accessors),
+            output=len(file.accessors)+1
+        ))
+
+        # Encode raw data
+        if output_type == gltf.VEC3:
+            output_struct = struct.Struct("<3f")
+            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in frames]
+        elif output_type == gltf.VEC4:
+            output_struct = struct.Struct("<4f")
+            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in frames]
+        else:
+            raise ValueError("Bad type")
+        input_series = tuple(frame.t for frame in frames)
+
+        encoded_output = b"".join(output_struct.pack(*frame) for frame in output_tuples)
+        encoded_input = b"".join(struct.pack("<f",t) for t in input_series)
+
+        # Build data pointer structures
+
+        file.accessors.append(gltf.Accessor(
+            bufferView=len(file.bufferViews),
+            componentType=gltf.FLOAT,
+            count=len(frames),
+            type=gltf.SCALAR,
+            max=[max(input_series)],
+            min=[min(input_series)]
+
+        ))
+        file.accessors.append(gltf.Accessor(
+            bufferView=len(file.bufferViews)+1,
+            componentType=gltf.FLOAT,
+            count=len(frames),
+            type=output_type,
+            max=transposeMap(max, output_tuples),
+            min=transposeMap(min, output_tuples)
+        ))
+        file.bufferViews.append(gltf.BufferView(
+            buffer=0,
+            byteOffset=len(data),
+            byteLength=len(encoded_input)
+        ))
+        data.extend(encoded_input)
+        file.bufferViews.append(gltf.BufferView(
+            buffer=0,
+            byteOffset=len(data),
+            byteLength=len(encoded_output)
+        ))
+        data.extend(encoded_output)
+
+    if len(mesh.translation) > 1:
+        addChannel(mesh.translation, gltf.VEC3, "translation")
+    if len(mesh.rotation) > 1:
+        addChannel(mesh.rotation, gltf.VEC4, "rotation")
+    if len(mesh.scale) > 1:
+        addChannel(mesh.scale, gltf.VEC3, "scale")
