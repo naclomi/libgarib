@@ -290,6 +290,7 @@ def actorAnimationToJson(obj):
         "prop_queue_ptr": a.next_anim_slot_idx,
         "starting_time": a.cur_time
     }
+    
     for defn in obj.animation.animation_definitions or []:
         animations.append({
             "start": defn.start_time,
@@ -304,12 +305,14 @@ def actor_to_gltf(obj_root, texture_sizes):
     data = bytearray()
     root_node = gltf.Node()
 
-    # TODO: add to top level extensionsUsed/extensionsRequired
-
+    # TODO: only use transformation inheritance if actor
+    #       is more than one node deep
     file = gltf.GLTF2(
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[root_node],
+        extensionsUsed=["EXT_transformation_inheritance"],
+        extensionsRequired=["EXT_transformation_inheritance"],
         samplers=[
             gltf.Sampler(
                 magFilter=gltf.LINEAR,
@@ -331,6 +334,12 @@ def actor_to_gltf(obj_root, texture_sizes):
 
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
+
+    # TODO: where is the best place to put this?
+    animation_props, animation_defs = actorAnimationToJson(obj_root)
+    file.nodes[0].extras["animation_defs"] = json.dumps(animation_defs)
+    file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
+
     return b"".join(file.save_to_bytes())
 
 def mesh_geo_to_prims(geo, texture_sizes):
@@ -415,8 +424,6 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
 
     gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
 
-    # TODO: GLTF xform order is S->R->T, engine is R->T->S
-    #       Make sure this node hierarchy reflects that:
     t = mesh.translation[0]
     r = mesh.rotation[0]
     s = mesh.scale[0]
@@ -425,21 +432,15 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         "EXT_transformation_inheritance": {"scale": False}
     }
 
-    s_node = gltf.Node(
-        name="{:}_SCALE".format(gltf_mesh.name),
-        scale=(s.v1, s.v2, s.v3),
-        extensions=node_inheritance
-    )
-    gltf_parent.children.append(len(file.nodes))
-    file.nodes.append(s_node)
-
     mesh_node = gltf.Node(
         name=gltf_mesh.name,
         mesh=len(file.meshes),
         translation=(t.v1, t.v2, t.v3),
+        scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
+        extensions=node_inheritance
     )
-    s_node.children.append(len(file.nodes))
+    gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
 
     file.meshes.append(gltf_mesh)
@@ -447,7 +448,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     channel_nodes = {
         "translation": mesh_node,
         "rotation": mesh_node,
-        "scale": s_node,
+        "scale": mesh_node,
     }
     gltf_helper.addAnimationDataToGLTF(mesh, channel_nodes, file, data)
 
