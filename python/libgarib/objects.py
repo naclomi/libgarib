@@ -410,8 +410,9 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         primitives = mesh_geo_to_prims(mesh.geometry, texture_sizes)
     else:
         primitives = {}
-        # TODO: dump animation and billboards anyway
-        print("WARNING: No geometry for mesh {:}".format(mesh.name.strip("\0")))
+
+    if len(primitives) == 0 and len(mesh.sprites or []) == 0:
+        print("WARNING: No display data for mesh {:}".format(mesh.name.strip("\0")))
 
     # TODO: link in display list binary URI, if applicable:
     gltf_mesh = gltf.Mesh(
@@ -449,6 +450,10 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         "scale": mesh_node,
     }
     gltf_helper.addAnimationDataToGLTF(mesh, channel_nodes, file, data)
+
+    for sprite in mesh.sprites or []:
+        gltf_helper.addBillboardSpriteToGLTF(sprite, mesh_node, file, data)
+
 
     return {"gltf_parent": mesh_node}
 

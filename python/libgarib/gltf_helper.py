@@ -96,34 +96,36 @@ class PackedVertexData(object):
             **self.gltf_attributes
         )
 
+
+def findSampler(file, material):
+    if material.clamp_s:
+        key_s = gltf.CLAMP_TO_EDGE
+    elif material.mirror_s:
+        key_s = gltf.MIRRORED_REPEAT
+    else:
+        key_s = gltf.REPEAT
+
+    if material.clamp_t:
+        key_t = gltf.CLAMP_TO_EDGE
+    elif material.mirror_t:
+        key_t = gltf.MIRRORED_REPEAT
+    else:
+        key_t = gltf.REPEAT
+
+    for idx, sampler in enumerate(file.samplers):
+        if sampler.wrapS == key_s and sampler.wrapT == key_t:
+            return idx
+    file.samplers.append(gltf.Sampler(
+        magFilter=gltf.LINEAR,
+        minFilter=gltf.LINEAR,
+        wrapS=key_s,
+        wrapT=key_t
+    ))
+    return len(file.samplers) - 1
+    
+
 def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
 
-    def findSampler(material):
-        if material.clamp_s:
-            key_s = gltf.CLAMP_TO_EDGE
-        elif material.mirror_s:
-            key_s = gltf.MIRRORED_REPEAT
-        else:
-            key_s = gltf.REPEAT
-
-        if material.clamp_t:
-            key_t = gltf.CLAMP_TO_EDGE
-        elif material.mirror_t:
-            key_t = gltf.MIRRORED_REPEAT
-        else:
-            key_t = gltf.REPEAT
-
-        for idx, sampler in enumerate(file.samplers):
-            if sampler.wrapS == key_s and sampler.wrapT == key_t:
-                return idx
-        file.samplers.append(gltf.Sampler(
-            magFilter=gltf.LINEAR,
-            minFilter=gltf.LINEAR,
-            wrapS=key_s,
-            wrapT=key_t
-        ))
-        return len(file.samplers) - 1
-        
 
     ###############################################
     # Build actual GLTF structures:
@@ -245,7 +247,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             ))
 
             file.textures.append(gltf.Texture(
-                sampler=findSampler(material),
+                sampler=findSampler(file, material),
                 source=len(file.images)
             ))
 
@@ -334,3 +336,32 @@ def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
         addChannel(mesh.rotation, gltf.VEC4, "rotation")
     if len(mesh.scale) > 1:
         addChannel(mesh.scale, gltf.VEC3, "scale")
+
+
+def addBillboardSpriteToGLTF(sprite, parent_node, file, data):
+    print("WARNING: Billboard export not yet implemented")
+
+    # TODO: create mesh data
+
+    spriteMaterial = Material(
+        texture_id=sprite.texture_id,
+        clamp_s=True,
+        clamp_t=True
+    )
+
+    file.materials.append(gltf.Material(
+        pbrMetallicRoughness = gltf.PbrMetallicRoughness(
+            baseColorTexture=gltf.TextureInfo(
+                index=len(file.textures)
+            )
+        ),
+    ))
+
+    file.textures.append(gltf.Texture(
+        sampler=findSampler(file, spriteMaterial),
+        source=len(file.images)
+    ))
+
+    file.images.append(gltf.Image(
+        uri="textures/0x{:08X}.png".format(spriteMaterial.texture_id),
+    ))
