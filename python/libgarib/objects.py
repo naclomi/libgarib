@@ -428,17 +428,15 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     r = mesh.rotation[0]
     s = mesh.scale[0]
 
-    node_inheritance = {
-        "EXT_transformation_inheritance": {"scale": False}
-    }
-
     mesh_node = gltf.Node(
         name=gltf_mesh.name,
         mesh=len(file.meshes),
         translation=(t.v1, t.v2, t.v3),
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
-        extensions=node_inheritance
+        extensions={
+            "EXT_transformation_inheritance": {"scale": False}
+        }
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
