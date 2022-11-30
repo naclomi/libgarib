@@ -352,7 +352,7 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
         name=name,
         mesh=len(file.meshes),
         translation=(sprite.x, sprite.y, sprite.z),
-        scale=(sprite.width/3, sprite.height/3, 1),
+        scale=(1, sprite.height/3, sprite.width/3),
         extensions={
             "EXT_transformation_inheritance": {"scale": False, "rotation": False}
         }
@@ -373,19 +373,19 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
 
     prims = MeshData()
     prims.positions = [
-        (-.5,-.5,0),
-        (.5,-.5,0),
-        (.5,.5,0),
-        (-.5,.5,0),
-        (-.5,-.5,0),
-        (.5,.5,0),
+        (0,-.5,.5),
+        (0,-.5,-.5),
+        (0,.5,.5),
+        (0,-.5,-.5),
+        (0,.5,-.5),
+        (0,.5,.5),
     ]
     prims.uvs = [
-        (0,0),
         (1,0),
-        (1,1),
-        (0,1),
         (0,0),
+        (1,1),
+        (0,0),
+        (0,1),
         (1,1),
     ]
 
