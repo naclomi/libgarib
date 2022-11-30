@@ -9,6 +9,7 @@
 - normalize texture sizes
 - enumerate/clarify render mode bits
     - possibly determine from material?
+- deal with vertex clamp attributes
 
 ## packing
 - compile new display lists

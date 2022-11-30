@@ -325,10 +325,16 @@ def actor_to_gltf(obj_root, texture_sizes):
 
     for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_sizes=texture_sizes)
 
+    # Only include non-billboard nodes in skin
+    skeletal_nodes = []
+    for idx, node in enumerate(file.nodes):
+        if node.mesh is None or file.meshes[node.mesh].extras.get("billboard", False) is False:
+            skeletal_nodes.append(idx)
+
     file.skins.append(
         gltf.Skin(
             skeleton=0,
-            joints=list(range(len(file.nodes)))
+            joints=skeletal_nodes
         )
     )
 
@@ -411,27 +417,33 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     else:
         primitives = {}
 
+    name = mesh.name.strip("\0")
+
     if len(primitives) == 0 and len(mesh.sprites or []) == 0:
         print("WARNING: No display data for mesh {:}".format(mesh.name.strip("\0")))
-
+   
     # TODO: link in display list binary URI, if applicable:
-    gltf_mesh = gltf.Mesh(
-        name=mesh.name.strip("\0"),
-        extras={
-            "id": "0x{:08X}".format(mesh.id),
-            "render_mode": "0x{:X}".format(mesh.render_mode)
-        }
-    )
-
-    gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
+    if len(primitives) > 0:
+        gltf_mesh = gltf.Mesh(
+            name=name,
+            extras={
+                "id": "0x{:08X}".format(mesh.id),
+                "render_mode": "0x{:X}".format(mesh.render_mode)
+            }
+        )
+        gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
+        mesh_id = len(file.meshes)
+        file.meshes.append(gltf_mesh)
+    else:
+        mesh_id = None
 
     t = mesh.translation[0]
     r = mesh.rotation[0]
     s = mesh.scale[0]
 
     mesh_node = gltf.Node(
-        name=gltf_mesh.name,
-        mesh=len(file.meshes),
+        name=name,
+        mesh=mesh_id,
         translation=(t.v1, t.v2, t.v3),
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
@@ -442,8 +454,6 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
 
-    file.meshes.append(gltf_mesh)
-
     channel_nodes = {
         "translation": mesh_node,
         "rotation": mesh_node,
@@ -451,8 +461,8 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     }
     gltf_helper.addAnimationDataToGLTF(mesh, channel_nodes, file, data)
 
-    for sprite in mesh.sprites or []:
-        gltf_helper.addBillboardSpriteToGLTF(sprite, mesh_node, file, data)
+    for idx, sprite in enumerate(mesh.sprites or []):
+        gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh_node, file, data)
 
 
     return {"gltf_parent": mesh_node}

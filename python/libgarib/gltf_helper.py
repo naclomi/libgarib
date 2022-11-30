@@ -5,6 +5,9 @@ from dataclasses import dataclass, replace
 # TODO: move this into another module that's not-gltf-specific:
 FRAME_TO_SEC = 1/29.97
 
+def idToTexturePath(tex_id):
+    return "textures/0x{:08X}.png".format(tex_id)
+
 def transposeMap(fn, array):
     results = []
     for col_idx in range(len(array[0])):
@@ -252,7 +255,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             ))
 
             file.images.append(gltf.Image(
-                uri="textures/0x{:08X}.png".format(material.texture_id),
+                uri=idToTexturePath(material.texture_id),
             ))
         else:
             file.materials.append(gltf.Material(
@@ -338,12 +341,96 @@ def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
         addChannel(mesh.scale, gltf.VEC3, "scale")
 
 
-def addBillboardSpriteToGLTF(sprite, parent_node, file, data):
-    print("WARNING: Billboard export not yet implemented")
+def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
+    # TODO: make sure textures are right-side-up
+    # TODO: don't have these nodes show up as skeletal bones
 
-    # TODO: create mesh data
+    name = "{:}_sprite_{:}".format(parent_node.name, idx)
 
-    spriteMaterial = Material(
+    # Create node structure
+    billboard_node = gltf.Node(
+        name=name,
+        mesh=len(file.meshes),
+        translation=(sprite.x, sprite.y, sprite.z),
+        scale=(sprite.width/3, sprite.height/3, 1),
+        extensions={
+            "EXT_transformation_inheritance": {"scale": False, "rotation": False}
+        }
+    )
+    parent_node.children.append(len(file.nodes))
+    file.nodes.append(billboard_node)
+
+    billboard_mesh = gltf.Mesh(
+        name=name,
+        extras={
+            "billboard": True,
+            "sprite_idx": idx
+        }
+    )
+    file.meshes.append(billboard_mesh)
+
+    # Create billboard mesh data
+
+    prims = MeshData()
+    prims.positions = [
+        (-.5,-.5,0),
+        (.5,-.5,0),
+        (.5,.5,0),
+        (-.5,.5,0),
+        (-.5,-.5,0),
+        (.5,.5,0),
+    ]
+    prims.uvs = [
+        (0,0),
+        (1,0),
+        (1,1),
+        (0,1),
+        (0,0),
+        (1,1),
+    ]
+
+    vertex_struct = PackedVertexData(file)
+    vertex_struct.addAttributeToFormat(
+        attrName="POSITION",
+        values=prims.positions,
+        sources=(
+            ("positions", ..., 0),
+            ("positions", ..., 1),
+            ("positions", ..., 2)
+        ),
+        componentType=gltf.FLOAT,
+        elementSize=gltf.VEC3
+    )
+    vertex_struct.addAttributeToFormat(
+        attrName="TEXCOORD_0",
+        values=prims.uvs,
+        sources=(
+            ("uvs", ..., 0),
+            ("uvs", ..., 1),
+        ),
+        componentType=gltf.FLOAT,
+        elementSize=gltf.VEC2
+    )
+
+    vertex_data = vertex_struct.pack(prims)
+    file.bufferViews.append(gltf.BufferView(
+        buffer=0,
+        byteOffset=len(data),
+        byteLength=len(vertex_data),
+        byteStride=vertex_struct.stride(),
+        target=gltf.ARRAY_BUFFER,
+    ))
+    data.extend(vertex_data)
+
+    # Build GLTF primitive
+
+    billboard_mesh.primitives.append(gltf.Primitive(
+        attributes=vertex_struct.gltf_attribute_map(),
+        material=len(file.materials),
+    ))
+
+
+    sprite_material = Material(
         texture_id=sprite.texture_id,
         clamp_s=True,
         clamp_t=True
@@ -358,10 +445,10 @@ def addBillboardSpriteToGLTF(sprite, parent_node, file, data):
     ))
 
     file.textures.append(gltf.Texture(
-        sampler=findSampler(file, spriteMaterial),
+        sampler=findSampler(file, sprite_material),
         source=len(file.images)
     ))
 
     file.images.append(gltf.Image(
-        uri="textures/0x{:08X}.png".format(spriteMaterial.texture_id),
+        uri=idToTexturePath(sprite_material.texture_id),
     ))
