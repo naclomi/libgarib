@@ -1,6 +1,8 @@
-import struct
-import pygltflib as gltf
 from dataclasses import dataclass, replace
+import math
+import struct
+
+import pygltflib as gltf
 
 # TODO: move this into another module that's not-gltf-specific:
 FRAME_TO_SEC = 1/29.97
@@ -129,7 +131,6 @@ def findSampler(file, material):
 
 def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
 
-
     ###############################################
     # Build actual GLTF structures:
 
@@ -247,6 +248,8 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                         index=len(file.textures)
                     )
                 ),
+                alphaMode=gltf.BLEND, # TODO: choose blend vs opaque depending on alpha mode
+                alphaCutoff=None
             ))
 
             file.textures.append(gltf.Texture(
@@ -262,6 +265,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorFactor=[1, 1, 1, 1]
                 ),
+                alphaCutoff=None
             ))
 
 
@@ -442,6 +446,9 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
                 index=len(file.textures)
             )
         ),
+        doubleSided=True,
+        alphaMode=gltf.BLEND,
+        alphaCutoff=None
     ))
 
     file.textures.append(gltf.Texture(

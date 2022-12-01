@@ -1,3 +1,4 @@
+import base64
 import dataclasses
 import io
 import json
@@ -422,13 +423,26 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     if len(primitives) == 0 and len(mesh.sprites or []) == 0:
         print("WARNING: No display data for mesh {:}".format(mesh.name.strip("\0")))
    
-    # TODO: link in display list binary URI, if applicable:
+    # TODO: handle display lists:
+    if mesh.display_list is None:
+        dl_extras = {}
+    else:
+        dl_raw = display_lists.dump_f3dex_dl(mesh.display_list, mesh._io._io.getbuffer())
+        dl_encoded = base64.b64encode(dl_raw).decode()
+        dl_extras = {
+            # TODO: record caching behavior
+            "display_list": dl_encoded,
+            "geometry_hash": 0 # TODO: hash prims and store here, compare to prim hash
+                               # when packing to determine if we need to recompile the DL or not
+        }
+
     if len(primitives) > 0:
         gltf_mesh = gltf.Mesh(
             name=name,
             extras={
                 "id": "0x{:08X}".format(mesh.id),
-                "render_mode": "0x{:X}".format(mesh.render_mode)
+                "render_mode": "0x{:X}".format(mesh.render_mode),
+                **dl_extras
             }
         )
         gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)

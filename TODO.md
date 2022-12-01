@@ -2,13 +2,12 @@
 # objbank-tool
 
 ## dumping
-- billboards
 - caching properties
 - dump display lists
     - link display lists
 - normalize texture sizes
 - enumerate/clarify render mode bits
-    - possibly determine from material?
+    - determine alpha blending options from material
 - deal with vertex clamp attributes
 
 ## packing
