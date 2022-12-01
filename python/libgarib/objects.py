@@ -407,7 +407,32 @@ def mesh_geo_to_prims(geo, texture_sizes):
 
     return primitives
 
+def mesh_to_pack_list(mesh):
+    pack_list = []
+    if mesh.geometry is not None:
+        geo = mesh.geometry
+        if geo.num_faces > 0:
+            pack_list.append("faces")
+        if geo.colors_norms is not None:
+            pack_list.append("colors")
+        if geo.uvs is not None:
+            pack_list.append("uvs")
+        if geo.u1 is not None:
+            pack_list.append("norms")
+        if geo.u5 is not None:
+            pack_list.append("flags")
+        if geo.texture_ids is not None:
+            pack_list.append("textures")
+    if mesh.display_list is not None:
+        pack_list.append("display_list")
+    return pack_list
+
 def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
+
+    # Pack list represents what data channels in the gltf
+    # file should be present when packing the actor
+    pack_list = mesh_to_pack_list(mesh)
+    # TODO: log the geo elements present in the pack list
 
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
@@ -430,7 +455,6 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         dl_raw = display_lists.dump_f3dex_dl(mesh.display_list, mesh._io._io.getbuffer())
         dl_encoded = base64.b64encode(dl_raw).decode()
         dl_extras = {
-            # TODO: record caching behavior
             "display_list": dl_encoded,
             "geometry_hash": 0 # TODO: hash prims and store here, compare to prim hash
                                # when packing to determine if we need to recompile the DL or not
@@ -442,6 +466,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
             extras={
                 "id": "0x{:08X}".format(mesh.id),
                 "render_mode": "0x{:X}".format(mesh.render_mode),
+                "pack_list": json.dumps(pack_list),
                 **dl_extras
             }
         )

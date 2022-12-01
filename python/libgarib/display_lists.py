@@ -102,7 +102,7 @@ def dump_f3dex_dl(display_list, bank):
     # TODO: implement the above, rather than what we're currently doing
     
     data_regions = []
-    output = b""
+    output = bytearray()
 
     raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list))
 
