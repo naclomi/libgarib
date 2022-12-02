@@ -347,6 +347,11 @@ def actor_to_gltf(obj_root, texture_sizes):
     file.nodes[0].extras["animation_defs"] = json.dumps(animation_defs)
     file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
 
+    # Go through and compute all necessary mesh hashes, now that buffers are constructed
+    for mesh in file.meshes:
+        if "data_hash" in mesh.extras:
+            mesh.extras["data_hash"] = gltf_helper.hashGLTFMesh(mesh, file).hexdigest()
+
     return b"".join(file.save_to_bytes())
 
 def mesh_geo_to_prims(geo, texture_sizes):
@@ -455,20 +460,15 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         dl_encoded = base64.b64encode(dl_raw).decode()
 
     if len(primitives) > 0:
-        gltf_mesh = gltf.Mesh(name=name)
-
-        data_hash = gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
-        mesh_extras = {
-            "id": "0x{:08X}".format(mesh.id),
+        gltf_mesh = gltf.Mesh(name=name, extras={
             "render_mode": "0x{:X}".format(mesh.render_mode),
             "pack_list": json.dumps(pack_list),
-        }
-        data_hash.update(json.dumps(mesh_extras).encode())
+        })
+        gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
         if dl_encoded is not None:
-            mesh_extras["display_list"] = dl_encoded
-            mesh_extras["data_hash"] = data_hash.hexdigest()
-
-        gltf_mesh.extras.update(mesh_extras)
+            gltf_mesh.extras["display_list"] = dl_encoded
+            # Mark mesh as needing to be hashed, once all buffers are constructed:
+            gltf_mesh.extras["data_hash"] = None
 
         mesh_id = len(file.meshes)
         file.meshes.append(gltf_mesh)

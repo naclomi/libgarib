@@ -1,5 +1,7 @@
+import collections
 from dataclasses import dataclass, replace
 import hashlib
+import json
 import math
 import struct
 
@@ -131,15 +133,50 @@ def findSampler(file, material):
     ))
     return len(file.samplers) - 1
 
-def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
+def gltfMaterialToGloverMaterial(gltf_material, file):
+    # TODO
+    return Material()
+
+def hashGLTFMesh(gltf_mesh, file):
+    materials = collections.OrderedDict()
+    bufferviews = collections.OrderedDict()
+    for primitive in gltf_mesh.primitives:
+        materials[primitive.material] = None
+        bufferviews[file.accessors[primitive.indices].bufferView] = None
+        attrs = json.loads(primitive.attributes.to_json())
+        for attr_name in sorted(attrs.keys()):
+            if attrs[attr_name] is None:
+                continue
+            bufferviews[file.accessors[attrs[attr_name]].bufferView] = None
+    bufferviews = [file.bufferViews[idx] for idx in bufferviews.keys()]
+    materials = [file.materials[idx] for idx in materials.keys()]
+
     data_hash = hashlib.sha1()
 
+    for material in materials:
+        data_hash.update(str(gltfMaterialToGloverMaterial(material, file)).encode())
+
+    buffer_cache = {}
+    for bufferview in bufferviews:
+        buffer = file.buffers[bufferview.buffer]
+        if buffer.uri in buffer_cache:
+            buffer_data = buffer_cache[buffer.uri]
+        else:
+            buffer_data = file.get_data_from_buffer_uri(buffer.uri)
+            buffer_cache[buffer.uri] = buffer_data
+        bufferview_data = buffer_data[bufferview.byteOffset: bufferview.byteOffset+bufferview.byteLength]
+        data_hash.update(bufferview_data)
+
+    data_hash.update(gltf_mesh.extras["render_mode"].encode())
+
+    return data_hash
+
+
+def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
     ###############################################
     # Build actual GLTF structures:
 
     for material, prims in sorted(primitives.items(), key=lambda p: p[0]):
-        data_hash.update(str(material).encode())
-
         indices_data = b"".join(struct.pack("H", i) for i in prims.indices)
         indices_bufferview_handle = len(file.bufferViews)
         file.bufferViews.append(gltf.BufferView(
@@ -149,7 +186,6 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             target=gltf.ELEMENT_ARRAY_BUFFER,
         ))
         data.extend(indices_data)
-        data_hash.update(indices_data)
 
         indices_handle = len(file.accessors)
         file.accessors.append(gltf.Accessor(
@@ -238,7 +274,6 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             target=gltf.ARRAY_BUFFER,
         ))
         data.extend(vertex_data)
-        data_hash.update(vertex_data)
 
         # Build GLTF primitive
 
@@ -276,8 +311,6 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                 ),
                 alphaCutoff=None
             ))
-
-    return data_hash
 
 
 def addAnimationDataToGLTF(mesh, channel_nodes, file, data):

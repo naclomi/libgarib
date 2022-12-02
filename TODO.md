@@ -2,7 +2,6 @@
 # objbank-tool
 
 ## dumping
-- caching properties
 - dump display lists
     - link display lists
 - normalize texture sizes
