@@ -1,4 +1,5 @@
 from dataclasses import dataclass, replace
+import hashlib
 import math
 import struct
 
@@ -6,6 +7,8 @@ import pygltflib as gltf
 
 # TODO: move this into another module that's not-gltf-specific:
 FRAME_TO_SEC = 1/29.97
+
+TSR_INHERTANCE_EXTENSION = "EXT_node_tsr_inheritance"
 
 def idToTexturePath(tex_id):
     return "textures/0x{:08X}.png".format(tex_id)
@@ -16,7 +19,7 @@ def transposeMap(fn, array):
         results.append(fn(*(row[col_idx] for row in array)))
     return results
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class Material(object):
     texture_id: int = None
     clamp_s: bool = False
@@ -127,14 +130,16 @@ def findSampler(file, material):
         wrapT=key_t
     ))
     return len(file.samplers) - 1
-    
 
 def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
+    data_hash = hashlib.sha1()
 
     ###############################################
     # Build actual GLTF structures:
 
-    for material, prims in primitives.items():
+    for material, prims in sorted(primitives.items(), key=lambda p: p[0]):
+        data_hash.update(str(material).encode())
+
         indices_data = b"".join(struct.pack("H", i) for i in prims.indices)
         indices_bufferview_handle = len(file.bufferViews)
         file.bufferViews.append(gltf.BufferView(
@@ -144,6 +149,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             target=gltf.ELEMENT_ARRAY_BUFFER,
         ))
         data.extend(indices_data)
+        data_hash.update(indices_data)
 
         indices_handle = len(file.accessors)
         file.accessors.append(gltf.Accessor(
@@ -232,6 +238,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             target=gltf.ARRAY_BUFFER,
         ))
         data.extend(vertex_data)
+        data_hash.update(vertex_data)
 
         # Build GLTF primitive
 
@@ -243,6 +250,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
 
         if material.texture_id is not None:
             file.materials.append(gltf.Material(
+                name="0x{:08X}".format(material.texture_id),
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorTexture=gltf.TextureInfo(
                         index=len(file.textures)
@@ -262,11 +270,14 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             ))
         else:
             file.materials.append(gltf.Material(
+                name="Untextured",
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorFactor=[1, 1, 1, 1]
                 ),
                 alphaCutoff=None
             ))
+
+    return data_hash
 
 
 def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
@@ -358,7 +369,7 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
         translation=(sprite.x, sprite.y, sprite.z),
         scale=(1, sprite.height/3, sprite.width/3),
         extensions={
-            "EXT_transformation_inheritance": {"scale": False, "rotation": False}
+            TSR_INHERTANCE_EXTENSION: {"scale": False, "rotation": False}
         }
     )
     parent_node.children.append(len(file.nodes))

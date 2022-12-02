@@ -312,8 +312,8 @@ def actor_to_gltf(obj_root, texture_sizes):
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[root_node],
-        extensionsUsed=["EXT_transformation_inheritance"],
-        extensionsRequired=["EXT_transformation_inheritance"],
+        extensionsUsed=[gltf_helper.TSR_INHERTANCE_EXTENSION],
+        extensionsRequired=[gltf_helper.TSR_INHERTANCE_EXTENSION],
         samplers=[
             gltf.Sampler(
                 magFilter=gltf.LINEAR,
@@ -448,29 +448,28 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     if len(primitives) == 0 and len(mesh.sprites or []) == 0:
         print("WARNING: No display data for mesh {:}".format(mesh.name.strip("\0")))
    
-    # TODO: handle display lists:
     if mesh.display_list is None:
-        dl_extras = {}
+        dl_encoded = None
     else:
         dl_raw = display_lists.dump_f3dex_dl(mesh.display_list, mesh._io._io.getbuffer())
         dl_encoded = base64.b64encode(dl_raw).decode()
-        dl_extras = {
-            "display_list": dl_encoded,
-            "geometry_hash": 0 # TODO: hash prims and store here, compare to prim hash
-                               # when packing to determine if we need to recompile the DL or not
-        }
 
     if len(primitives) > 0:
-        gltf_mesh = gltf.Mesh(
-            name=name,
-            extras={
-                "id": "0x{:08X}".format(mesh.id),
-                "render_mode": "0x{:X}".format(mesh.render_mode),
-                "pack_list": json.dumps(pack_list),
-                **dl_extras
-            }
-        )
-        gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
+        gltf_mesh = gltf.Mesh(name=name)
+
+        data_hash = gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
+        mesh_extras = {
+            "id": "0x{:08X}".format(mesh.id),
+            "render_mode": "0x{:X}".format(mesh.render_mode),
+            "pack_list": json.dumps(pack_list),
+        }
+        data_hash.update(json.dumps(mesh_extras).encode())
+        if dl_encoded is not None:
+            mesh_extras["display_list"] = dl_encoded
+            mesh_extras["data_hash"] = data_hash.hexdigest()
+
+        gltf_mesh.extras.update(mesh_extras)
+
         mesh_id = len(file.meshes)
         file.meshes.append(gltf_mesh)
     else:
@@ -487,7 +486,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
         extensions={
-            "EXT_transformation_inheritance": {"scale": False}
+            gltf_helper.TSR_INHERTANCE_EXTENSION: {"scale": False}
         }
     )
     gltf_parent.children.append(len(file.nodes))
