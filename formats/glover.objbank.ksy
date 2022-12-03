@@ -53,9 +53,9 @@ types:
         type: str
         encoding: ASCII
         size: 8
-      - id: unused
+      - id: mesh_alpha
         type: u1
-      - id: alpha
+      - id: sprite_alpha
         type: u1
       - id: num_scale
         type: u2
@@ -132,13 +132,6 @@ types:
         if: display_list_ptr != 0
   geometry:
     seq:
-      # TODO: u1 and colors_norms seem to encode the same
-      #       data, but u1 is per-face and colors_norms is
-      #       per-vertex. from this, it seems likely that
-      #       u1 is face normals and colors_norms is just
-      #       colors, but this should be confirmed whether
-      #       or not to be true
-
       - id: num_faces
         type: u2
       - id: num_vertices
@@ -147,25 +140,25 @@ types:
         type: u4
       - id: faces_ptr
         type: u4
-      - id: u1_ptr # TODO: colors?
+      - id: norms_ptr
         type: u4
       - id: uvs_ptr
         type: u4
       - id: uvs_unmodified_ptr
         type: u4
-      - id: colors_norms_ptr # TODO: just norms?
+      - id: colors_ptr
         type: u4
-      - id: u5_ptr
+      - id: flags_ptr
         type: u4
       - id: texture_ids_ptr
         type: u4
     instances:
-      u1:
-        pos: u1_ptr
+      norms:
+        pos: norms_ptr
         type: u4
         repeat: expr
         repeat-expr: num_faces
-        if: u1_ptr != 0
+        if: norms_ptr != 0
       vertices:
         pos: vertices_ptr
         type: vertex
@@ -190,18 +183,18 @@ types:
         repeat: expr
         repeat-expr: num_faces
         if: uvs_unmodified_ptr != 0
-      colors_norms:
-        pos: colors_norms_ptr
+      colors:
+        pos: colors_ptr
         type: u4
         repeat: expr
         repeat-expr: num_vertices
-        if: colors_norms_ptr != 0
-      u5:
-        pos: u5_ptr
+        if: colors_ptr != 0
+      flags:
+        pos: flags_ptr
         type: u1
         repeat: expr
         repeat-expr: num_faces
-        if: u5_ptr != 0
+        if: flags_ptr != 0
       texture_ids:
         pos: texture_ids_ptr
         type: u4

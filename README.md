@@ -2,7 +2,7 @@
 
 Tools for reading and manipulating data from the 1999 N64 release of the video game Glover.
 
-## File contents
+## Repo contents
 
 - `docs`: Human-language specifications and descriptions of game file formats
 - `formats`: Rom memory maps and Kaitai Struct descriptions of game file formats

@@ -39,7 +39,7 @@ class MeshData(object):
         self.colors = []
         self.uvs = []
         self.norms = []
-        self.unknown = []
+        self.flags = []
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -249,15 +249,15 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                 elementSize=gltf.VEC3
             )
 
-        if len(prims.unknown) > 0:
+        if len(prims.flags) > 0:
             # TODO: this is hard to transfer
             #       to blender as a custom attribuet;
             #       instead, encode as a color channel?
             vertex_struct.addAttributeToFormat(
                 attrName="_GLOVER_FLAGS",
-                values=prims.unknown,
+                values=prims.flags,
                 sources=(
-                    ("unknown", ...),
+                    ("flags", ...),
                 ),
                 componentType=gltf.UNSIGNED_INT,
                 elementSize=gltf.SCALAR,

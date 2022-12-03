@@ -269,8 +269,8 @@ declare namespace GloverObjbank {
     sprites: GloverObjbank.Sprite[];
     id: number;
     name: string;
-    unused: number;
-    alpha: number;
+    meshAlpha: number;
+    spriteAlpha: number;
     numScale: number;
     numTranslation: number;
     numRotation: number;
@@ -290,8 +290,8 @@ declare namespace GloverObjbank {
     _debug: {
       id: DebugPosition;
       name: DebugPosition;
-      unused: DebugPosition;
-      alpha: DebugPosition;
+      meshAlpha: DebugPosition;
+      spriteAlpha: DebugPosition;
       numScale: DebugPosition;
       numTranslation: DebugPosition;
       numRotation: DebugPosition;
@@ -333,21 +333,22 @@ declare namespace GloverObjbank {
     _io: any;
 
     textureIds: number[];
-    u5: number[];
     faces: GloverObjbank.Face[];
+    uvsUnmodified: GloverObjbank.Uv[];
+    flags: number[];
     vertices: GloverObjbank.Vertex[];
-    u1: number[];
     uvs: GloverObjbank.Uv[];
-    colorsNorms: number[];
+    colors: number[];
+    norms: number[];
     numFaces: number;
     numVertices: number;
     verticesPtr: number;
     facesPtr: number;
-    u1Ptr: number;
+    normsPtr: number;
     uvsPtr: number;
-    u3: number;
-    colorsNormsPtr: number;
-    u5Ptr: number;
+    uvsUnmodifiedPtr: number;
+    colorsPtr: number;
+    flagsPtr: number;
     textureIdsPtr: number;
 
     _debug: {
@@ -355,11 +356,11 @@ declare namespace GloverObjbank {
       numVertices: DebugPosition;
       verticesPtr: DebugPosition;
       facesPtr: DebugPosition;
-      u1Ptr: DebugPosition;
+      normsPtr: DebugPosition;
       uvsPtr: DebugPosition;
-      u3: DebugPosition;
-      colorsNormsPtr: DebugPosition;
-      u5Ptr: DebugPosition;
+      uvsUnmodifiedPtr: DebugPosition;
+      colorsPtr: DebugPosition;
+      flagsPtr: DebugPosition;
       textureIdsPtr: DebugPosition;
     };
   }

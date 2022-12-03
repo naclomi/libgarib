@@ -473,6 +473,28 @@ var GloverLevel = (function() {
     return CameoInst;
   })();
 
+  var PlatTurnTowardsPathPoint = GloverLevel.PlatTurnTowardsPathPoint = (function() {
+    function PlatTurnTowardsPathPoint(_io, _parent, _root) {
+      this.__type = 'PlatTurnTowardsPathPoint';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PlatTurnTowardsPathPoint.prototype._read = function() {
+      this._debug.input1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.input1 = this._io.readU4be();
+      this._debug.input1.end = this._io.pos;
+      this._debug.input2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.input2 = this._io.readU4be();
+      this._debug.input2.end = this._io.pos;
+    }
+
+    return PlatTurnTowardsPathPoint;
+  })();
+
   var PlatMvspn0x5a = GloverLevel.PlatMvspn0x5a = (function() {
     function PlatMvspn0x5a(_io, _parent, _root) {
       this.__type = 'PlatMvspn0x5a';
@@ -2154,6 +2176,9 @@ var GloverLevel = (function() {
         break;
       case 152:
         this.params = new AmbientLight(this._io, this, this._root);
+        break;
+      case 94:
+        this.params = new PlatTurnTowardsPathPoint(this._io, this, this._root);
         break;
       case 109:
         this.params = new PlatPathAcceleration(this._io, this, this._root);

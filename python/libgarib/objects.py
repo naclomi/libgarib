@@ -374,8 +374,8 @@ def mesh_geo_to_prims(geo, texture_sizes):
         for v_idx in (face.v0, face.v1, face.v2):
             v = geo.vertices[v_idx]
             prims.positions.append((v.x, v.y, v.z))
-            if geo.colors_norms is not None:
-                c = geo.colors_norms[v_idx]
+            if geo.colors is not None:
+                c = geo.colors[v_idx]
                 prims.colors.append((
                     ((c & 0xFF000000) >> 24) / 255,
                     ((c & 0x00FF0000) >> 16) / 255,
@@ -393,13 +393,13 @@ def mesh_geo_to_prims(geo, texture_sizes):
             prims.uvs += ((uv.u1.value, uv.v1.value),
                           (uv.u2.value, uv.v2.value),
                           (uv.u3.value, uv.v3.value))
-        if geo.u1 is not None:
-            norm_raw = geo.u1[face_idx]
+        if geo.norms is not None:
+            norm_raw = geo.norms[face_idx]
             norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
             norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
             norm_norm = tuple(coord / norm_mag for coord in norm_byte)
             prims.norms += (norm_norm,) * 3
-        if geo.u5 is not None:
+        if geo.flags is not None:
             # TODO: what is this data? how can we include it effectively?
             # (11/13/22) This is more than likely the clamp and mirror flags
             #   for the texture face. They go unused in-game, because loadF3DEXTexture
@@ -407,8 +407,8 @@ def mesh_geo_to_prims(geo, texture_sizes):
             #   than the mesh data. Format from GBI is {clamp bit, mirror bit},
             #   and because they go unused we can't tell which is S and which is T.
             #   Disappointing. /shrug
-            u5 = geo.u5[face_idx]
-            prims.unknown += ((u5,) * 3)
+            flags = geo.flags[face_idx]
+            prims.flags += ((flags,) * 3)
 
     return primitives
 
@@ -418,13 +418,13 @@ def mesh_to_pack_list(mesh):
         geo = mesh.geometry
         if geo.num_faces > 0:
             pack_list.append("faces")
-        if geo.colors_norms is not None:
+        if geo.colors is not None:
             pack_list.append("colors")
         if geo.uvs is not None:
             pack_list.append("uvs")
-        if geo.u1 is not None:
+        if geo.norms is not None:
             pack_list.append("norms")
-        if geo.u5 is not None:
+        if geo.flags is not None:
             pack_list.append("flags")
         if geo.texture_ids is not None:
             pack_list.append("textures")
@@ -561,13 +561,13 @@ def scrapeBankSegments(bank_data):
                 if mesh.geometry is not None:
                     geo = mesh.geometry
                     bank_push(mesh, "geometry", "Geometry root", name)
-                    bank_push(geo, "u1", "Geometry (face normals)", name)
+                    bank_push(geo, "norms", "Geometry (face normals)", name)
                     bank_push(geo, "vertices", "Geometry (vertices)", name)
                     bank_push(geo, "faces", "Geometry (faces)", name)
                     bank_push(geo, "uvs", "Geometry (UVs)", name)
                     bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
-                    bank_push(geo, "colors_norms", "Geometry (vertex colors)", name)
-                    bank_push(geo, "u5", "Geometry (face properties)", name)
+                    bank_push(geo, "colors", "Geometry (vertex colors)", name)
+                    bank_push(geo, "flags", "Geometry (face properties)", name)
                     bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
                 bank_push(mesh, "sprites", "Sprites", name)
                 bank_push(mesh, "scale", "Keyframes (scale)", name)

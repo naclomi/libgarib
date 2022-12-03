@@ -413,6 +413,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['body']['end'] = self._io.pos()
 
 
+    class PlatTurnTowardsPathPoint(KaitaiStruct):
+        SEQ_FIELDS = ["input_1", "input_2"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['input_1']['start'] = self._io.pos()
+            self.input_1 = self._io.read_u4be()
+            self._debug['input_1']['end'] = self._io.pos()
+            self._debug['input_2']['start'] = self._io.pos()
+            self.input_2 = self._io.read_u4be()
+            self._debug['input_2']['end'] = self._io.pos()
+
+
     class PlatMvspn0x5a(KaitaiStruct):
         SEQ_FIELDS = ["u16_0x1c", "u32_0x18"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1794,6 +1812,8 @@ class GloverLevel(KaitaiStruct):
                 self.params = GloverLevel.PlatOrbitAroundPoint(self._io, self, self._root)
             elif _on == 152:
                 self.params = GloverLevel.AmbientLight(self._io, self, self._root)
+            elif _on == 94:
+                self.params = GloverLevel.PlatTurnTowardsPathPoint(self._io, self, self._root)
             elif _on == 109:
                 self.params = GloverLevel.PlatPathAcceleration(self._io, self, self._root)
             elif _on == 32000:

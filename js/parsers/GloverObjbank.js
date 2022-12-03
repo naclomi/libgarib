@@ -469,12 +469,12 @@ var GloverObjbank = (function() {
       this._debug.name = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.name = KaitaiStream.bytesToStr(this._io.readBytes(8), "ASCII");
       this._debug.name.end = this._io.pos;
-      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.unused = this._io.readU1();
-      this._debug.unused.end = this._io.pos;
-      this._debug.alpha = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.alpha = this._io.readU1();
-      this._debug.alpha.end = this._io.pos;
+      this._debug.meshAlpha = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.meshAlpha = this._io.readU1();
+      this._debug.meshAlpha.end = this._io.pos;
+      this._debug.spriteAlpha = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.spriteAlpha = this._io.readU1();
+      this._debug.spriteAlpha.end = this._io.pos;
       this._debug.numScale = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.numScale = this._io.readU2be();
       this._debug.numScale.end = this._io.pos;
@@ -729,21 +729,21 @@ var GloverObjbank = (function() {
       this._debug.facesPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.facesPtr = this._io.readU4be();
       this._debug.facesPtr.end = this._io.pos;
-      this._debug.u1Ptr = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u1Ptr = this._io.readU4be();
-      this._debug.u1Ptr.end = this._io.pos;
+      this._debug.normsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.normsPtr = this._io.readU4be();
+      this._debug.normsPtr.end = this._io.pos;
       this._debug.uvsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.uvsPtr = this._io.readU4be();
       this._debug.uvsPtr.end = this._io.pos;
-      this._debug.u3 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u3 = this._io.readU4be();
-      this._debug.u3.end = this._io.pos;
-      this._debug.colorsNormsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.colorsNormsPtr = this._io.readU4be();
-      this._debug.colorsNormsPtr.end = this._io.pos;
-      this._debug.u5Ptr = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u5Ptr = this._io.readU4be();
-      this._debug.u5Ptr.end = this._io.pos;
+      this._debug.uvsUnmodifiedPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.uvsUnmodifiedPtr = this._io.readU4be();
+      this._debug.uvsUnmodifiedPtr.end = this._io.pos;
+      this._debug.colorsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.colorsPtr = this._io.readU4be();
+      this._debug.colorsPtr.end = this._io.pos;
+      this._debug.flagsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.flagsPtr = this._io.readU4be();
+      this._debug.flagsPtr.end = this._io.pos;
       this._debug.textureIdsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.textureIdsPtr = this._io.readU4be();
       this._debug.textureIdsPtr.end = this._io.pos;
@@ -769,27 +769,6 @@ var GloverObjbank = (function() {
         return this._m_textureIds;
       }
     });
-    Object.defineProperty(Geometry.prototype, 'u5', {
-      get: function() {
-        if (this._m_u5 !== undefined)
-          return this._m_u5;
-        if (this.u5Ptr != 0) {
-          var _pos = this._io.pos;
-          this._io.seek(this.u5Ptr);
-          this._debug._m_u5 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-          this._m_u5 = new Array(this.numFaces);
-          this._debug._m_u5.arr = new Array(this.numFaces);
-          for (var i = 0; i < this.numFaces; i++) {
-            this._debug._m_u5.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-            this._m_u5[i] = this._io.readU1();
-            this._debug._m_u5.arr[i].end = this._io.pos;
-          }
-          this._debug._m_u5.end = this._io.pos;
-          this._io.seek(_pos);
-        }
-        return this._m_u5;
-      }
-    });
     Object.defineProperty(Geometry.prototype, 'faces', {
       get: function() {
         if (this._m_faces !== undefined)
@@ -809,6 +788,48 @@ var GloverObjbank = (function() {
           this._io.seek(_pos);
         }
         return this._m_faces;
+      }
+    });
+    Object.defineProperty(Geometry.prototype, 'uvsUnmodified', {
+      get: function() {
+        if (this._m_uvsUnmodified !== undefined)
+          return this._m_uvsUnmodified;
+        if (this.uvsUnmodifiedPtr != 0) {
+          var _pos = this._io.pos;
+          this._io.seek(this.uvsUnmodifiedPtr);
+          this._debug._m_uvsUnmodified = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_uvsUnmodified = new Array(this.numFaces);
+          this._debug._m_uvsUnmodified.arr = new Array(this.numFaces);
+          for (var i = 0; i < this.numFaces; i++) {
+            this._debug._m_uvsUnmodified.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_uvsUnmodified[i] = new Uv(this._io, this, this._root);
+            this._debug._m_uvsUnmodified.arr[i].end = this._io.pos;
+          }
+          this._debug._m_uvsUnmodified.end = this._io.pos;
+          this._io.seek(_pos);
+        }
+        return this._m_uvsUnmodified;
+      }
+    });
+    Object.defineProperty(Geometry.prototype, 'flags', {
+      get: function() {
+        if (this._m_flags !== undefined)
+          return this._m_flags;
+        if (this.flagsPtr != 0) {
+          var _pos = this._io.pos;
+          this._io.seek(this.flagsPtr);
+          this._debug._m_flags = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_flags = new Array(this.numFaces);
+          this._debug._m_flags.arr = new Array(this.numFaces);
+          for (var i = 0; i < this.numFaces; i++) {
+            this._debug._m_flags.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_flags[i] = this._io.readU1();
+            this._debug._m_flags.arr[i].end = this._io.pos;
+          }
+          this._debug._m_flags.end = this._io.pos;
+          this._io.seek(_pos);
+        }
+        return this._m_flags;
       }
     });
     Object.defineProperty(Geometry.prototype, 'vertices', {
@@ -832,27 +853,6 @@ var GloverObjbank = (function() {
         return this._m_vertices;
       }
     });
-    Object.defineProperty(Geometry.prototype, 'u1', {
-      get: function() {
-        if (this._m_u1 !== undefined)
-          return this._m_u1;
-        if (this.u1Ptr != 0) {
-          var _pos = this._io.pos;
-          this._io.seek(this.u1Ptr);
-          this._debug._m_u1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-          this._m_u1 = new Array(this.numFaces);
-          this._debug._m_u1.arr = new Array(this.numFaces);
-          for (var i = 0; i < this.numFaces; i++) {
-            this._debug._m_u1.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-            this._m_u1[i] = this._io.readU4be();
-            this._debug._m_u1.arr[i].end = this._io.pos;
-          }
-          this._debug._m_u1.end = this._io.pos;
-          this._io.seek(_pos);
-        }
-        return this._m_u1;
-      }
-    });
     Object.defineProperty(Geometry.prototype, 'uvs', {
       get: function() {
         if (this._m_uvs !== undefined)
@@ -874,25 +874,46 @@ var GloverObjbank = (function() {
         return this._m_uvs;
       }
     });
-    Object.defineProperty(Geometry.prototype, 'colorsNorms', {
+    Object.defineProperty(Geometry.prototype, 'colors', {
       get: function() {
-        if (this._m_colorsNorms !== undefined)
-          return this._m_colorsNorms;
-        if (this.colorsNormsPtr != 0) {
+        if (this._m_colors !== undefined)
+          return this._m_colors;
+        if (this.colorsPtr != 0) {
           var _pos = this._io.pos;
-          this._io.seek(this.colorsNormsPtr);
-          this._debug._m_colorsNorms = { start: this._io.pos, ioOffset: this._io.byteOffset };
-          this._m_colorsNorms = new Array(this.numVertices);
-          this._debug._m_colorsNorms.arr = new Array(this.numVertices);
+          this._io.seek(this.colorsPtr);
+          this._debug._m_colors = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_colors = new Array(this.numVertices);
+          this._debug._m_colors.arr = new Array(this.numVertices);
           for (var i = 0; i < this.numVertices; i++) {
-            this._debug._m_colorsNorms.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-            this._m_colorsNorms[i] = this._io.readU4be();
-            this._debug._m_colorsNorms.arr[i].end = this._io.pos;
+            this._debug._m_colors.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_colors[i] = this._io.readU4be();
+            this._debug._m_colors.arr[i].end = this._io.pos;
           }
-          this._debug._m_colorsNorms.end = this._io.pos;
+          this._debug._m_colors.end = this._io.pos;
           this._io.seek(_pos);
         }
-        return this._m_colorsNorms;
+        return this._m_colors;
+      }
+    });
+    Object.defineProperty(Geometry.prototype, 'norms', {
+      get: function() {
+        if (this._m_norms !== undefined)
+          return this._m_norms;
+        if (this.normsPtr != 0) {
+          var _pos = this._io.pos;
+          this._io.seek(this.normsPtr);
+          this._debug._m_norms = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_norms = new Array(this.numFaces);
+          this._debug._m_norms.arr = new Array(this.numFaces);
+          for (var i = 0; i < this.numFaces; i++) {
+            this._debug._m_norms.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_norms[i] = this._io.readU4be();
+            this._debug._m_norms.arr[i].end = this._io.pos;
+          }
+          this._debug._m_norms.end = this._io.pos;
+          this._io.seek(_pos);
+        }
+        return this._m_norms;
       }
     });
 
