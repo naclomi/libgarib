@@ -109,8 +109,6 @@ def dump_f3dex_dl(display_list, bank):
     #   0x0C-0x10 : Number of Pointer Addresses (number of pointer addresses to be resolved)
     #   0x10-N    : List of 4-byte pointer addresses. Each address relative to start of Data Section.
     #   N-end     : Data Section (actual binary data)
-    #
-    # For our data, the type is always 0 and the start address is unused
     raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list))
     
     linked_data = []
@@ -130,14 +128,13 @@ def dump_f3dex_dl(display_list, bank):
     output = bytearray()
     output += struct.pack(">I", 0) # Data type (0/display list)
     output += struct.pack(">I", len(raw_dl)) # Size of DL
-    output += struct.pack(">I", 0) # Star address (unused)
+    output += struct.pack(">I", 0) # Start address/entry point of DL (for us, always 0)
     output += struct.pack(">I", len(linked_data)) # Number of pointers
 
     # Pointer offsets in DL data
     for dl_offset, _, _ in linked_data:
         output += struct.pack(">I", dl_offset)
     
-
     # Write out DL itself
     payload_start = len(output)
     output += raw_dl
