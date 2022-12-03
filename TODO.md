@@ -2,8 +2,6 @@
 # objbank-tool
 
 ## dumping
-- dump display lists
-    - link display lists
 - normalize texture sizes
 - enumerate/clarify render mode bits
     - determine alpha blending options from material

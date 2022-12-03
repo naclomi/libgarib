@@ -94,39 +94,60 @@ def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
     return primitives
 
 
-
 def dump_f3dex_dl(display_list, bank):
     # Dump a Fast64-style insertable binary, based on the
-    # implementation here:
-    #   https://github.com/projectcomet64/cometfast64/blob/797b07fa8f26e4101eec22ed5ba5ab037047679b/fast64_internal/utility.py#L414
-    # TODO: implement the above, rather than what we're currently doing
-    
-    data_regions = []
-    output = bytearray()
-
+    # spec here:
+    # https://github.com/Fast-64/fast64/blob/main/fast64_internal/sm64/README.md#insertable-binary-exporting
+    #
+    #   0x00-0x04 : Data Type
+    #       0 = Display List
+    #       1 = Geolayout
+    #       2 = Animation
+    #       3 = Collision
+    #   0x04-0x08 : Data Size (size in bytes of Data Section)
+    #   0x08-0x0C : Start Address (start address of data, relative to start of Data Section)
+    #   0x0C-0x10 : Number of Pointer Addresses (number of pointer addresses to be resolved)
+    #   0x10-N    : List of 4-byte pointer addresses. Each address relative to start of Data Section.
+    #   N-end     : Data Section (actual binary data)
+    #
+    # For our data, the type is always 0 and the start address is unused
     raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list))
-
-    output += struct.pack(">I", len(raw_dl))
-    output += raw_dl
-
-    offset = len(output)
+    
+    linked_data = []
+    dl_offset = 0
     for cmd, args in F3DEX.parseList(raw_dl):
         if cmd is F3DEX.byName["G_VTX"]:
-            # Replace addresses into vertex buffers with
-            # an index into the TLV array
             region_offset = args["address"]
             region_size = args["length"] + 1
-            data_regions.append((region_offset, region_size))
-            args["address"] = len(data_regions)
-            output[offset:offset+8] = cmd.toBytes(args)
+            linked_data.append((dl_offset+4, region_offset, region_size))
         elif (cmd is F3DEX.byName["G_MTX"]
          or cmd is F3DEX.byName["G_MOVEMEM"]
          or cmd is F3DEX.byName["G_DL"]
          or cmd is F3DEX.byName["G_BRANCH_Z"]):
             raise Exception("TODO: Not yet implemented: Export F3DEX command {:}".format(cmd))
+        dl_offset += 8
 
-        offset += 8
-    for offset, size in data_regions:
-        raw_dl += struct.pack(">I",size)
-        raw_dl += bank[offset:offset+size]
-    return raw_dl
+    output = bytearray()
+    output += struct.pack(">I", 0) # Data type (0/display list)
+    output += struct.pack(">I", len(raw_dl)) # Size of DL
+    output += struct.pack(">I", 0) # Star address (unused)
+    output += struct.pack(">I", len(linked_data)) # Number of pointers
+
+    # Pointer offsets in DL data
+    for dl_offset, _, _ in linked_data:
+        output += struct.pack(">I", dl_offset)
+    
+
+    # Write out DL itself
+    payload_start = len(output)
+    output += raw_dl
+
+    # Write subsequent linked data regions
+    for dl_offset, region_offset, region_size in linked_data:
+        # Rewrite dl pointer to relocated data
+        ptr_start = payload_start + dl_offset
+        ptr_end = ptr_start + 4
+        output[ptr_start: ptr_end] = struct.pack(">I", len(output) - payload_start)
+        output += bank[region_offset: region_offset + region_size]
+
+    return output
