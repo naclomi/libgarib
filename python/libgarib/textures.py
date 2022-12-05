@@ -1,4 +1,5 @@
 import math
+import os
 import struct
 import sys
 
@@ -7,6 +8,18 @@ import PIL.Image
 
 from .parsers.glover_texbank import GloverTexbank
 from .parsers.construct import glover_texbank as texbank_writer
+from .hash import hash_str
+
+#######################################
+# Conversion functions
+
+def filenameToTexID(name):
+    basename = os.path.basename(name)
+    if basename.startswith("0x"):
+        return int(basename.split(".")[0], 16)
+    else:
+        return hash_str(basename)
+
 
 def encodeRGBA16(r, g, b, a):
     r = (int((r/255)*31) & 0x1f) << 11
@@ -163,3 +176,20 @@ def texToIm(texture: GloverTexbank):
         im.putpalette(palette, rawmode="RGBA")
     im.putdata(decoded_pixels)
     return im
+
+#######################################
+# Accessor functions
+
+class TextureDB(object):
+    def __init__(self):
+        self.byId = {}
+
+    def addIm(self, im, filename):
+        tex_raw = imToTex(im, filenameToTexID(filename))
+        tex = GloverTexbank.Texture.from_bytes(tex_raw)
+        self.byId[tex.id] = tex
+
+    def addBank(self, buffer):
+        bank = GloverTexbank.from_bytes(buffer)
+        for texture in bank.asset:
+            self.byId[texture.id] = texture

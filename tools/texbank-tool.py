@@ -25,12 +25,8 @@ def pack(args):
             continue
         try:
             with PIL.Image.open(filename) as im:
-                basename = os.path.basename(filename)
-                if basename.startswith("0x"):
-                    tex_id = int(basename.split(".")[0], 16)
-                else:
-                    tex_id = hash_str(basename)
-                textures.append(libgarib.textures.imToTex(im, tex_id))
+                texID = libgarib.textures.filenameToTexID(filename)
+                textures.append(libgarib.textures.imToTex(im, texID))
         except (json.JSONDecodeError, construct.core.MappingError, libgarib.textures.TextureEncodeException) as e:
             sys.stderr.write("WARNING: Malformed image metadata for texture '{:}': {:}. Texture was not included in bank\n".format(filename, str(e)))
         except PIL.UnidentifiedImageError:

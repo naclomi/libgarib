@@ -8,11 +8,29 @@ import sys
 import _prefer_local_implementation
 import libgarib.objects
 import libgarib.display_lists
+import libgarib.textures
 from libgarib.parsers.glover_objbank import GloverObjbank
 
 from libgarib.fla2 import compress, data_from_stream
 
+import PIL.Image
+
 import pygltflib as gltf
+
+def build_texture_db(textures):
+    db = libgarib.textures.TextureDB()
+    if textures is not None:
+        for filename in textures:
+            with open(filename, "rb") as f:
+                header = f.read(4)
+                f.seek(0)
+                if header == b"\x89PNG":
+                    im = PIL.Image.open(f)
+                    db.addIm(im, filename)
+                else:
+                    raw_data = data_from_stream(f)
+                    db.addBank(raw_data)
+    return db
 
 def bankmap(args):
     # TODO! The "padding" at the end of each file seems
@@ -50,6 +68,8 @@ def bankmap(args):
  
 
 def unpack(args):
+    texture_db = build_texture_db(args.textures)
+
     for bank_filename in args.bank_file:
         bank_output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(bank_filename))[0] + ".unpacked")
         os.makedirs(bank_output_dir, exist_ok=True)
@@ -62,71 +82,14 @@ def unpack(args):
             if obj is None:
                 continue
 
-            # animation_properties, animations = libgarib.objects.actorAnimationToJson(obj)
-            # actor = {
-            #     "id": obj.obj_id,
-            #     "animation_properties": animation_properties,
-            #     "animations": animations
-            # }
-
-            # for defn in obj.animation.animation_definitions or []:
-            #     actor["animations"].append({
-            #         "start": defn.start_time,
-            #         "end": defn.end_time,
-            #         "speed": defn.playback_speed,
-            #         "flags": defn.u1, # TODO: what does this do??
-            #     })
-
-            # obj_output_dir = os.path.join(bank_output_dir, "0x{:08x} ({:})".format(obj.obj_id, obj.mesh.name.strip("\x00")))
-            # os.makedirs(obj_output_dir, exist_ok=True)
-            # def mesh_dump_callback(mesh, cur_matrix, parents):
-            #     name_str = mesh.name.strip("\x00")
-            #     actor_node = {
-            #         "id": mesh.id,
-            #         "children": []
-            #     }
-            #     if len(parents) > 0:
-            #         name_str = libgarib.objects.parent_str(parents) + "." + name_str
-            #     dl = libgarib.display_lists.dump_f3dex_dl(mesh, bank_data)
-            #     if len(dl) > 0:
-            #         dl_filename = os.path.join(obj_output_dir, name_str + ".f3dex.lgdl")
-            #         actor_node["dl"] = os.path.relpath(dl_filename, bank_output_dir)
-            #         with open(dl_filename, "wb") as f:
-            #             f.write(dl)
-            #     # if mesh.geometry.num_faces > 0:
-            #     #     ply_filename = os.path.join(obj_output_dir, name_str + ".ply")
-            #     #     actor_node["model"] = os.path.relpath(ply_filename, bank_output_dir)
-            #     #     with open(ply_filename, "wb") as f:
-            #     #         f.write(libgarib.objects.mesh_to_ply(mesh))
-
-
-            #     if mesh.num_sprites > 0:
-            #         actor_node["sprites"] = []
-            #         for sprite in mesh.sprites:
-            #             actor_node["sprites"].append({
-            #                 "texture_id": sprite.texture_id,
-            #                 "position": [sprite.x, sprite.y, sprite.z],
-            #                 "size": [sprite.width, sprite.height],
-            #                 "unknown1": sprite.u5, # TODO: ???
-            #                 "unknown2": sprite.u6, # TODO: ???
-            #                 "flags": sprite.flags
-            #             })
-            #     mesh.dump_actor_node = actor_node
-            #     if len(parents) > 0:
-            #         parents[-1].dump_actor_node["children"].append(actor_node)
-            #     return {"parents": parents + [mesh]}
-
-            # libgarib.objects.for_each_mesh(obj.mesh, mesh_dump_callback)
-            # actor["mesh"] = obj.mesh.dump_actor_node
-            # with open(os.path.join(bank_output_dir, "0x{:08x}.actor.json".format(obj.obj_id)), "w") as f:
-            #     json.dump(actor, f, indent=2, sort_keys=True)
-
             with open(os.path.join(bank_output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
                 # TODO: load texture sizes:
-                f.write(libgarib.objects.actor_to_gltf(obj, {}))
+                f.write(libgarib.objects.actor_to_gltf(obj, texture_db))
 
 
 def pack(args):
+    texture_db = build_texture_db(args.textures)
+
     root = libgarib.objects.LinkableObjectBank()
 
     for actor_filename in args.actor_file:
@@ -149,23 +112,28 @@ def pack(args):
             f.write(bank)
     sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(root.directory.actors), args.output_file))
 
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Tool to work with object bank archives from Glover (N64)")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     pack_parser = subparsers.add_parser('pack', help='Build object banks from raw model assets')
     pack_parser.add_argument("actor_file", type=str, nargs="+",
-                        help="Actor file to pack (.actor.json)")
+                        help="glTF2 file to pack")
     pack_parser.add_argument("--output-file", type=str, required=True,
                         help="File to write bank into")
     pack_parser.add_argument("--compress", action="store_true",
                         help="FLA2-compress the output")
+    pack_parser.add_argument("-t", "--textures", action="append", type=str,
+                        help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
 
     unpack_parser = subparsers.add_parser('unpack', help='Extract raw model assets from object banks')
     unpack_parser.add_argument("bank_file", type=str, nargs="+",
                         help="Object bank file (potentially FLA2-compressed)")
     unpack_parser.add_argument("--output-dir", type=str, default=os.getcwd(),
                         help="Directory to output bank contents")
+    unpack_parser.add_argument("-t", "--textures", action="append", type=str,
+                        help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
 
     map_parser = subparsers.add_parser('map', help='Dump memory map of object banks')
     map_parser.add_argument("bank_file", type=str, nargs="+",

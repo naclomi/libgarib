@@ -302,7 +302,7 @@ def actorAnimationToJson(obj):
     return properties, animations
 
 
-def actor_to_gltf(obj_root, texture_sizes):
+def actor_to_gltf(obj_root, texture_db):
     data = bytearray()
     root_node = gltf.Node()
 
@@ -324,7 +324,7 @@ def actor_to_gltf(obj_root, texture_sizes):
         ],
     )
 
-    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_sizes=texture_sizes)
+    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_db=texture_db)
 
     # Only include non-billboard nodes in skin
     skeletal_nodes = []
@@ -354,13 +354,15 @@ def actor_to_gltf(obj_root, texture_sizes):
 
     return b"".join(file.save_to_bytes())
 
-def mesh_geo_to_prims(geo, texture_sizes):
+def mesh_geo_to_prims(geo, texture_db):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
     # Map texture/material to vertex attributes:
     primitives = {}
  
+    tex_warnings = set()
+
     for face_idx in range(geo.num_faces):
         material = gltf_helper.Material()
         if geo.texture_ids is not None:
@@ -382,17 +384,22 @@ def mesh_geo_to_prims(geo, texture_sizes):
                     ((c & 0x0000FF00) >> 8) / 255
                 ))
         if geo.uvs is not None:
+            tex = texture_db.byId.get(material.texture_id, None)
             uv = geo.uvs[face_idx]
-            # TODO: these texture coordinates need
-            #       to be normalized based on texture size,
-            #       which is......unfortunate.
-            #
-            #       does that mean we need texture
-            #       bank data to accurately dump object
-            #       banks? shit.....
-            prims.uvs += ((uv.u1.value, uv.v1.value),
-                          (uv.u2.value, uv.v2.value),
-                          (uv.u3.value, uv.v3.value))
+            if tex is not None:
+                prims.uvs += ((uv.u1.value / tex.width, uv.v1.value / tex.height),
+                              (uv.u2.value / tex.width, uv.v2.value / tex.height),
+                              (uv.u3.value / tex.width, uv.v3.value / tex.height))
+            else:
+                if material.texture_id not in tex_warnings:
+                    print("WARNING: Couldn't find image dimensions for texture id 0x{:08X}, UVs for mesh '{:}'' will be inaccurate".format(
+                        material.texture_id, geo._parent.name.strip("\0")
+                    ))
+                    tex_warnings.add(material.texture_id)
+                prims.uvs += ((uv.u1.value, uv.v1.value),
+                              (uv.u2.value, uv.v2.value),
+                              (uv.u3.value, uv.v3.value))
+
         if geo.norms is not None:
             norm_raw = geo.norms[face_idx]
             norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
@@ -432,7 +439,7 @@ def mesh_to_pack_list(mesh):
         pack_list.append("display_list")
     return pack_list
 
-def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
+def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
 
     # Pack list represents what data channels in the gltf
     # file should be present when packing the actor
@@ -442,9 +449,9 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_sizes):
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
         lighting = (mesh.render_mode & 0x8) == 0 
-        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_sizes)
+        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_db)
     elif mesh.geometry.num_faces > 0:
-        primitives = mesh_geo_to_prims(mesh.geometry, texture_sizes)
+        primitives = mesh_geo_to_prims(mesh.geometry, texture_db)
     else:
         primitives = {}
 
