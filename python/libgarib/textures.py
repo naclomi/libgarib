@@ -1,5 +1,6 @@
 import math
 import os
+import re
 import struct
 import sys
 
@@ -95,7 +96,7 @@ def imToTex(im, tex_id):
         mode = (metadata["color_format"], metadata["compression_format"])
         if mode == ("ia", "uncompressed_16b"):
             for y in range(im.size[1]):
-                for x in range(0, im.size[0], 2):
+                for x in range(0, im.size[0]):
                     pixel = px[x,y]
                     if pixel[0] != pixel[1] or pixel[0] != pixel[2]:
                         raise TextureEncodeException("Non-greyscale image being encoded as IA")
@@ -134,7 +135,7 @@ def imToTex(im, tex_id):
     })
 
 
-def texToIm(texture: GloverTexbank):
+def texToIm(texture):
     size = (texture.width, texture.height)
     decoded_pixels = []
     palette = []

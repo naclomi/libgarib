@@ -1,30 +1,27 @@
+# texbank-tool
+- there used to be a creepy bug in IA tex packing whereby every other X coordinate
+  was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
+- parsing doesn't seem to properly pick up filenames in metadata
+- support reading metadata-stored filenames in TextureDB
 
 # objbank-tool
 
 ## dumping
+- don't repeat properties on child meshes when they're identical 
 - mesh+sprite alpha
 - enumerate/clarify render mode bits
     - determine alpha blending options from material
     - from reverse engineering notes:
         ```
-        // TODO: 0x1 -- something to do with mesh generation?
-
-        #define MESH_OPACITY        0x2
-        #define MESH_OPAQUE         0
-        #define MESH_TRANSPARENT    MESH_OPACITY
-
-        #define MESH_TEXTURING      0x4
-        #define MESH_UNTEXTURED     0
-        #define MESH_TEXTURED       MESH_TEXTURING
-
-        #define MESH_LIGHTING       0x8
-        #define MESH_LIT            0
-        #define MESH_UNLIT          MESH_LIGHTING
-
-        // TODO: 0x10 -- ???
-        // TODO: 0x20 -- animate water UVs
-        // TODO: 0x40 -- lock animation time for rotation and all subsequent child TSR animations to (global level timer % 40) (wtf?)
-        // TODO: 0x80 -- something to do with render order?
+        // bit -- 0 / 1
+        // 0x1 -- TODO: something to do with mesh generation?
+        // 0x2 -- opaque / transparent
+        // 0x4 -- untextured / textured 
+        // 0x8 -- lit / unlit
+        // 0x10 -- ??? TODO
+        // 0x20 -- _ / animate water UVs
+        // 0x40 -- _ / lock animation time for rotation and all subsequent child TSR animations to (global level timer % 40) (wtf?)
+        // 0x80 -- TODO: something to do with render order?
         ```
 - deal with vertex clamp attributes
 

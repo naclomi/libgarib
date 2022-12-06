@@ -24,7 +24,7 @@ class GloverTexbank(KaitaiStruct):
         ci = 2
         ia = 3
         i = 4
-    SEQ_FIELDS = ["n_textures", "asset"]
+    SEQ_FIELDS = ["n_textures", "assets", "filenames"]
     def __init__(self, _io, _parent=None, _root=None):
         self._io = _io
         self._parent = _parent
@@ -36,16 +36,26 @@ class GloverTexbank(KaitaiStruct):
         self._debug['n_textures']['start'] = self._io.pos()
         self.n_textures = self._io.read_u4be()
         self._debug['n_textures']['end'] = self._io.pos()
-        self._debug['asset']['start'] = self._io.pos()
-        self.asset = [None] * (self.n_textures)
+        self._debug['assets']['start'] = self._io.pos()
+        self.assets = [None] * (self.n_textures)
         for i in range(self.n_textures):
-            if not 'arr' in self._debug['asset']:
-                self._debug['asset']['arr'] = []
-            self._debug['asset']['arr'].append({'start': self._io.pos()})
-            self.asset[i] = GloverTexbank.Texture(self._io, self, self._root)
-            self._debug['asset']['arr'][i]['end'] = self._io.pos()
+            if not 'arr' in self._debug['assets']:
+                self._debug['assets']['arr'] = []
+            self._debug['assets']['arr'].append({'start': self._io.pos()})
+            self.assets[i] = GloverTexbank.Texture(self._io, self, self._root)
+            self._debug['assets']['arr'][i]['end'] = self._io.pos()
 
-        self._debug['asset']['end'] = self._io.pos()
+        self._debug['assets']['end'] = self._io.pos()
+        self._debug['filenames']['start'] = self._io.pos()
+        self.filenames = [None] * (self.n_textures)
+        for i in range(self.n_textures):
+            if not 'arr' in self._debug['filenames']:
+                self._debug['filenames']['arr'] = []
+            self._debug['filenames']['arr'].append({'start': self._io.pos()})
+            self.filenames[i] = (self._io.read_bytes_term(0, False, True, False)).decode(u"UTF-8")
+            self._debug['filenames']['arr'][i]['end'] = self._io.pos()
+
+        self._debug['filenames']['end'] = self._io.pos()
 
     class Texture(KaitaiStruct):
         SEQ_FIELDS = ["id", "palette_anim_idx_min", "palette_anim_idx_max", "flags", "frame_increment", "frame_counter", "width", "height", "masks", "maskt", "length", "color_format", "compression_format", "data_ptr", "palette_offset", "data"]

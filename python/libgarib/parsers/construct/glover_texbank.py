@@ -39,7 +39,8 @@ glover_texbank__texture = Struct(
 
 glover_texbank = Struct(
 	'n_textures' / Int32ub,
-	'asset' / Array(this.n_textures, LazyBound(lambda: glover_texbank__texture)),
+	'assets' / Array(this.n_textures, LazyBound(lambda: glover_texbank__texture)),
+	'filenames' / Array(this.n_textures, NullTerminated(GreedyString(encoding='UTF-8'), term=b'\x00', include=False, consume=True)),
 )
 
 _schema = glover_texbank

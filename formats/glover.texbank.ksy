@@ -5,10 +5,17 @@ meta:
 seq:
   - id: n_textures
     type: u4
-  - id: asset
+  - id: assets
     type: texture
     repeat: expr
     repeat-expr: n_textures
+  - id: filenames
+    type: strz
+    encoding: UTF-8
+    eos-error: false
+    repeat: expr
+    repeat-expr: n_textures
+
 types:
   texture:
     seq:

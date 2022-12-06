@@ -12,11 +12,13 @@ declare class GloverTexbank {
   _io: any;
 
   nTextures: number;
-  asset: GloverTexbank.Texture[];
+  assets: GloverTexbank.Texture[];
+  filenames: string[];
 
   _debug: {
     nTextures: DebugPosition;
-    asset: DebugPosition;
+    assets: DebugPosition;
+    filenames: DebugPosition;
   };
 }
 

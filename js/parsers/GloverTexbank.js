@@ -49,15 +49,24 @@ var GloverTexbank = (function() {
     this._debug.nTextures = { start: this._io.pos, ioOffset: this._io.byteOffset };
     this.nTextures = this._io.readU4be();
     this._debug.nTextures.end = this._io.pos;
-    this._debug.asset = { start: this._io.pos, ioOffset: this._io.byteOffset };
-    this.asset = new Array(this.nTextures);
-    this._debug.asset.arr = new Array(this.nTextures);
+    this._debug.assets = { start: this._io.pos, ioOffset: this._io.byteOffset };
+    this.assets = new Array(this.nTextures);
+    this._debug.assets.arr = new Array(this.nTextures);
     for (var i = 0; i < this.nTextures; i++) {
-      this._debug.asset.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.asset[i] = new Texture(this._io, this, this._root);
-      this._debug.asset.arr[i].end = this._io.pos;
+      this._debug.assets.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.assets[i] = new Texture(this._io, this, this._root);
+      this._debug.assets.arr[i].end = this._io.pos;
     }
-    this._debug.asset.end = this._io.pos;
+    this._debug.assets.end = this._io.pos;
+    this._debug.filenames = { start: this._io.pos, ioOffset: this._io.byteOffset };
+    this.filenames = new Array(this.nTextures);
+    this._debug.filenames.arr = new Array(this.nTextures);
+    for (var i = 0; i < this.nTextures; i++) {
+      this._debug.filenames.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.filenames[i] = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, false), "UTF-8");
+      this._debug.filenames.arr[i].end = this._io.pos;
+    }
+    this._debug.filenames.end = this._io.pos;
   }
 
   var Texture = GloverTexbank.Texture = (function() {

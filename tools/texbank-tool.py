@@ -19,6 +19,7 @@ from libgarib.fla2 import compress, data_from_stream
 
 def pack(args):
     textures = []
+    filenames = []
     for filename in args.image_file:
         ext = os.path.splitext(filename)[1]
         if ext == "json":
@@ -27,13 +28,25 @@ def pack(args):
             with PIL.Image.open(filename) as im:
                 texID = libgarib.textures.filenameToTexID(filename)
                 textures.append(libgarib.textures.imToTex(im, texID))
+            metadata_filename = os.path.basename(filename)
+            if not metadata_filename.startswith("0x"):
+                filenames.append("{:}\0".format(metadata_filename))
+            else:
+                filenames.append("\0")
         except (json.JSONDecodeError, construct.core.MappingError, libgarib.textures.TextureEncodeException) as e:
             sys.stderr.write("WARNING: Malformed image metadata for texture '{:}': {:}. Texture was not included in bank\n".format(filename, str(e)))
         except PIL.UnidentifiedImageError:
             sys.stderr.write("WARNING: Couldn't open image {:}. Texture was not included in bank\n".format(filename))
+
+    if args.strip_filenames:
+        # If we're not writing the filenames metadata,
+        # remove it from the Construct texbank structure
+        texbank_writer.glover_texbank.subcons.pop()
+
     bank = texbank_writer.glover_texbank.build({
         "n_textures": len(textures),
-        "asset": list(map(lambda t: texbank_writer.glover_texbank__texture.parse(t), textures))
+        "assets": list(map(lambda t: texbank_writer.glover_texbank__texture.parse(t), textures)),
+        "filenames": None if args.strip_filenames else filenames
     })
     if args.compress:
         def compression_progress_callback(percent):
@@ -55,10 +68,16 @@ def unpack(args):
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverTexbank.from_bytes(bank_data)
-        for texture in bank.asset:
+        print(bank.filenames)
+        for idx, texture in enumerate(bank.assets):
             try:
+                if idx < len(bank.filenames) and len(bank.filenames[idx]) > 0:
+                    # Use sanitized filename from metadata
+                    filename = os.path.basename(bank.filenames[idx])
+                else:
+                    filename = "0x{:08X}.png".format(texture.id)
                 im = libgarib.textures.texToIm(texture)
-                out_file = os.path.join(bank_output_dir, "0x{:08X}.png".format(texture.id))
+                out_file = os.path.join(bank_output_dir, filename)
                 metadata = {
                     "flags": texture.flags,
                     "color_format": texture.color_format.name,
@@ -90,6 +109,8 @@ if __name__=="__main__":
                         help="File to write bank into")
     pack_parser.add_argument("--compress", action="store_true",
                         help="FLA2-compress the output")
+    pack_parser.add_argument("--strip-filenames", action="store_true",
+                        help="Don't store filenames in bank")
 
     unpack_parser = subparsers.add_parser('unpack', help='Extract raw image assets from texture banks')    
     unpack_parser.add_argument("bank_file", type=str, nargs="+",
