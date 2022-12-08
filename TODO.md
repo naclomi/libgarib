@@ -1,8 +1,6 @@
 # texbank-tool
 - there used to be a creepy bug in IA tex packing whereby every other X coordinate
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
-- parsing doesn't seem to properly pick up filenames in metadata
-- support reading metadata-stored filenames in TextureDB
 
 # objbank-tool
 

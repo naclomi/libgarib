@@ -30,9 +30,9 @@ def pack(args):
                 textures.append(libgarib.textures.imToTex(im, texID))
             metadata_filename = os.path.basename(filename)
             if not metadata_filename.startswith("0x"):
-                filenames.append("{:}\0".format(metadata_filename))
+                filenames.append("{:}".format(metadata_filename))
             else:
-                filenames.append("\0")
+                filenames.append("")
         except (json.JSONDecodeError, construct.core.MappingError, libgarib.textures.TextureEncodeException) as e:
             sys.stderr.write("WARNING: Malformed image metadata for texture '{:}': {:}. Texture was not included in bank\n".format(filename, str(e)))
         except PIL.UnidentifiedImageError:
@@ -68,7 +68,6 @@ def unpack(args):
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverTexbank.from_bytes(bank_data)
-        print(bank.filenames)
         for idx, texture in enumerate(bank.assets):
             try:
                 if idx < len(bank.filenames) and len(bank.filenames[idx]) > 0:

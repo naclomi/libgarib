@@ -184,6 +184,7 @@ def texToIm(texture):
 class TextureDB(object):
     def __init__(self):
         self.byId = {}
+        self.byFilename = {}
 
     def addIm(self, im, filename):
         tex_raw = imToTex(im, filenameToTexID(filename))
@@ -192,5 +193,8 @@ class TextureDB(object):
 
     def addBank(self, buffer):
         bank = GloverTexbank.from_bytes(buffer)
-        for texture in bank.asset:
+        for idx, texture in enumerate(bank.assets):
             self.byId[texture.id] = texture
+            if bank.filenames is not None and len(bank.filenames) > idx:
+                if bank.filenames[idx] != "":
+                    self.byFilename[bank.filenames[idx]] = texture
