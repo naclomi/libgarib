@@ -334,20 +334,20 @@ declare namespace GloverObjbank {
 
     textureIds: number[];
     faces: GloverObjbank.Face[];
+    vertexCn: number[];
     uvsUnmodified: GloverObjbank.Uv[];
     flags: number[];
     vertices: GloverObjbank.Vertex[];
     uvs: GloverObjbank.Uv[];
-    colors: number[];
-    norms: number[];
+    faceCn: number[];
     numFaces: number;
     numVertices: number;
     verticesPtr: number;
     facesPtr: number;
-    normsPtr: number;
+    faceCnPtr: number;
     uvsPtr: number;
     uvsUnmodifiedPtr: number;
-    colorsPtr: number;
+    vertexCnPtr: number;
     flagsPtr: number;
     textureIdsPtr: number;
 
@@ -356,10 +356,10 @@ declare namespace GloverObjbank {
       numVertices: DebugPosition;
       verticesPtr: DebugPosition;
       facesPtr: DebugPosition;
-      normsPtr: DebugPosition;
+      faceCnPtr: DebugPosition;
       uvsPtr: DebugPosition;
       uvsUnmodifiedPtr: DebugPosition;
-      colorsPtr: DebugPosition;
+      vertexCnPtr: DebugPosition;
       flagsPtr: DebugPosition;
       textureIdsPtr: DebugPosition;
     };

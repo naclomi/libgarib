@@ -667,7 +667,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class Geometry(KaitaiStruct):
-        SEQ_FIELDS = ["num_faces", "num_vertices", "vertices_ptr", "faces_ptr", "norms_ptr", "uvs_ptr", "uvs_unmodified_ptr", "colors_ptr", "flags_ptr", "texture_ids_ptr"]
+        SEQ_FIELDS = ["num_faces", "num_vertices", "vertices_ptr", "faces_ptr", "face_cn_ptr", "uvs_ptr", "uvs_unmodified_ptr", "vertex_cn_ptr", "flags_ptr", "texture_ids_ptr"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -688,18 +688,18 @@ class GloverObjbank(KaitaiStruct):
             self._debug['faces_ptr']['start'] = self._io.pos()
             self.faces_ptr = self._io.read_u4be()
             self._debug['faces_ptr']['end'] = self._io.pos()
-            self._debug['norms_ptr']['start'] = self._io.pos()
-            self.norms_ptr = self._io.read_u4be()
-            self._debug['norms_ptr']['end'] = self._io.pos()
+            self._debug['face_cn_ptr']['start'] = self._io.pos()
+            self.face_cn_ptr = self._io.read_u4be()
+            self._debug['face_cn_ptr']['end'] = self._io.pos()
             self._debug['uvs_ptr']['start'] = self._io.pos()
             self.uvs_ptr = self._io.read_u4be()
             self._debug['uvs_ptr']['end'] = self._io.pos()
             self._debug['uvs_unmodified_ptr']['start'] = self._io.pos()
             self.uvs_unmodified_ptr = self._io.read_u4be()
             self._debug['uvs_unmodified_ptr']['end'] = self._io.pos()
-            self._debug['colors_ptr']['start'] = self._io.pos()
-            self.colors_ptr = self._io.read_u4be()
-            self._debug['colors_ptr']['end'] = self._io.pos()
+            self._debug['vertex_cn_ptr']['start'] = self._io.pos()
+            self.vertex_cn_ptr = self._io.read_u4be()
+            self._debug['vertex_cn_ptr']['end'] = self._io.pos()
             self._debug['flags_ptr']['start'] = self._io.pos()
             self.flags_ptr = self._io.read_u4be()
             self._debug['flags_ptr']['end'] = self._io.pos()
@@ -750,6 +750,28 @@ class GloverObjbank(KaitaiStruct):
                 self._io.seek(_pos)
 
             return self._m_faces if hasattr(self, '_m_faces') else None
+
+        @property
+        def vertex_cn(self):
+            if hasattr(self, '_m_vertex_cn'):
+                return self._m_vertex_cn if hasattr(self, '_m_vertex_cn') else None
+
+            if self.vertex_cn_ptr != 0:
+                _pos = self._io.pos()
+                self._io.seek(self.vertex_cn_ptr)
+                self._debug['_m_vertex_cn']['start'] = self._io.pos()
+                self._m_vertex_cn = [None] * (self.num_vertices)
+                for i in range(self.num_vertices):
+                    if not 'arr' in self._debug['_m_vertex_cn']:
+                        self._debug['_m_vertex_cn']['arr'] = []
+                    self._debug['_m_vertex_cn']['arr'].append({'start': self._io.pos()})
+                    self._m_vertex_cn[i] = self._io.read_u4be()
+                    self._debug['_m_vertex_cn']['arr'][i]['end'] = self._io.pos()
+
+                self._debug['_m_vertex_cn']['end'] = self._io.pos()
+                self._io.seek(_pos)
+
+            return self._m_vertex_cn if hasattr(self, '_m_vertex_cn') else None
 
         @property
         def uvs_unmodified(self):
@@ -840,48 +862,26 @@ class GloverObjbank(KaitaiStruct):
             return self._m_uvs if hasattr(self, '_m_uvs') else None
 
         @property
-        def colors(self):
-            if hasattr(self, '_m_colors'):
-                return self._m_colors if hasattr(self, '_m_colors') else None
+        def face_cn(self):
+            if hasattr(self, '_m_face_cn'):
+                return self._m_face_cn if hasattr(self, '_m_face_cn') else None
 
-            if self.colors_ptr != 0:
+            if self.face_cn_ptr != 0:
                 _pos = self._io.pos()
-                self._io.seek(self.colors_ptr)
-                self._debug['_m_colors']['start'] = self._io.pos()
-                self._m_colors = [None] * (self.num_vertices)
-                for i in range(self.num_vertices):
-                    if not 'arr' in self._debug['_m_colors']:
-                        self._debug['_m_colors']['arr'] = []
-                    self._debug['_m_colors']['arr'].append({'start': self._io.pos()})
-                    self._m_colors[i] = self._io.read_u4be()
-                    self._debug['_m_colors']['arr'][i]['end'] = self._io.pos()
-
-                self._debug['_m_colors']['end'] = self._io.pos()
-                self._io.seek(_pos)
-
-            return self._m_colors if hasattr(self, '_m_colors') else None
-
-        @property
-        def norms(self):
-            if hasattr(self, '_m_norms'):
-                return self._m_norms if hasattr(self, '_m_norms') else None
-
-            if self.norms_ptr != 0:
-                _pos = self._io.pos()
-                self._io.seek(self.norms_ptr)
-                self._debug['_m_norms']['start'] = self._io.pos()
-                self._m_norms = [None] * (self.num_faces)
+                self._io.seek(self.face_cn_ptr)
+                self._debug['_m_face_cn']['start'] = self._io.pos()
+                self._m_face_cn = [None] * (self.num_faces)
                 for i in range(self.num_faces):
-                    if not 'arr' in self._debug['_m_norms']:
-                        self._debug['_m_norms']['arr'] = []
-                    self._debug['_m_norms']['arr'].append({'start': self._io.pos()})
-                    self._m_norms[i] = self._io.read_u4be()
-                    self._debug['_m_norms']['arr'][i]['end'] = self._io.pos()
+                    if not 'arr' in self._debug['_m_face_cn']:
+                        self._debug['_m_face_cn']['arr'] = []
+                    self._debug['_m_face_cn']['arr'].append({'start': self._io.pos()})
+                    self._m_face_cn[i] = self._io.read_u4be()
+                    self._debug['_m_face_cn']['arr'][i]['end'] = self._io.pos()
 
-                self._debug['_m_norms']['end'] = self._io.pos()
+                self._debug['_m_face_cn']['end'] = self._io.pos()
                 self._io.seek(_pos)
 
-            return self._m_norms if hasattr(self, '_m_norms') else None
+            return self._m_face_cn if hasattr(self, '_m_face_cn') else None
 
 
 

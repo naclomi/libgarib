@@ -172,7 +172,7 @@ def hashGLTFMesh(gltf_mesh, file):
     return data_hash
 
 
-def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
+def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
     ###############################################
     # Build actual GLTF structures:
 
@@ -251,7 +251,7 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
 
         if len(prims.flags) > 0:
             # TODO: this is hard to transfer
-            #       to blender as a custom attribuet;
+            #       to blender as a custom attribute;
             #       instead, encode as a color channel?
             vertex_struct.addAttributeToFormat(
                 attrName="_GLOVER_FLAGS",
@@ -283,6 +283,22 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
             indices=indices_handle
         ))
 
+        if render_mode.xlu:
+            blend_mode = {
+                "alphaMode": gltf.BLEND,
+                "alphaCutoff": None
+            }
+        elif render_mode.masked:
+            blend_mode = {
+                "alphaMode": gltf.MASK,
+                "alphaCutoff": .5
+            }
+        else:
+            blend_mode = {
+                "alphaMode": gltf.OPAQUE,
+                "alphaCutoff": None
+            }
+
         if material.texture_id is not None:
             file.materials.append(gltf.Material(
                 name="0x{:08X}".format(material.texture_id),
@@ -291,10 +307,8 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                         index=len(file.textures)
                     )
                 ),
-                alphaMode=gltf.BLEND, # TODO: choose blend vs opaque depending on alpha mode
-                alphaCutoff=None
+                **blend_mode
             ))
-
             file.textures.append(gltf.Texture(
                 sampler=findSampler(file, material),
                 source=len(file.images)
@@ -309,8 +323,11 @@ def addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data):
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorFactor=[1, 1, 1, 1]
                 ),
-                alphaCutoff=None
+                **blend_mode
             ))
+
+        if render_mode.unlit:
+            file.materials[-1].extensions["KHR_materials_unlit"] = {}
 
 
 def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
@@ -491,8 +508,11 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
             )
         ),
         doubleSided=True,
-        alphaMode=gltf.BLEND,
-        alphaCutoff=None
+        alphaMode=gltf.MASK,
+        alphaCutoff=0.5,
+        extensions={
+            "KHR_materials_unlit": {}
+        }
     ))
 
     file.textures.append(gltf.Texture(

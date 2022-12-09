@@ -7,20 +7,8 @@
 ## dumping
 - don't repeat properties on child meshes when they're identical 
 - mesh+sprite alpha
-- enumerate/clarify render mode bits
-    - determine alpha blending options from material
-    - from reverse engineering notes:
-        ```
-        // bit -- 0 / 1
-        // 0x1 -- TODO: something to do with mesh generation?
-        // 0x2 -- opaque / transparent
-        // 0x4 -- untextured / textured 
-        // 0x8 -- lit / unlit
-        // 0x10 -- ??? TODO
-        // 0x20 -- _ / animate water UVs
-        // 0x40 -- _ / lock animation time for rotation and all subsequent child TSR animations to (global level timer % 40) (wtf?)
-        // 0x80 -- TODO: something to do with render order?
-        ```
+- decide whether geo data is color or normal based on mesh flags, not just whether it's per-vert/per-face
+- finish enumerating/clarifying render mode bits
 - deal with vertex clamp attributes
 
 ## packing

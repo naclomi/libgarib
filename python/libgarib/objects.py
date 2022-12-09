@@ -354,7 +354,7 @@ def actor_to_gltf(obj_root, texture_db):
 
     return b"".join(file.save_to_bytes())
 
-def mesh_geo_to_prims(geo, texture_db):
+def mesh_geo_to_prims(geo, render_mode, texture_db):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
@@ -376,8 +376,8 @@ def mesh_geo_to_prims(geo, texture_db):
         for v_idx in (face.v0, face.v1, face.v2):
             v = geo.vertices[v_idx]
             prims.positions.append((v.x, v.y, v.z))
-            if geo.colors is not None:
-                c = geo.colors[v_idx]
+            if geo.vertex_cn is not None:
+                c = geo.vertex_cn[v_idx]
                 prims.colors.append((
                     ((c & 0xFF000000) >> 24) / 255,
                     ((c & 0x00FF0000) >> 16) / 255,
@@ -400,8 +400,8 @@ def mesh_geo_to_prims(geo, texture_db):
                               (uv.u2.value, uv.v2.value),
                               (uv.u3.value, uv.v3.value))
 
-        if geo.norms is not None:
-            norm_raw = geo.norms[face_idx]
+        if geo.face_cn is not None:
+            norm_raw = geo.face_cn[face_idx]
             norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
             norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
             norm_norm = tuple(coord / norm_mag for coord in norm_byte)
@@ -425,11 +425,11 @@ def mesh_to_pack_list(mesh):
         geo = mesh.geometry
         if geo.num_faces > 0:
             pack_list.append("faces")
-        if geo.colors is not None:
+        if geo.vertex_cn is not None:
             pack_list.append("colors")
         if geo.uvs is not None:
             pack_list.append("uvs")
-        if geo.norms is not None:
+        if geo.face_cn is not None:
             pack_list.append("norms")
         if geo.flags is not None:
             pack_list.append("flags")
@@ -439,19 +439,59 @@ def mesh_to_pack_list(mesh):
         pack_list.append("display_list")
     return pack_list
 
-def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
+class RenderMode(object):
+    # TODO: look more into "cloud surfaces":
+    #       http://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro15/index15.5.html
+    FLAGS = [
+        ("per_vertex_colorsnorms", 0x1),
+        ("xlu", 0x2),
+        ("masked", 0x4),
+        ("unlit", 0x8),
+        # 0x10 seems to be unused
+        ("ripple", 0x20), # TODO: implement
+        ("anim_sync", 0x40), # TODO: implement
+        ("cloud", 0x80), # TODO: implement
+    ]
+    MASK = sum(pos for _, pos in FLAGS)
+    MISC_MASK = (~MASK) & 0xFFFF
 
+    def __init__(self, mode=0):
+        self.fromInt(mode)
+
+    def fromInt(self, mode):
+        for name, pos in self.FLAGS:
+            setattr(self, name, (mode & pos) != 0)
+        self.misc = mode & self.MISC_MASK
+        return self
+
+    def toInt(self):
+        return sum(pos if getattr(self, name) else 0 for name, pos in self.FLAGS) | self.misc
+
+    def toDict(self):
+        d = {name: getattr(self, name) for name, _ in self.FLAGS}
+        d["misc"] = self.misc
+        return d
+
+    def __str__(self):
+        return str(self.toDict())
+
+    def __repr__(self):
+        return str(self.toDict())
+
+
+def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
+    render_mode = RenderMode(mesh.render_mode)
     # Pack list represents what data channels in the gltf
     # file should be present when packing the actor
     pack_list = mesh_to_pack_list(mesh)
-    # TODO: log the geo elements present in the pack list
+    # print(mesh.name.strip("\0"), render_mode)
 
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
-        lighting = (mesh.render_mode & 0x8) == 0 
+        lighting = not render_mode.unlit
         primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_db)
     elif mesh.geometry.num_faces > 0:
-        primitives = mesh_geo_to_prims(mesh.geometry, texture_db)
+        primitives = mesh_geo_to_prims(mesh.geometry, render_mode, texture_db)
     else:
         primitives = {}
 
@@ -471,7 +511,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
             "render_mode": "0x{:X}".format(mesh.render_mode),
             "pack_list": json.dumps(pack_list),
         })
-        gltf_helper.addMeshDataToGLTFMesh(primitives, gltf_mesh, file, data)
+        gltf_helper.addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data)
         if dl_encoded is not None:
             gltf_mesh.extras["display_list"] = dl_encoded
             # Mark mesh as needing to be hashed, once all buffers are constructed:

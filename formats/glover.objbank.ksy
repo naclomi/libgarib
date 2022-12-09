@@ -140,25 +140,25 @@ types:
         type: u4
       - id: faces_ptr
         type: u4
-      - id: norms_ptr
+      - id: face_cn_ptr
         type: u4
       - id: uvs_ptr
         type: u4
       - id: uvs_unmodified_ptr
         type: u4
-      - id: colors_ptr
+      - id: vertex_cn_ptr
         type: u4
       - id: flags_ptr
         type: u4
       - id: texture_ids_ptr
         type: u4
     instances:
-      norms:
-        pos: norms_ptr
+      face_cn:
+        pos: face_cn_ptr
         type: u4
         repeat: expr
         repeat-expr: num_faces
-        if: norms_ptr != 0
+        if: face_cn_ptr != 0
       vertices:
         pos: vertices_ptr
         type: vertex
@@ -183,12 +183,12 @@ types:
         repeat: expr
         repeat-expr: num_faces
         if: uvs_unmodified_ptr != 0
-      colors:
-        pos: colors_ptr
+      vertex_cn:
+        pos: vertex_cn_ptr
         type: u4
         repeat: expr
         repeat-expr: num_vertices
-        if: colors_ptr != 0
+        if: vertex_cn_ptr != 0
       flags:
         pos: flags_ptr
         type: u1

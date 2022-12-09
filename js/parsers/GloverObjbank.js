@@ -729,18 +729,18 @@ var GloverObjbank = (function() {
       this._debug.facesPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.facesPtr = this._io.readU4be();
       this._debug.facesPtr.end = this._io.pos;
-      this._debug.normsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.normsPtr = this._io.readU4be();
-      this._debug.normsPtr.end = this._io.pos;
+      this._debug.faceCnPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.faceCnPtr = this._io.readU4be();
+      this._debug.faceCnPtr.end = this._io.pos;
       this._debug.uvsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.uvsPtr = this._io.readU4be();
       this._debug.uvsPtr.end = this._io.pos;
       this._debug.uvsUnmodifiedPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.uvsUnmodifiedPtr = this._io.readU4be();
       this._debug.uvsUnmodifiedPtr.end = this._io.pos;
-      this._debug.colorsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.colorsPtr = this._io.readU4be();
-      this._debug.colorsPtr.end = this._io.pos;
+      this._debug.vertexCnPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.vertexCnPtr = this._io.readU4be();
+      this._debug.vertexCnPtr.end = this._io.pos;
       this._debug.flagsPtr = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.flagsPtr = this._io.readU4be();
       this._debug.flagsPtr.end = this._io.pos;
@@ -788,6 +788,27 @@ var GloverObjbank = (function() {
           this._io.seek(_pos);
         }
         return this._m_faces;
+      }
+    });
+    Object.defineProperty(Geometry.prototype, 'vertexCn', {
+      get: function() {
+        if (this._m_vertexCn !== undefined)
+          return this._m_vertexCn;
+        if (this.vertexCnPtr != 0) {
+          var _pos = this._io.pos;
+          this._io.seek(this.vertexCnPtr);
+          this._debug._m_vertexCn = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_vertexCn = new Array(this.numVertices);
+          this._debug._m_vertexCn.arr = new Array(this.numVertices);
+          for (var i = 0; i < this.numVertices; i++) {
+            this._debug._m_vertexCn.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_vertexCn[i] = this._io.readU4be();
+            this._debug._m_vertexCn.arr[i].end = this._io.pos;
+          }
+          this._debug._m_vertexCn.end = this._io.pos;
+          this._io.seek(_pos);
+        }
+        return this._m_vertexCn;
       }
     });
     Object.defineProperty(Geometry.prototype, 'uvsUnmodified', {
@@ -874,46 +895,25 @@ var GloverObjbank = (function() {
         return this._m_uvs;
       }
     });
-    Object.defineProperty(Geometry.prototype, 'colors', {
+    Object.defineProperty(Geometry.prototype, 'faceCn', {
       get: function() {
-        if (this._m_colors !== undefined)
-          return this._m_colors;
-        if (this.colorsPtr != 0) {
+        if (this._m_faceCn !== undefined)
+          return this._m_faceCn;
+        if (this.faceCnPtr != 0) {
           var _pos = this._io.pos;
-          this._io.seek(this.colorsPtr);
-          this._debug._m_colors = { start: this._io.pos, ioOffset: this._io.byteOffset };
-          this._m_colors = new Array(this.numVertices);
-          this._debug._m_colors.arr = new Array(this.numVertices);
-          for (var i = 0; i < this.numVertices; i++) {
-            this._debug._m_colors.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-            this._m_colors[i] = this._io.readU4be();
-            this._debug._m_colors.arr[i].end = this._io.pos;
-          }
-          this._debug._m_colors.end = this._io.pos;
-          this._io.seek(_pos);
-        }
-        return this._m_colors;
-      }
-    });
-    Object.defineProperty(Geometry.prototype, 'norms', {
-      get: function() {
-        if (this._m_norms !== undefined)
-          return this._m_norms;
-        if (this.normsPtr != 0) {
-          var _pos = this._io.pos;
-          this._io.seek(this.normsPtr);
-          this._debug._m_norms = { start: this._io.pos, ioOffset: this._io.byteOffset };
-          this._m_norms = new Array(this.numFaces);
-          this._debug._m_norms.arr = new Array(this.numFaces);
+          this._io.seek(this.faceCnPtr);
+          this._debug._m_faceCn = { start: this._io.pos, ioOffset: this._io.byteOffset };
+          this._m_faceCn = new Array(this.numFaces);
+          this._debug._m_faceCn.arr = new Array(this.numFaces);
           for (var i = 0; i < this.numFaces; i++) {
-            this._debug._m_norms.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
-            this._m_norms[i] = this._io.readU4be();
-            this._debug._m_norms.arr[i].end = this._io.pos;
+            this._debug._m_faceCn.arr[i] = { start: this._io.pos, ioOffset: this._io.byteOffset };
+            this._m_faceCn[i] = this._io.readU4be();
+            this._debug._m_faceCn.arr[i].end = this._io.pos;
           }
-          this._debug._m_norms.end = this._io.pos;
+          this._debug._m_faceCn.end = this._io.pos;
           this._io.seek(_pos);
         }
-        return this._m_norms;
+        return this._m_faceCn;
       }
     });
 
