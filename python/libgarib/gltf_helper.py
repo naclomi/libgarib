@@ -41,6 +41,23 @@ class MeshData(object):
         self.norms = []
         self.flags = []
 
+    def pushU32Color(self, value, quantity=1):
+        color = (
+            ((value & 0xFF000000) >> 24) / 255,
+            ((value & 0x00FF0000) >> 16) / 255,
+            ((value & 0x0000FF00) >> 8) / 255
+        )
+        for _ in range(quantity):
+            self.colors.append(color)
+
+    def pushU32Normal(self, value, quantity=1):
+        norm_byte = struct.unpack(">bbbb", struct.pack(">I",value))[:-1]
+        norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
+        norm_norm = tuple(coord / norm_mag for coord in norm_byte)
+        for _ in range(quantity):
+            self.norms.append(norm_norm)
+
+
     def __getitem__(self, key):
         return getattr(self, key)
 

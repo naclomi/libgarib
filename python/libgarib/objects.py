@@ -363,6 +363,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
  
     tex_warnings = set()
 
+
     for face_idx in range(geo.num_faces):
         material = gltf_helper.Material()
         if geo.texture_ids is not None:
@@ -377,12 +378,11 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
             v = geo.vertices[v_idx]
             prims.positions.append((v.x, v.y, v.z))
             if geo.vertex_cn is not None:
-                c = geo.vertex_cn[v_idx]
-                prims.colors.append((
-                    ((c & 0xFF000000) >> 24) / 255,
-                    ((c & 0x00FF0000) >> 16) / 255,
-                    ((c & 0x0000FF00) >> 8) / 255
-                ))
+                if render_mode.unlit:
+                    prims.pushU32Color(geo.vertex_cn[v_idx], 3)
+                else:
+                    prims.pushU32Normal(geo.vertex_cn[v_idx], 3)
+
         if geo.uvs is not None:
             tex = texture_db.byId.get(material.texture_id, None)
             uv = geo.uvs[face_idx]
@@ -401,11 +401,11 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
                               (uv.u3.value, uv.v3.value))
 
         if geo.face_cn is not None:
-            norm_raw = geo.face_cn[face_idx]
-            norm_byte = struct.unpack(">bbbb", struct.pack(">I",norm_raw))[:-1]
-            norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
-            norm_norm = tuple(coord / norm_mag for coord in norm_byte)
-            prims.norms += (norm_norm,) * 3
+            if render_mode.unlit:
+                prims.pushU32Color(geo.face_cn[face_idx], 3)
+            else:
+                prims.pushU32Normal(geo.face_cn[face_idx], 3)
+
         if geo.flags is not None:
             # TODO: what is this data? how can we include it effectively?
             # (11/13/22) This is more than likely the clamp and mirror flags
