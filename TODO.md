@@ -7,9 +7,9 @@
 ## dumping
 - don't repeat properties on child meshes when they're identical 
 - mesh+sprite alpha
-- decide whether geo data is color or normal based on mesh flags, not just whether it's per-vert/per-face
 - finish enumerating/clarifying render mode bits
 - deal with vertex clamp attributes
+- vertex compressor
 
 ## packing
 - compile new display lists

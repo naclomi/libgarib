@@ -184,8 +184,6 @@ def hashGLTFMesh(gltf_mesh, file):
         bufferview_data = buffer_data[bufferview.byteOffset: bufferview.byteOffset+bufferview.byteLength]
         data_hash.update(bufferview_data)
 
-    data_hash.update(gltf_mesh.extras["render_mode"].encode())
-
     return data_hash
 
 

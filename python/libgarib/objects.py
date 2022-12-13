@@ -363,7 +363,6 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
  
     tex_warnings = set()
 
-
     for face_idx in range(geo.num_faces):
         material = gltf_helper.Material()
         if geo.texture_ids is not None:
@@ -378,10 +377,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
             v = geo.vertices[v_idx]
             prims.positions.append((v.x, v.y, v.z))
             if geo.vertex_cn is not None:
-                if render_mode.unlit:
-                    prims.pushU32Color(geo.vertex_cn[v_idx], 3)
-                else:
-                    prims.pushU32Normal(geo.vertex_cn[v_idx], 3)
+                prims.pushU32Color(geo.vertex_cn[v_idx])
 
         if geo.uvs is not None:
             tex = texture_db.byId.get(material.texture_id, None)
@@ -401,10 +397,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
                               (uv.u3.value, uv.v3.value))
 
         if geo.face_cn is not None:
-            if render_mode.unlit:
-                prims.pushU32Color(geo.face_cn[face_idx], 3)
-            else:
-                prims.pushU32Normal(geo.face_cn[face_idx], 3)
+            prims.pushU32Normal(geo.face_cn[face_idx], 3)
 
         if geo.flags is not None:
             # TODO: what is this data? how can we include it effectively?
@@ -440,17 +433,17 @@ def mesh_to_pack_list(mesh):
     return pack_list
 
 class RenderMode(object):
-    # TODO: look more into "cloud surfaces":
+    # TODO: look more into "cloud surfaces" -- can we represent these in gltf materials?:
     #       http://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro15/index15.5.html
     FLAGS = [
-        ("per_vertex_colorsnorms", 0x1),
+        ("per_vertex_cn", 0x1),
         ("xlu", 0x2),
         ("masked", 0x4),
         ("unlit", 0x8),
         # 0x10 seems to be unused
-        ("ripple", 0x20), # TODO: implement
-        ("anim_sync", 0x40), # TODO: implement
-        ("cloud", 0x80), # TODO: implement
+        ("ripple", 0x20),
+        ("sync_to_global_clock", 0x40),
+        ("cloud", 0x80),
     ]
     MASK = sum(pos for _, pos in FLAGS)
     MISC_MASK = (~MASK) & 0xFFFF
@@ -508,9 +501,18 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
 
     if len(primitives) > 0:
         gltf_mesh = gltf.Mesh(name=name, extras={
-            "render_mode": "0x{:X}".format(mesh.render_mode),
             "pack_list": json.dumps(pack_list),
         })
+        if render_mode.ripple:
+            gltf_mesh.extras["ripple"] = 1
+        if render_mode.sync_to_global_clock:
+            gltf_mesh.extras["sync_to_global_clock"] = 1
+        if render_mode.cloud:
+            gltf_mesh.extras["cloud"] = 1
+        if render_mode.misc != 0:
+            gltf_mesh.extras["render_mode"] = "0x{:4X}".format(render_mode.misc)
+            gltf_mesh.extras["render_mode mask"] = "0x{:4X}".format(render_mode.MISC_MASK)
+
         gltf_helper.addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data)
         if dl_encoded is not None:
             gltf_mesh.extras["display_list"] = dl_encoded
