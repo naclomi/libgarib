@@ -304,16 +304,14 @@ def actorAnimationToJson(obj):
 
 def actor_to_gltf(obj_root, texture_db):
     data = bytearray()
-    root_node = gltf.Node()
+    root_node = gltf.Node(name="0x{:08X}".format(obj_root.obj_id))
 
-    # TODO: only use transformation inheritance if actor
-    #       is more than one node deep
+    is_skeletal = obj_root.mesh.child is not None or obj_root.mesh.sibling is not None
+
     file = gltf.GLTF2(
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
         nodes=[root_node],
-        extensionsUsed=[gltf_helper.TSR_INHERTANCE_EXTENSION],
-        extensionsRequired=[gltf_helper.TSR_INHERTANCE_EXTENSION],
         samplers=[
             gltf.Sampler(
                 magFilter=gltf.LINEAR,
@@ -326,18 +324,27 @@ def actor_to_gltf(obj_root, texture_db):
 
     for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_db=texture_db)
 
-    # Only include non-billboard nodes in skin
     skeletal_nodes = []
+    billboard_nodes = []
     for idx, node in enumerate(file.nodes):
-        if node.mesh is None or file.meshes[node.mesh].extras.get("billboard", False) is False:
+        is_billboard = file.meshes[node.mesh].extras.get("billboard", False) if node.mesh is not None else False
+        if node.mesh is None or not is_billboard:
+            # Only include non-billboard nodes in skin
             skeletal_nodes.append(idx)
+        if is_billboard:
+            billboard_nodes.append(idx)
 
-    file.skins.append(
-        gltf.Skin(
-            skeleton=0,
-            joints=skeletal_nodes
+    if is_skeletal:
+        file.skins.append(
+            gltf.Skin(
+                skeleton=0,
+                joints=skeletal_nodes
+            )
         )
-    )
+
+    if is_skeletal or len(billboard_nodes) > 0:
+        file.extensionsUsed.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
+        file.extensionsRequired.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
 
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
@@ -535,7 +542,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
         extensions={
-            gltf_helper.TSR_INHERTANCE_EXTENSION: {"scale": False}
+            gltf_helper.TSR_INHERITANCE_EXTENSION: {"scale": False}
         }
     )
     gltf_parent.children.append(len(file.nodes))

@@ -10,7 +10,7 @@ import pygltflib as gltf
 # TODO: move this into another module that's not-gltf-specific:
 FRAME_TO_SEC = 1/29.97
 
-TSR_INHERTANCE_EXTENSION = "EXT_node_tsr_inheritance"
+TSR_INHERITANCE_EXTENSION = "EXT_node_tsr_inheritance"
 
 def idToTexturePath(tex_id):
     return "textures/0x{:08X}.png".format(tex_id)
@@ -434,7 +434,7 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
         translation=(sprite.x, sprite.y, sprite.z),
         scale=(1, sprite.height/3, sprite.width/3),
         extensions={
-            TSR_INHERTANCE_EXTENSION: {"scale": False, "rotation": False}
+            TSR_INHERITANCE_EXTENSION: {"scale": False, "rotation": False}
         }
     )
     parent_node.children.append(len(file.nodes))

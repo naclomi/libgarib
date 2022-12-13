@@ -7,9 +7,10 @@
 ## dumping
 - don't repeat properties on child meshes when they're identical 
 - mesh+sprite alpha
-- finish enumerating/clarifying render mode bits
 - deal with vertex clamp attributes
+- vertex UVs are off on pool entry for 0xcd048e58-at1land
 - vertex compressor
+- possibly split animations into multiple gltf anim objects?
 
 ## packing
 - compile new display lists
