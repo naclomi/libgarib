@@ -349,10 +349,9 @@ def actor_to_gltf(obj_root, texture_db):
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
 
-    # TODO: where is the best place to put this?
     animation_props, animation_defs = actorAnimationToJson(obj_root)
-    file.nodes[0].extras["animation_defs"] = json.dumps(animation_defs)
-    file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
+    file.scenes[0].extras["animation_defs"] = json.dumps(animation_defs)
+    file.scenes[0].extras["animation_props"] = json.dumps(animation_props)
 
     # Go through and compute all necessary mesh hashes, now that buffers are constructed
     for mesh in file.meshes:
