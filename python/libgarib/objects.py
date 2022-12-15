@@ -106,7 +106,8 @@ def for_each_mesh(mesh, callback, cur_matrix=None, **kwargs):
         for_each_mesh(mesh.sibling, callback, cur_matrix, **kwargs)
     if mesh.child is not None:
         child_kwargs = kwargs.copy()
-        child_kwargs.update(updated_kwargs)
+        if updated_kwargs is not None:
+            child_kwargs.update(updated_kwargs)
         for_each_mesh(mesh.child, callback, cur_matrix, **child_kwargs)
 
 def getConstructFieldOffset(construct_struct, field_name):
@@ -306,8 +307,6 @@ def actor_to_gltf(obj_root, texture_db):
     data = bytearray()
     root_node = gltf.Node(name="0x{:08X}".format(obj_root.obj_id))
 
-    is_skeletal = obj_root.mesh.child is not None or obj_root.mesh.sibling is not None
-
     file = gltf.GLTF2(
         scene=0,
         scenes=[gltf.Scene(nodes=[0])],
@@ -322,7 +321,11 @@ def actor_to_gltf(obj_root, texture_db):
         ],
     )
 
+    # Export model data
+
     for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_db=texture_db)
+
+    # Finalize rig
 
     skeletal_nodes = []
     billboard_nodes = []
@@ -333,6 +336,8 @@ def actor_to_gltf(obj_root, texture_db):
             skeletal_nodes.append(idx)
         if is_billboard:
             billboard_nodes.append(idx)
+
+    is_skeletal = obj_root.mesh.child is not None or obj_root.mesh.sibling is not None
 
     if is_skeletal:
         file.skins.append(
@@ -346,12 +351,26 @@ def actor_to_gltf(obj_root, texture_db):
         file.extensionsUsed.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
         file.extensionsRequired.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
 
+    # Export animations
+    exported_anims = {}
+    for idx, anim in enumerate(obj_root.animation.animation_definitions or []):
+        key = (anim.start_time, anim.end_time, anim.playback_speed, anim.u1)
+        if key not in exported_anims:
+            animation_to_gltf(anim, obj_root.mesh, file, data)
+            exported_anims[key] = len(file.animations)
+        file.animations[exported_anims[key]].name += "_{:}".format(idx)
+
+    animation_props, animation_defs = actorAnimationToJson(obj_root)
+    file.scenes[0].extras["animation_props"] = json.dumps(animation_props)
+
+    # Finalize binary data
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
     file.set_binary_blob(bytes(data))
 
-    animation_props, animation_defs = actorAnimationToJson(obj_root)
-    file.scenes[0].extras["animation_defs"] = json.dumps(animation_defs)
-    file.scenes[0].extras["animation_props"] = json.dumps(animation_props)
+    # Clean up internal properties
+    for node in file.nodes:
+        if "_id" in node.extras:
+            del node.extras["_id"]
 
     # Go through and compute all necessary mesh hashes, now that buffers are constructed
     for mesh in file.meshes:
@@ -542,24 +561,30 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
         rotation=(r.v1, r.v2, r.v3, r.v4),
         extensions={
             gltf_helper.TSR_INHERITANCE_EXTENSION: {"scale": False}
+        },
+        extras={
+            "_id": mesh.id
         }
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
 
-    channel_nodes = {
-        "translation": mesh_node,
-        "rotation": mesh_node,
-        "scale": mesh_node,
-    }
-    gltf_helper.addAnimationDataToGLTF(mesh, channel_nodes, file, data)
-
     for idx, sprite in enumerate(mesh.sprites or []):
         gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh_node, file, data)
 
-
     return {"gltf_parent": mesh_node}
 
+
+def animation_to_gltf(anim, root_mesh, file, data):
+    anim_root = gltf.Animation(
+        name="slot",
+        extras={
+            "playback_speed": anim.playback_speed,
+            "u1": anim.u1 # TODO: what does this do??
+        })
+    file.animations.append(anim_root)
+    for_each_mesh(root_mesh, gltf_helper.addAnimationDataToGLTF,
+        clip=(anim.start_time, anim.end_time), file=file, data=data)
 
 ###############################################
 # Bank mapping utlities

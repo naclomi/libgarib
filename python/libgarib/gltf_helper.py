@@ -5,10 +5,9 @@ import json
 import math
 import struct
 
-import pygltflib as gltf
+from . import animation
 
-# TODO: move this into another module that's not-gltf-specific:
-FRAME_TO_SEC = 1/29.97
+import pygltflib as gltf
 
 TSR_INHERITANCE_EXTENSION = "EXT_node_tsr_inheritance"
 
@@ -345,7 +344,13 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             file.materials[-1].extensions["KHR_materials_unlit"] = {}
 
 
-def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
+def addAnimationDataToGLTF(mesh, cur_matrix, clip, file, data):
+
+    for mesh_node_idx, node in enumerate(file.nodes):
+        if node.extras.get("_id",None) == mesh.id:
+            break
+    else:
+        raise Exception("Couldn't find mesh node '0x{:08X}'".format(mesh.id))
 
     def addChannel(frames, output_type, channel_name):
         if len(file.animations) == 0:
@@ -355,10 +360,11 @@ def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
             anim_root = file.animations[0]
 
         # Build high-level animation structures
+
         anim_root.channels.append(gltf.AnimationChannel(
             sampler=len(anim_root.samplers),
             target=gltf.AnimationChannelTarget(
-                node=file.nodes.index(channel_nodes[channel_name]),
+                node=mesh_node_idx,
                 path=channel_name
             )
         ))
@@ -368,18 +374,35 @@ def addAnimationDataToGLTF(mesh, channel_nodes, file, data):
         ))
 
         # Encode raw data
+        clip_frames = [frame for frame in frames if frame.t >= clip[0] and frame.t < clip[1]]
+        if clip_frames[0].t != clip[0]:
+            prev_idx = frames.index(clip_frames[0]) - 1
+            if prev_idx >= 0:
+                if output_type == gltf.VEC3:
+                    clip_frames.insert(0, animation.lerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
+                else:
+                    clip_frames.insert(0, animation.slerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
+
+        if clip_frames[-1].t != clip[1]:
+            next_idx = frames.index(clip_frames[0]) + 1
+            if next_idx < len(frames):
+                if output_type == gltf.VEC3:
+                    clip_frames.append(animation.lerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
+                else:
+                    clip_frames.append(animation.slerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
+
         if output_type == gltf.VEC3:
             output_struct = struct.Struct("<3f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in frames]
+            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in clip_frames]
         elif output_type == gltf.VEC4:
             output_struct = struct.Struct("<4f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in frames]
+            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in clip_frames]
         else:
             raise ValueError("Bad type")
-        input_series = tuple(frame.t*FRAME_TO_SEC for frame in frames)
-
+        input_series = tuple((frame.t-clip[0])*animation.FRAME_TO_SEC for frame in clip_frames)
         encoded_output = b"".join(output_struct.pack(*frame) for frame in output_tuples)
         encoded_input = b"".join(struct.pack("<f",t) for t in input_series)
+
 
         # Build data pointer structures
 
@@ -538,3 +561,4 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
     file.images.append(gltf.Image(
         uri=idToTexturePath(sprite_material.texture_id),
     ))
+
