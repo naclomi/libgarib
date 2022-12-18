@@ -17,7 +17,7 @@ def idToTexturePath(tex_id):
 def transposeMap(fn, array):
     results = []
     for col_idx in range(len(array[0])):
-        results.append(fn(*(row[col_idx] for row in array)))
+        results.append(fn(list(row[col_idx] for row in array)))
     return results
 
 @dataclass(frozen=True, order=True)
@@ -344,7 +344,7 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             file.materials[-1].extensions["KHR_materials_unlit"] = {}
 
 
-def addAnimationDataToGLTF(mesh, cur_matrix, clip, file, data):
+def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
 
     for mesh_node_idx, node in enumerate(file.nodes):
         if node.extras.get("_id",None) == mesh.id:
@@ -353,28 +353,11 @@ def addAnimationDataToGLTF(mesh, cur_matrix, clip, file, data):
         raise Exception("Couldn't find mesh node '0x{:08X}'".format(mesh.id))
 
     def addChannel(frames, output_type, channel_name):
-        if len(file.animations) == 0:
-            anim_root = gltf.Animation(name="Global timeline")
-            file.animations.append(anim_root)
-        else:
-            anim_root = file.animations[0]
-
-        # Build high-level animation structures
-
-        anim_root.channels.append(gltf.AnimationChannel(
-            sampler=len(anim_root.samplers),
-            target=gltf.AnimationChannelTarget(
-                node=mesh_node_idx,
-                path=channel_name
-            )
-        ))
-        anim_root.samplers.append(gltf.AnimationSampler(
-            input=len(file.accessors),
-            output=len(file.accessors)+1
-        ))
-
-        # Encode raw data
+        # Prep frames
         clip_frames = [frame for frame in frames if frame.t >= clip[0] and frame.t < clip[1]]
+        if len(clip_frames) == 0:
+            return
+
         if clip_frames[0].t != clip[0]:
             prev_idx = frames.index(clip_frames[0]) - 1
             if prev_idx >= 0:
@@ -384,7 +367,7 @@ def addAnimationDataToGLTF(mesh, cur_matrix, clip, file, data):
                     clip_frames.insert(0, animation.slerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
 
         if clip_frames[-1].t != clip[1]:
-            next_idx = frames.index(clip_frames[0]) + 1
+            next_idx = frames.index(clip_frames[-1]) + 1
             if next_idx < len(frames):
                 if output_type == gltf.VEC3:
                     clip_frames.append(animation.lerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
@@ -399,13 +382,27 @@ def addAnimationDataToGLTF(mesh, cur_matrix, clip, file, data):
             output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in clip_frames]
         else:
             raise ValueError("Bad type")
+
+        # Build high-level animation structures
+        gltf_animation.channels.append(gltf.AnimationChannel(
+            sampler=len(gltf_animation.samplers),
+            target=gltf.AnimationChannelTarget(
+                node=mesh_node_idx,
+                path=channel_name
+            )
+        ))
+        gltf_animation.samplers.append(gltf.AnimationSampler(
+            input=len(file.accessors),
+            output=len(file.accessors)+1
+        ))
+
+        # Encode raw data
         input_series = tuple((frame.t-clip[0])*animation.FRAME_TO_SEC for frame in clip_frames)
         encoded_output = b"".join(output_struct.pack(*frame) for frame in output_tuples)
         encoded_input = b"".join(struct.pack("<f",t) for t in input_series)
 
 
         # Build data pointer structures
-
         file.accessors.append(gltf.Accessor(
             bufferView=len(file.bufferViews),
             componentType=gltf.FLOAT,

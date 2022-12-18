@@ -356,8 +356,8 @@ def actor_to_gltf(obj_root, texture_db):
     for idx, anim in enumerate(obj_root.animation.animation_definitions or []):
         key = (anim.start_time, anim.end_time, anim.playback_speed, anim.u1)
         if key not in exported_anims:
-            animation_to_gltf(anim, obj_root.mesh, file, data)
             exported_anims[key] = len(file.animations)
+            animation_to_gltf(anim, obj_root.mesh, file, data)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
 
     animation_props, animation_defs = actorAnimationToJson(obj_root)
@@ -584,7 +584,8 @@ def animation_to_gltf(anim, root_mesh, file, data):
         })
     file.animations.append(anim_root)
     for_each_mesh(root_mesh, gltf_helper.addAnimationDataToGLTF,
-        clip=(anim.start_time, anim.end_time), file=file, data=data)
+        gltf_animation=anim_root, clip=(anim.start_time, anim.end_time),
+        file=file, data=data)
 
 ###############################################
 # Bank mapping utlities
