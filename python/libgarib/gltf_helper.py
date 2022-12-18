@@ -355,33 +355,44 @@ def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
     def addChannel(frames, output_type, channel_name):
         # Prep frames
         clip_frames = [frame for frame in frames if frame.t >= clip[0] and frame.t < clip[1]]
+
+        # TODO: handle case when clip falls entirely before frame series
         if len(clip_frames) == 0:
-            return
+            for idx in range(len(frames)):
+                if frames[idx].t > clip[0]:
+                    frame_start = frames[idx-1]
+                    frame_end = frames[idx]
+                    break
+            else:
+                frame_start = frames[-1]
+                frame_end = frames[-1]
 
-        if clip_frames[0].t != clip[0]:
-            prev_idx = frames.index(clip_frames[0]) - 1
-            if prev_idx >= 0:
-                if output_type == gltf.VEC3:
-                    clip_frames.insert(0, animation.lerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
-                else:
-                    clip_frames.insert(0, animation.slerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
+            if output_type == gltf.VEC3:
+                clip_frames = [
+                    animation.lerpFrame(frame_start, frame_end, clip[0]),
+                    animation.lerpFrame(frame_start, frame_end, clip[1])
+                ]
+            else:
+                clip_frames = [
+                    animation.slerpFrame(frame_start, frame_end, clip[0]),
+                    animation.slerpFrame(frame_start, frame_end, clip[1])
+                ]
+        else:            
+            if clip_frames[0].t != clip[0]:
+                prev_idx = frames.index(clip_frames[0]) - 1
+                if prev_idx >= 0:
+                    if output_type == gltf.VEC3:
+                        clip_frames.insert(0, animation.lerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
+                    else:
+                        clip_frames.insert(0, animation.slerpFrame(frames[prev_idx], clip_frames[0], clip[0]))
 
-        if clip_frames[-1].t != clip[1]:
-            next_idx = frames.index(clip_frames[-1]) + 1
-            if next_idx < len(frames):
-                if output_type == gltf.VEC3:
-                    clip_frames.append(animation.lerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
-                else:
-                    clip_frames.append(animation.slerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
-
-        if output_type == gltf.VEC3:
-            output_struct = struct.Struct("<3f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in clip_frames]
-        elif output_type == gltf.VEC4:
-            output_struct = struct.Struct("<4f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in clip_frames]
-        else:
-            raise ValueError("Bad type")
+            if clip_frames[-1].t != clip[1]:
+                next_idx = frames.index(clip_frames[-1]) + 1
+                if next_idx < len(frames):
+                    if output_type == gltf.VEC3:
+                        clip_frames.append(animation.lerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
+                    else:
+                        clip_frames.append(animation.slerpFrame(clip_frames[-1], frames[next_idx], clip[1]))
 
         # Build high-level animation structures
         gltf_animation.channels.append(gltf.AnimationChannel(
@@ -397,6 +408,16 @@ def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
         ))
 
         # Encode raw data
+
+        if output_type == gltf.VEC3:
+            output_struct = struct.Struct("<3f")
+            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in clip_frames]
+        elif output_type == gltf.VEC4:
+            output_struct = struct.Struct("<4f")
+            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in clip_frames]
+        else:
+            raise ValueError("Bad type")
+
         input_series = tuple((frame.t-clip[0])*animation.FRAME_TO_SEC for frame in clip_frames)
         encoded_output = b"".join(output_struct.pack(*frame) for frame in output_tuples)
         encoded_input = b"".join(struct.pack("<f",t) for t in input_series)
@@ -406,7 +427,7 @@ def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
         file.accessors.append(gltf.Accessor(
             bufferView=len(file.bufferViews),
             componentType=gltf.FLOAT,
-            count=len(frames),
+            count=len(clip_frames),
             type=gltf.SCALAR,
             max=[max(input_series)],
             min=[min(input_series)]
@@ -415,7 +436,7 @@ def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
         file.accessors.append(gltf.Accessor(
             bufferView=len(file.bufferViews)+1,
             componentType=gltf.FLOAT,
-            count=len(frames),
+            count=len(clip_frames),
             type=output_type,
             max=transposeMap(max, output_tuples),
             min=transposeMap(min, output_tuples)
