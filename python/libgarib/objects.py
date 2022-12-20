@@ -298,7 +298,7 @@ def actorAnimationToJson(obj):
             "start": defn.start_time,
             "end": defn.end_time,
             "speed": defn.playback_speed,
-            "flags": defn.u1, # TODO: what does this do??
+            "unused": defn.unused
         })
     return properties, animations
 
@@ -578,10 +578,12 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
 def animation_to_gltf(anim, root_mesh, file, data):
     anim_root = gltf.Animation(
         name="slot",
-        extras={
-            "playback_speed": anim.playback_speed,
-            "u1": anim.u1 # TODO: what does this do??
-        })
+        extras={}
+    )
+    if anim.playback_speed != 1:
+        anim_root.extras["playback_speed"] = anim.playback_speed
+    if anim.unused != 0:
+        anim_root.extras["unused"] = anim.unused
     file.animations.append(anim_root)
     for_each_mesh(root_mesh, gltf_helper.addAnimationDataToGLTF,
         gltf_animation=anim_root, clip=(anim.start_time, anim.end_time),
