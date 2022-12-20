@@ -73,8 +73,7 @@ def unpack(args):
     texture_db = build_texture_db(args.textures)
 
     for bank_filename in args.bank_file:
-        bank_output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(bank_filename))[0] + ".unpacked")
-        os.makedirs(bank_output_dir, exist_ok=True)
+        os.makedirs(args.output_dir, exist_ok=True)
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverObjbank.from_bytes(bank_data)
@@ -84,7 +83,7 @@ def unpack(args):
             if obj is None:
                 continue
 
-            with open(os.path.join(bank_output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
+            with open(os.path.join(args.output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
                 f.write(libgarib.objects.actor_to_gltf(obj, texture_db))
 
 

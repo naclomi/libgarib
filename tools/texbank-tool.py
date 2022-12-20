@@ -63,8 +63,7 @@ def pack(args):
 
 def unpack(args):
     for bank_filename in args.bank_file:
-        bank_output_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(bank_filename))[0] + ".unpacked")
-        os.makedirs(bank_output_dir, exist_ok=True)
+        os.makedirs(args.output_dir, exist_ok=True)
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverTexbank.from_bytes(bank_data)
@@ -76,7 +75,7 @@ def unpack(args):
                 else:
                     filename = "0x{:08X}.png".format(texture.id)
                 im = libgarib.textures.texToIm(texture)
-                out_file = os.path.join(bank_output_dir, filename)
+                out_file = os.path.join(args.output_dir, filename)
                 metadata = {
                     "flags": texture.flags,
                     "color_format": texture.color_format.name,
