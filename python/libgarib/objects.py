@@ -726,3 +726,39 @@ def fillGaps(segments, bank_data):
     segments = segments + gaps
     segments.sort(key=lambda s: s.memory_range[0])
     return segments
+
+class CircularLink(object):
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return "CircularLink<0x{:X},{:}>".format(id(self.obj), str(self.obj))
+
+def kaitaiToJson(obj, visited = None):
+    if visited is None:
+        visited = set()
+    if issubclass(type(obj), list):
+        if id(obj) in visited:
+            return CircularLink(obj)
+        visited.add(id(obj))
+        return [kaitaiToJson(v, visited) for v in obj]
+    elif hasattr(obj, "__dict__"):
+        if id(obj) in visited:
+            return CircularLink(obj)
+        visited.add(id(obj))
+        d = {}
+        all_attr = {}
+        all_attr.update(obj.__dict__)
+        for k,v in vars(type(obj)).items():
+            if type(v) is property:
+                all_attr[k] = getattr(obj, k)
+        for k, v in all_attr.items():
+            if k.startswith("_"):
+                continue
+            d[k] = kaitaiToJson(v, visited)
+        return d
+    else:
+        return obj

@@ -5,20 +5,19 @@
 # objbank-tool
 
 ## dumping
+- sometimes, blender exporter crashes on material export and causes the skeleton to become ALL screwed up
 - don't repeat properties on child meshes when they're identical 
 - mesh+sprite alpha
 - deal with vertex clamp attributes
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
-- vertex compressor
-- possibly split animations into multiple gltf anim objects?
-
+- vertex compressor?
+- animations should have slot as a property rather than just in name
+- use a dict to map slot names?
+- export global animation track, or at least have an option to?
+- confirm that animation U1 prop is unused
 ## packing
 - compile new display lists
 - gltf meshes
-
-# actor-metadata-editor
-- choose UI toolkit
-- allow structured editing of gltf metadata
 
 # fla2.c
 - write C implementation

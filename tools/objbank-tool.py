@@ -13,6 +13,8 @@ from libgarib.parsers.glover_objbank import GloverObjbank
 
 from libgarib.fla2 import compress, data_from_stream
 
+import jmespath
+
 import PIL.Image
 
 import pygltflib as gltf
@@ -83,7 +85,6 @@ def unpack(args):
                 continue
 
             with open(os.path.join(bank_output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
-                # TODO: load texture sizes:
                 f.write(libgarib.objects.actor_to_gltf(obj, texture_db))
 
 
@@ -111,6 +112,21 @@ def pack(args):
         with open(args.output_file, "wb") as f:
             f.write(bank)
     sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(root.directory.actors), args.output_file))
+
+def query(args):
+    results = {}
+    for bank_filename in args.bank_file:
+        with open(bank_filename, "rb") as f:
+            bank_data = data_from_stream(f)
+
+        bank = GloverObjbank.from_bytes(bank_data)
+
+        results[bank_filename] = jmespath.search(args.query, libgarib.objects.kaitaiToJson(bank))
+
+    if args.output_format == "json":
+        print(json.dumps(results))
+    elif args.output_format == "pretty":
+        print(json.dumps(results, indent=4))
 
 
 if __name__=="__main__":
@@ -141,6 +157,13 @@ if __name__=="__main__":
     map_parser.add_argument("--zla", action="store_true",
                         help="Print pointers to zero-length arrays")
 
+    query_parser = subparsers.add_parser('query', help='Extract individual pieces of data from object data en masse')
+    query_parser.add_argument("query", type=str,
+                        help="Simple JSONPath-like query")
+    query_parser.add_argument("bank_file", type=str, nargs="+",
+                        help="Object bank file (potentially FLA2-compressed)")
+    query_parser.add_argument("--output-format", choices=["json", "pretty"], default="pretty",
+                        help="Choose output data format")
 
     args = parser.parse_args()
     if args.command == "pack":
@@ -149,4 +172,6 @@ if __name__=="__main__":
         unpack(args)
     elif args.command == "map":
         bankmap(args)
+    elif args.command == "query":
+        query(args)
 
