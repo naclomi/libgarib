@@ -344,7 +344,7 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             file.materials[-1].extensions["KHR_materials_unlit"] = {}
 
 
-def addAnimationDataToGLTF(mesh, cur_matrix, gltf_animation, clip, file, data):
+def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
 
     for mesh_node_idx, node in enumerate(file.nodes):
         if node.extras.get("_id",None) == mesh.id:

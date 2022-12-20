@@ -97,18 +97,15 @@ class LinkableObjectBank(linkable.LinkableStruct):
 def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
-def for_each_mesh(mesh, callback, cur_matrix=None, **kwargs):
-    if cur_matrix is None:
-        cur_matrix = pyrr.matrix44.Matrix44.identity()
-    # TODO: matrix xforms
-    updated_kwargs = callback(mesh, cur_matrix, **kwargs)
+def for_each_mesh(mesh, callback, **kwargs):
+    updated_kwargs = callback(mesh, **kwargs)
     if mesh.sibling is not None:
-        for_each_mesh(mesh.sibling, callback, cur_matrix, **kwargs)
+        for_each_mesh(mesh.sibling, callback, **kwargs)
     if mesh.child is not None:
         child_kwargs = kwargs.copy()
         if updated_kwargs is not None:
             child_kwargs.update(updated_kwargs)
-        for_each_mesh(mesh.child, callback, cur_matrix, **child_kwargs)
+        for_each_mesh(mesh.child, callback, **child_kwargs)
 
 def getConstructFieldOffset(construct_struct, field_name):
     offset = 0
@@ -491,7 +488,7 @@ class RenderMode(object):
         return str(self.toDict())
 
 
-def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
+def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     render_mode = RenderMode(mesh.render_mode)
     # Pack list represents what data channels in the gltf
     # file should be present when packing the actor
@@ -571,7 +568,7 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
 
 def global_timeline_to_gltf(root_mesh, file, data):
     max_time = 0
-    def scrape_max(mesh, cur_matrix):
+    def scrape_max(mesh):
         nonlocal max_time
         max_time = max(max_time, mesh.scale[-1].t)
         max_time = max(max_time, mesh.translation[-1].t)
@@ -649,7 +646,7 @@ def scrapeBankSegments(bank_data):
         bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
         if actor.mesh is not None:
 
-            def scrape_mesh(mesh, cur_matrix, parents):
+            def scrape_mesh(mesh, parents):
                 name = "{:08X}.".format(dir_entry.obj_id) + parent_str(parents + [mesh])
                 bank_push(mesh, None, "Mesh", name)
 
