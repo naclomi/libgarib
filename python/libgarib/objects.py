@@ -238,7 +238,7 @@ def actorAnimationFromJson(actor):
             "start_time": anim_def["start"],
             "end_time": anim_def["end"],
             "playback_speed": anim_def["speed"],
-            "u1": anim_def["flags"],
+            "unused": anim_def["unused"],
         })
     defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
 
@@ -268,10 +268,9 @@ def actorAnimationFromJson(actor):
     return props, defs
 
 
-def actorAnimationToJson(obj):
+def actorAnimationMetadataToJson(obj):
     a = obj.animation
-    animations = []
-
+    
     def queue_idx_to_props(idx):
         return {
             "idx": a.next_anim_idx[idx],
@@ -293,14 +292,7 @@ def actorAnimationToJson(obj):
         "starting_time": a.cur_time
     }
     
-    for defn in obj.animation.animation_definitions or []:
-        animations.append({
-            "start": defn.start_time,
-            "end": defn.end_time,
-            "speed": defn.playback_speed,
-            "unused": defn.unused
-        })
-    return properties, animations
+    return properties
 
 
 def actor_to_gltf(obj_root, texture_db):
@@ -360,7 +352,9 @@ def actor_to_gltf(obj_root, texture_db):
             animation_to_gltf(anim, obj_root.mesh, file, data)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
 
-    animation_props, animation_defs = actorAnimationToJson(obj_root)
+    global_timeline_to_gltf(obj_root.mesh, file, data)
+
+    animation_props = actorAnimationMetadataToJson(obj_root)
     file.scenes[0].extras["animation_props"] = json.dumps(animation_props)
 
     # Finalize binary data
@@ -573,6 +567,24 @@ def mesh_to_gltf(mesh, cur_matrix, file, gltf_parent, data, texture_db):
         gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh_node, file, data)
 
     return {"gltf_parent": mesh_node}
+
+
+def global_timeline_to_gltf(root_mesh, file, data):
+    max_time = 0
+    def scrape_max(mesh, cur_matrix):
+        nonlocal max_time
+        max_time = max(max_time, mesh.scale[-1].t)
+        max_time = max(max_time, mesh.translation[-1].t)
+        max_time = max(max_time, mesh.rotation[-1].t)
+    for_each_mesh(root_mesh, scrape_max)
+
+    anim_root = gltf.Animation(
+        name="Global timeline"
+    )
+    file.animations.append(anim_root)
+    for_each_mesh(root_mesh, gltf_helper.addAnimationDataToGLTF,
+        gltf_animation=anim_root, clip=(0, max_time),
+        file=file, data=data)
 
 
 def animation_to_gltf(anim, root_mesh, file, data):
