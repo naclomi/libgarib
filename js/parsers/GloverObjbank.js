@@ -279,9 +279,9 @@ var GloverObjbank = (function() {
       this._debug.playbackSpeed = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.playbackSpeed = this._io.readF4be();
       this._debug.playbackSpeed.end = this._io.pos;
-      this._debug.u1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u1 = this._io.readU4be();
-      this._debug.u1.end = this._io.pos;
+      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused = this._io.readU4be();
+      this._debug.unused.end = this._io.pos;
     }
 
     return AnimationDefinition;

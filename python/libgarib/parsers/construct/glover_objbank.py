@@ -52,7 +52,7 @@ glover_objbank__animation_definition = Struct(
 	'start_time' / Int16sb,
 	'end_time' / Int16sb,
 	'playback_speed' / Float32b,
-	'u1' / Int32ub,
+	'unused' / Int32ub,
 )
 
 glover_objbank__face = Struct(

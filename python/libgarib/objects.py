@@ -354,7 +354,7 @@ def actor_to_gltf(obj_root, texture_db):
     # Export animations
     exported_anims = {}
     for idx, anim in enumerate(obj_root.animation.animation_definitions or []):
-        key = (anim.start_time, anim.end_time, anim.playback_speed, anim.u1)
+        key = (anim.start_time, anim.end_time, anim.playback_speed, anim.unused)
         if key not in exported_anims:
             exported_anims[key] = len(file.animations)
             animation_to_gltf(anim, obj_root.mesh, file, data)

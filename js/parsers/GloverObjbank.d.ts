@@ -153,13 +153,13 @@ declare namespace GloverObjbank {
     startTime: number;
     endTime: number;
     playbackSpeed: number;
-    u1: number;
+    unused: number;
 
     _debug: {
       startTime: DebugPosition;
       endTime: DebugPosition;
       playbackSpeed: DebugPosition;
-      u1: DebugPosition;
+      unused: DebugPosition;
     };
   }
 }

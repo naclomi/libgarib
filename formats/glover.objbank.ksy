@@ -333,5 +333,10 @@ types:
         type: s2
       - id: playback_speed
         type: f4
-      - id: u1
+      - id: unused
+        # this value is 0 everywhere except:
+        #   - glover anims 12, 24, 42
+        #   - FF boss actor "parento" (pillar elctricity)
+        # where it is 1. the value is never read by the
+        # game at runtime.
         type: u4

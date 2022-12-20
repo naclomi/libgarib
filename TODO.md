@@ -14,7 +14,7 @@
 - animations should have slot as a property rather than just in name
 - use a dict to map slot names?
 - export global animation track, or at least have an option to?
-- confirm that animation U1 prop is unused
+
 ## packing
 - compile new display lists
 - gltf meshes

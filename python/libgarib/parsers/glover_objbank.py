@@ -235,7 +235,7 @@ class GloverObjbank(KaitaiStruct):
 
 
     class AnimationDefinition(KaitaiStruct):
-        SEQ_FIELDS = ["start_time", "end_time", "playback_speed", "u1"]
+        SEQ_FIELDS = ["start_time", "end_time", "playback_speed", "unused"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -253,9 +253,9 @@ class GloverObjbank(KaitaiStruct):
             self._debug['playback_speed']['start'] = self._io.pos()
             self.playback_speed = self._io.read_f4be()
             self._debug['playback_speed']['end'] = self._io.pos()
-            self._debug['u1']['start'] = self._io.pos()
-            self.u1 = self._io.read_u4be()
-            self._debug['u1']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_u4be()
+            self._debug['unused']['end'] = self._io.pos()
 
 
     class Face(KaitaiStruct):
