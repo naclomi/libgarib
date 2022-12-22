@@ -7,13 +7,13 @@
 ## dumping
 - sometimes, blender exporter crashes on material export and causes the skeleton to become ALL screwed up
 - don't repeat properties on child meshes when they're identical 
-- mesh+sprite alpha
+- deal with collision vs dlist
 - deal with vertex clamp attributes
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
 - vertex compressor?
 - animations should have slot as a property rather than just in name
 - use a dict to map slot names?
-- export global animation track, or at least have an option to?
+- control export of global animation track via cmdline arg
 
 ## packing
 - compile new display lists

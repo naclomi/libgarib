@@ -15,6 +15,7 @@ import pyrr
 from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
+from . import hash as hash_str
 from . import linkable
 from . import gltf_helper
 from . import display_lists
@@ -116,132 +117,129 @@ def getConstructFieldOffset(construct_struct, field_name):
     else:
         raise Exception("Field not found")
 
-def packMesh(mesh, bank):
+
+def packNode(node_idx, bank, file):
+    node = file.nodes[node_idx]
+
+    pack_list = node.extras.get("pack_list", ["display_list"])
+
     pointers = []
 
+    # Pack children
+
     children = []
-    for child in mesh["children"]:
-        children.append(packMesh(child, bank))
-        if len(children) > 1:
-            children[-2].pointers.append(linkable.LinkablePointer(
-                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
-                dtype = ">I",
-                target = children[-1]
-            ))
- 
-    if len(mesh.get("sprites", [])) > 0:
+    sprite_nodes = []
+    for child_idx in node.children:
+        if gltf_helper.gltfNodeIsBillboard(child_idx, file):
+            sprite_nodes.append(child_idx)
+        else:
+            children.append(packNode(child_idx, bank, file))
+            if len(children) > 1:
+                children[-2].pointers.append(linkable.LinkablePointer(
+                    offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
+                    dtype = ">I",
+                    target = children[-1]
+                ))
+
+    # Pack sprites
+
+    if len(sprite_nodes) > 0:     
         raw_sprites = []
-        for sprite in mesh["sprites"]:
-            # {
-            #         "texture_id": sprite.texture_id,
-            #         "position": [sprite.x, sprite.y, sprite.z],
-            #         "size": [sprite.width, sprite.height],
-            #         "unknown1": sprite.u5, # TODO: ???
-            #         "unknown2": sprite.u6, # TODO: ???
-            #         "flags": sprite.flags
-            #     })
-            # TODO
+        sprite_alpha = None
+        for sprite_idx in sprite_nodes:
+            sprite_node = file.nodes[sprite_idx]
+            if "alpha" in sprite_node.extras:
+                if sprite_alpha is None:
+                    sprite_alpha = sprite_node.extras["alpha"]
+                elif sprite_alpha != sprite_node.extras["alpha"]:
+                    print("WARNING: Inconsistent sprite alphas on {:}, only first will be used".format(node.name))
+            # TODO: pack sprite geo data
             pass
+        if sprite_alpha is None:
+            sprite_alpha = 0xFF
+
         raw_sprites = b"".join(raw_sprites)
         sprites = linkable.LinkableBytes(data=raw_sprites)
         bank.sprites.append(sprites)
         pointers.append(linkable.LinkablePointer(
-                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
-                dtype = ">I",
-                target = sprites
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
+            dtype = ">I",
+            target = sprites
         ))
+    else:
+        sprite_alpha = 0
 
     # TODO
-    raw_mesh = b""
-    # raw_mesh = objbank_writer.glover_objbank__mesh.build({
-    #     # "id": , # / Int32ub,
-    #     # "name": , # / FixedSized(8, GreedyString(encoding='ASCII')),
-    #     # "unused": , # / Int8ub,
-    #     # "alpha": , # / Int8ub,
-    #     # "num_scale": , # / Int16ub,
-    #     # "num_translation": , # / Int16ub,
-    #     # "num_rotation": , # / Int16ub,
-    #     # "geometry_ptr": , # / Int32ub,
-    #     # "display_list_ptr": , # / Int32ub,
-    #     # "scale_ptr": , # / Int32ub,
-    #     # "translation_ptr": , # / Int32ub,
-    #     # "rotation_ptr": , # / Int32ub,
-    #     "num_sprites": len(mesh.get("sprites", [])), # / Int32ub,
-    #     "sprites_ptr": 0,
-    #     "num_children": len(children),
-    #     # "render_mode": , # / Int16ub,
-    #     "child_ptr": 0,
-    #     "sibling_ptr": 0,
-    #     # "runtime_collision_data_ptr": , # / Int32ub,
-    #     "rotation": None,
-    #     "geometry": None,
-    #     "scale": None,
-    #     "translation": None,
-    #     "child": None,
-    #     "sibling": None,
-    #     "display_list": None,
-    #     "sprites": None
-    # })
 
+
+    # Pack sprite itself
+    mesh_id = hash_str.hash_str(node.name)
+
+    raw_mesh = b""
+    raw_mesh = objbank_writer.glover_objbank__mesh.build({
+        "id": mesh_id,
+        "name": node.name[:8].encode().ljust(8, b"\0"),
+        "mesh_alpha": node.extras.get("alpha", 0xFF), # / Int8ub,
+        "sprite_alpha": sprite_alpha,
+        # "num_scale": , # / Int16ub,
+        # "num_translation": , # / Int16ub,
+        # "num_rotation": , # / Int16ub,
+        "geometry_ptr": 0,
+        "display_list_ptr": 0,
+        "scale_ptr": 0, # / Int32ub,
+        "translation_ptr": 0, # / Int32ub,
+        "rotation_ptr": 0, # / Int32ub,
+        "num_sprites": len(sprite_nodes),
+        "sprites_ptr": 0,
+        "num_children": len(children),
+        # "render_mode": , # / Int16ub,
+        "child_ptr": 0,
+        "sibling_ptr": 0,
+        "runtime_collision_data_ptr": 0,
+        "rotation": None,
+        "geometry": None,
+        "scale": None,
+        "translation": None,
+        "child": None,
+        "sibling": None,
+        "display_list": None,
+        "sprites": None
+    })
+
+    # Pack geo
+    if should_pack_geo(pack_list):
+        # TODO
+        pass
+
+    # Pack DL
+    if "display_list" in pack_list:
+        display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, bank, file)
+        pointers.append(linkable.LinkablePointer(
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
+            dtype = ">I",
+            target = display_list,
+            target_offset = dl_start_offset
+        ))
+
+
+    # Fix up child ptr
     if len(children) > 0:
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "child_ptr"),
             dtype = ">I",
             target = children[0]
         ))
-    return linkable.LinkableBytes(data=raw_mesh, pointers=pointers) 
 
-def packActor(actor, bank):
-    anim_props, anim_defs = actorAnimationFromJson(actor)
-    bank.anim_defs.append(anim_defs)
-    bank.anim_props.append(anim_props)
+    # Finalize structure
+    linkable_mesh = linkable.LinkableBytes(data=raw_mesh, pointers=pointers) 
+    bank.meshses.append(linkable_mesh)
+    return linkable_mesh
 
-    root_mesh = packMesh(actor["mesh"], bank)
-    bank.meshes.append(root_mesh)
 
-    root_actor_raw = objbank_writer.glover_objbank__object_root.build({
-        "obj_id": actor["id"],
-        "bank_base_addr": 0,
-        "u2": 0, # TODO: what does this do??
-        "mesh_ptr": 0,
-        "u3": 0, # TODO: what does this do??
-        "u4": 0, # TODO: what does this do??
-        "animation_ptr": 0,
-        "mesh": None,
-        "animation": None,
-    })
-    root_actor = linkable.LinkableBytes(
-        data=root_actor_raw,
-        pointers=[
-            linkable.LinkablePointer(
-                offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
-                dtype = ">I",
-                target = anim_props
-            ),
-            linkable.LinkablePointer(
-                offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
-                dtype = ">I",
-                target = root_mesh
-            ),
-        ]
-    )
-    bank.actors.append(root_actor)
-    bank.directory.actors[actor["id"]] = root_actor
-
-def actorAnimationFromJson(actor):
-    raw_defs = b""
-    for anim_def in actor["animations"]:
-        raw_defs += objbank_writer.glover_objbank__animation_definition.build({
-            "start_time": anim_def["start"],
-            "end_time": anim_def["end"],
-            "playback_speed": anim_def["speed"],
-            "unused": anim_def["unused"],
-        })
-    defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
-
-    p = actor["animation_properties"]
+def actorAnimationMetadataFromJson(props_json, defs, file):
+    p = json.loads(props_json)
     raw_props = objbank_writer.glover_objbank__animation.build({
-        "num_animation_definitions": len(actor["animations"]),
+        "num_animation_definitions": len(file.animations),
         "current_animation_idx": p["starting_props"]["idx"],
         "is_playing": p["starting_props"]["is_playing"],
         "time_delta": p["starting_props"]["time_delta"],
@@ -261,8 +259,8 @@ def actorAnimationFromJson(actor):
         dtype = ">I",
         target = defs
     )
-    props = linkable.LinkableBytes(data=raw_defs, pointers=[anim_ptr])
-    return props, defs
+    props = linkable.LinkableBytes(data=raw_props, pointers=[anim_ptr])
+    return props
 
 
 def actorAnimationMetadataToJson(obj):
@@ -290,6 +288,73 @@ def actorAnimationMetadataToJson(obj):
     }
     
     return properties
+
+
+class GLTFStructureException(Exception):
+    pass
+
+def packActor(file, bank, texture_db):
+    # print(file)
+    print(file.scenes[0].extras)
+
+
+    if len(file.scenes) != 1:
+        raise GLTFStructureException("There must be only one scene")
+
+    for node_idx in file.scenes[0].nodes:
+
+        root_node = file.nodes[node_idx]
+
+        # Pack animations
+
+        raw_defs = b""
+
+        # TODO: 
+        # for anim_def in actor["animations"]:
+        #     raw_defs += objbank_writer.glover_objbank__animation_definition.build({
+        #         "start_time": anim_def["start"],
+        #         "end_time": anim_def["end"],
+        #         "playback_speed": anim_def["speed"],
+        #         "unused": anim_def["unused"],
+        #     })
+
+        anim_defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
+        bank.anim_defs.append(anim_defs)
+
+        anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, file)
+        bank.anim_props.append(anim_props)
+
+        # Pack mesh data
+        root_mesh = packNode(node_idx, bank, file)
+
+        # root_actor_raw = objbank_writer.glover_objbank__object_root.build({
+        #     "obj_id": actor["id"],
+        #     "bank_base_addr": 0,
+        #     "u2": 0, # TODO: what does this do??
+        #     "mesh_ptr": 0,
+        #     "u3": 0, # TODO: what does this do??
+        #     "u4": 0, # TODO: what does this do??
+        #     "animation_ptr": 0,
+        #     "mesh": None,
+        #     "animation": None,
+        # })
+        # root_actor = linkable.LinkableBytes(
+        #     data=root_actor_raw,
+        #     pointers=[
+        #         linkable.LinkablePointer(
+        #             offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
+        #             dtype = ">I",
+        #             target = anim_props
+        #         ),
+        #         linkable.LinkablePointer(
+        #             offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
+        #             dtype = ">I",
+        #             target = root_mesh
+        #         ),
+        #     ]
+        # )
+        # bank.actors.append(root_actor)
+        # bank.directory.actors[actor["id"]] = root_actor
 
 
 def actor_to_gltf(obj_root, texture_db):
@@ -352,7 +417,7 @@ def actor_to_gltf(obj_root, texture_db):
     global_timeline_to_gltf(obj_root.mesh, file, data)
 
     animation_props = actorAnimationMetadataToJson(obj_root)
-    file.scenes[0].extras["animation_props"] = json.dumps(animation_props)
+    file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
 
     # Finalize binary data
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
@@ -428,6 +493,9 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
 
     return primitives
 
+def should_pack_geo(pack_list):
+    return set(("faces", "colors", "uvs", "norms", "flags", "textures")).union(set(pack_list))
+
 def mesh_to_pack_list(mesh):
     pack_list = []
     if mesh.geometry is not None:
@@ -493,7 +561,6 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     # Pack list represents what data channels in the gltf
     # file should be present when packing the actor
     pack_list = mesh_to_pack_list(mesh)
-    # print(mesh.name.strip("\0"), render_mode)
 
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
@@ -534,7 +601,6 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
             gltf_mesh.extras["display_list"] = dl_encoded
             # Mark mesh as needing to be hashed, once all buffers are constructed:
             gltf_mesh.extras["data_hash"] = None
-
         mesh_id = len(file.meshes)
         file.meshes.append(gltf_mesh)
     else:
@@ -554,14 +620,15 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
             gltf_helper.TSR_INHERITANCE_EXTENSION: {"scale": False}
         },
         extras={
-            "_id": mesh.id
+            "_id": mesh.id,
+            "alpha": mesh.mesh_alpha
         }
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
 
     for idx, sprite in enumerate(mesh.sprites or []):
-        gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh_node, file, data)
+        gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh.sprite_alpha, mesh_node, file, data)
 
     return {"gltf_parent": mesh_node}
 

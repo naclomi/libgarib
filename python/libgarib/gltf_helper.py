@@ -461,11 +461,11 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
     if len(mesh.scale) > 1:
         addChannel(mesh.scale, gltf.VEC3, "scale")
 
+def gltfNodeIsBillboard(node_idx, file):
+    mesh = file.meshes[file.nodes[node_idx].meshes[0]]
+    return mesh.extras.get("billboard", False):
 
-def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
-    # TODO: make sure textures are right-side-up
-    # TODO: don't have these nodes show up as skeletal bones
-
+def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
     name = "{:}_sprite_{:}".format(parent_node.name, idx)
 
     # Create node structure
@@ -476,6 +476,10 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
         scale=(1, sprite.height/3, sprite.width/3),
         extensions={
             TSR_INHERITANCE_EXTENSION: {"scale": False, "rotation": False}
+        },
+        extras={
+            "sprite_idx": idx,
+            "alpha": alpha
         }
     )
     parent_node.children.append(len(file.nodes))
@@ -485,7 +489,6 @@ def addBillboardSpriteToGLTF(sprite, idx, parent_node, file, data):
         name=name,
         extras={
             "billboard": True,
-            "sprite_idx": idx
         }
     )
     file.meshes.append(billboard_mesh)

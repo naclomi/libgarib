@@ -94,8 +94,9 @@ def pack(args):
 
     for actor_filename in args.actor_file:
         with open(actor_filename, "r") as f:
-            actor = json.load(f)
-            libgarib.objects.packActor(actor, root)
+            file = gltf.GLTF2.load(actor_filename)
+            libgarib.objects.packActor(file, root, texture_db)
+ 
     root.finalize()
     bank = root.link()
 

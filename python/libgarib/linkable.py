@@ -62,6 +62,12 @@ class LinkableBytes(Linkable):
     def __len__(self):
         return padLen(len(self.data))
 
+    def finalize(self):
+        for pointer in self.pointers:
+            if pointer.target is None:
+                # Relative pointer
+                pointer.target = self
+
     def link(self):
         for pointer in self.pointers:
             pointer.rewrite(self.data)
