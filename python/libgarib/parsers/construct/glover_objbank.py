@@ -69,8 +69,8 @@ glover_objbank__sprite = Struct(
 	'z' / Int16ub,
 	'width' / Int16ub,
 	'height' / Int16ub,
-	'u5' / Int16ub,
-	'u6' / Int16ub,
+	'u5' / Int16sb,
+	'u6' / Int16sb,
 	'flags' / Int16ub,
 )
 

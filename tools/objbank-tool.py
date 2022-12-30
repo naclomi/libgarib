@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import cmd
 import io
 import json
 import os
@@ -114,20 +115,37 @@ def pack(args):
     sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(root.directory.actors), args.output_file))
 
 def query(args):
-    results = {}
+    json_banks = {}
     for bank_filename in args.bank_file:
-        with open(bank_filename, "rb") as f:
-            bank_data = data_from_stream(f)
+            with open(bank_filename, "rb") as f:
+                bank_data = data_from_stream(f)
 
-        bank = GloverObjbank.from_bytes(bank_data)
+            bank = GloverObjbank.from_bytes(bank_data)
+            json_banks[bank_filename] = libgarib.objects.objBankToJson(bank)
 
-        results[bank_filename] = jmespath.search(args.query, libgarib.objects.kaitaiToJson(bank))
+    def run_query(query_txt):
+        results = {}
+        for bank_filename, bank_data in json_banks.items():
+            results[bank_filename] = jmespath.search(query_txt, bank_data)
 
-    if args.output_format == "json":
-        print(json.dumps(results))
-    elif args.output_format == "pretty":
-        print(json.dumps(results, indent=4))
+        if args.output_format == "json":
+            print(json.dumps(results))
+        elif args.output_format == "pretty":
+            print(json.dumps(results, indent=4))
+        print("\n\n")
 
+    if args.query is not None and len(args.query) > 0:
+        for query_txt in args.query:
+            run_query(query_txt)
+    else:
+        class JMESPathShell(cmd.Cmd):
+            prompt="> "
+            def default(self, line):
+                try:
+                    run_query(line)
+                except Exception as e:
+                    print(e)
+        JMESPathShell().cmdloop()
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Tool to work with object bank archives from Glover (N64)")
@@ -158,8 +176,8 @@ if __name__=="__main__":
                         help="Print pointers to zero-length arrays")
 
     query_parser = subparsers.add_parser('query', help='Extract individual pieces of data from object data en masse')
-    query_parser.add_argument("query", type=str,
-                        help="Simple JSONPath-like query")
+    query_parser.add_argument("--query", action="append",
+                        help="JMESPath query")
     query_parser.add_argument("bank_file", type=str, nargs="+",
                         help="Object bank file (potentially FLA2-compressed)")
     query_parser.add_argument("--output-format", choices=["json", "pretty"], default="pretty",

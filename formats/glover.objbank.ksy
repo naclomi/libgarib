@@ -257,9 +257,9 @@ types:
       - id: height
         type: u2
       - id: u5
-        type: u2
+        type: s2
       - id: u6
-        type: u2
+        type: s2
       - id: flags
         type: u2
 

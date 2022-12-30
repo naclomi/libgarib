@@ -19,6 +19,7 @@ from . import hash as hash_str
 from . import linkable
 from . import gltf_helper
 from . import display_lists
+from . import objproxy
 
 
 ###############################################
@@ -117,6 +118,32 @@ def getConstructFieldOffset(construct_struct, field_name):
     else:
         raise Exception("Field not found")
 
+def textureIdFromMaterial(material_idx, file):
+    material = file.materials[material_idx]
+    texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
+    texture = file.textures[texture_idx]
+    image = file.images[texture.source]
+    basename = os.path.basename(image.uri)
+    # TODO: fallback chain -- first look in URI, then look in gltf image's name, then in material's name
+    return next(re.finditer("(0x[0-9A-Fa-f]+)|([0-9]+)", basename)).group(0)
+
+def packSprite(sprite_idx, file, texture_db):
+    sprite_node = file.nodes[sprite_idx]
+    # TODO: pack geo
+    return objbank_writer.glover_objbank__sprite.build({
+        "texture_id": textureIdFromMaterial(sprite_node.material, file), # / Int32ub,
+        "runtime_data_ptr": 0, # / Int32ub,
+        "x": node.translation[0],
+        "y": node.translation[1],
+        "z": node.translation[2],
+        "width": node.scale[2]*3 if node.scale[0] == 1 else node.scale[0]*3, 
+        "height": node.scale[1]*3, # / Int16ub,
+        # "u5": , # / Int16ub,
+        # "u6": , # / Int16ub,
+        # "flags": , # / Int16ub,
+    })
+
+
 
 def packNode(node_idx, bank, file):
     node = file.nodes[node_idx]
@@ -153,8 +180,7 @@ def packNode(node_idx, bank, file):
                     sprite_alpha = sprite_node.extras["alpha"]
                 elif sprite_alpha != sprite_node.extras["alpha"]:
                     print("WARNING: Inconsistent sprite alphas on {:}, only first will be used".format(node.name))
-            # TODO: pack sprite geo data
-            pass
+            raw_sprites.append(packSprite(sprite_idx, file, texture_db))
         if sprite_alpha is None:
             sprite_alpha = 0xFF
 
@@ -172,7 +198,7 @@ def packNode(node_idx, bank, file):
     # TODO
 
 
-    # Pack sprite itself
+    # Pack mesh metadata
     mesh_id = hash_str.hash_str(node.name)
 
     raw_mesh = b""
@@ -290,16 +316,13 @@ def actorAnimationMetadataToJson(obj):
     return properties
 
 
-class GLTFStructureException(Exception):
-    pass
-
 def packActor(file, bank, texture_db):
     # print(file)
     print(file.scenes[0].extras)
 
 
     if len(file.scenes) != 1:
-        raise GLTFStructureException("There must be only one scene")
+        raise gltf_helper.GLTFStructureException("There must be only one scene")
 
     for node_idx in file.scenes[0].nodes:
 
@@ -805,38 +828,19 @@ def fillGaps(segments, bank_data):
     segments.sort(key=lambda s: s.memory_range[0])
     return segments
 
-class CircularLink(object):
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return "CircularLink<0x{:X},{:}>".format(id(self.obj), str(self.obj))
-
-def kaitaiToJson(obj, visited = None):
-    if visited is None:
-        visited = set()
-    if issubclass(type(obj), list):
-        if id(obj) in visited:
-            return CircularLink(obj)
-        visited.add(id(obj))
-        return [kaitaiToJson(v, visited) for v in obj]
-    elif hasattr(obj, "__dict__"):
-        if id(obj) in visited:
-            return CircularLink(obj)
-        visited.add(id(obj))
-        d = {}
-        all_attr = {}
-        all_attr.update(obj.__dict__)
-        for k,v in vars(type(obj)).items():
-            if type(v) is property:
-                all_attr[k] = getattr(obj, k)
-        for k, v in all_attr.items():
-            if k.startswith("_"):
-                continue
-            d[k] = kaitaiToJson(v, visited)
-        return d
-    else:
-        return obj
+def objBankToJson(bank):
+    json = objproxy.GenericProxy.of(bank)
+    def scrapeChildren(node, flat):
+        flat.append(node)
+        if (sibling := node.get("sibling", None)) is not None:
+            scrapeChildren(sibling, flat)
+        if (child := node.get("child", None)) is not None:
+            scrapeChildren(child, flat)
+    for entry in json["directory"]:
+        all_meshes = []
+        obj = entry["obj_root"]
+        if obj is None:
+            continue
+        scrapeChildren(obj["mesh"], all_meshes)
+        obj["all_meshes"] = all_meshes
+    return json

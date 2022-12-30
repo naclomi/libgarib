@@ -6,8 +6,6 @@ import struct
 from . import gltf_helper
 from . import linkable
 
-from .objects import GLTFStructureException
-
 from .gbi import F3DEX, Vertex as GbiVertex
 
 ################################
@@ -18,7 +16,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
     node = file.nodes[node_idx]
 
     if len(node.meshes) > 1:
-        raise GLTFStructureException("There must be only one mesh per node")
+        raise gltf_helper.GLTFStructureException("There must be only one mesh per node")
     mesh_idx = node.meshes[0]
 
     raw_dl = b""

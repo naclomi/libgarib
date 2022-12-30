@@ -11,6 +11,9 @@ import pygltflib as gltf
 
 TSR_INHERITANCE_EXTENSION = "EXT_node_tsr_inheritance"
 
+class GLTFStructureException(Exception):
+    pass
+
 def idToTexturePath(tex_id):
     return "textures/0x{:08X}.png".format(tex_id)
 
@@ -463,7 +466,7 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
 
 def gltfNodeIsBillboard(node_idx, file):
     mesh = file.meshes[file.nodes[node_idx].meshes[0]]
-    return mesh.extras.get("billboard", False):
+    return mesh.extras.get("billboard", False)
 
 def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
     name = "{:}_sprite_{:}".format(parent_node.name, idx)
