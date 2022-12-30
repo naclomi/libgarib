@@ -5,6 +5,9 @@
 # objbank-tool
 
 ## dumping
+- animation: instead of just saving playback_time as a property,
+             scale time timeline with it (it's only used to determine u16
+             time code precision)
 - sometimes, blender exporter crashes on material export and causes the skeleton to become ALL screwed up
 - don't repeat properties on child meshes when they're identical 
 - deal with collision vs dlist

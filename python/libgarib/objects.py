@@ -133,11 +133,11 @@ def packSprite(sprite_idx, file, texture_db):
     return objbank_writer.glover_objbank__sprite.build({
         "texture_id": textureIdFromMaterial(sprite_node.material, file), # / Int32ub,
         "runtime_data_ptr": 0, # / Int32ub,
-        "x": node.translation[0],
-        "y": node.translation[1],
-        "z": node.translation[2],
-        "width": node.scale[2]*3 if node.scale[0] == 1 else node.scale[0]*3, 
-        "height": node.scale[1]*3, # / Int16ub,
+        "x": sprite_node.translation[0],
+        "y": sprite_node.translation[1],
+        "z": sprite_node.translation[2],
+        "width": sprite_node.scale[2]*3 if sprite_node.scale[0] == 1 else sprite_node.scale[0]*3, 
+        "height": sprite_node.scale[1]*3, # / Int16ub,
         # "u5": , # / Int16ub,
         # "u6": , # / Int16ub,
         # "flags": , # / Int16ub,
@@ -145,7 +145,7 @@ def packSprite(sprite_idx, file, texture_db):
 
 
 
-def packNode(node_idx, bank, file):
+def packNode(node_idx, bank, file, texture_db, dopesheet):
     node = file.nodes[node_idx]
 
     pack_list = node.extras.get("pack_list", ["display_list"])
@@ -160,7 +160,7 @@ def packNode(node_idx, bank, file):
         if gltf_helper.gltfNodeIsBillboard(child_idx, file):
             sprite_nodes.append(child_idx)
         else:
-            children.append(packNode(child_idx, bank, file))
+            children.append(packNode(child_idx, bank, file, texture_db, dopesheet))
             if len(children) > 1:
                 children[-2].pointers.append(linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
@@ -315,11 +315,39 @@ def actorAnimationMetadataToJson(obj):
     
     return properties
 
+class ActorDopesheet(object):
+    pass
+
+def setupActorAnimations(file, root_node_idx, bank):
+    # TODO:
+    # - identify all nodes in root tree, as set N
+    # - identify animations that reference nodes in N, as set S
+    # - arrange animations based on slot idx into global order
+    # - create dope sheet structure
+    #   - for each animation, determine playback speed based on time precision
+    # - pack definitions based on dope sheet
+    root_node = file.nodes[root_node_idx]
+
+    raw_defs = b""
+
+    # TODO: 
+    # for anim_def in actor["animations"]:
+    #     raw_defs += objbank_writer.glover_objbank__animation_definition.build({
+    #         "start_time": anim_def["start"],
+    #         "end_time": anim_def["end"],
+    #         "playback_speed": anim_def["speed"],
+    #         "unused": anim_def["unused"],
+    #     })
+
+    anim_defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
+    bank.anim_defs.append(anim_defs)
+
+    anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, file)
+    bank.anim_props.append(anim_props)
+
+    return ActorDopesheet(), anim_props
 
 def packActor(file, bank, texture_db):
-    # print(file)
-    print(file.scenes[0].extras)
-
 
     if len(file.scenes) != 1:
         raise gltf_helper.GLTFStructureException("There must be only one scene")
@@ -328,56 +356,44 @@ def packActor(file, bank, texture_db):
 
         root_node = file.nodes[node_idx]
 
+        obj_id = root_node.extras.get("id", None)
+        if obj_id is None:
+            obj_id = hash_str.hash_str(root_node.name)
+
         # Pack animations
-
-        raw_defs = b""
-
-        # TODO: 
-        # for anim_def in actor["animations"]:
-        #     raw_defs += objbank_writer.glover_objbank__animation_definition.build({
-        #         "start_time": anim_def["start"],
-        #         "end_time": anim_def["end"],
-        #         "playback_speed": anim_def["speed"],
-        #         "unused": anim_def["unused"],
-        #     })
-
-        anim_defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
-        bank.anim_defs.append(anim_defs)
-
-        anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, file)
-        bank.anim_props.append(anim_props)
+        anim_dopesheet, anim_data = setupActorAnimations(file, node_idx, bank)
 
         # Pack mesh data
-        root_mesh = packNode(node_idx, bank, file)
+        root_mesh = packNode(node_idx, bank, file, texture_db, anim_dopesheet)
 
-        # root_actor_raw = objbank_writer.glover_objbank__object_root.build({
-        #     "obj_id": actor["id"],
-        #     "bank_base_addr": 0,
-        #     "u2": 0, # TODO: what does this do??
-        #     "mesh_ptr": 0,
-        #     "u3": 0, # TODO: what does this do??
-        #     "u4": 0, # TODO: what does this do??
-        #     "animation_ptr": 0,
-        #     "mesh": None,
-        #     "animation": None,
-        # })
-        # root_actor = linkable.LinkableBytes(
-        #     data=root_actor_raw,
-        #     pointers=[
-        #         linkable.LinkablePointer(
-        #             offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
-        #             dtype = ">I",
-        #             target = anim_props
-        #         ),
-        #         linkable.LinkablePointer(
-        #             offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
-        #             dtype = ">I",
-        #             target = root_mesh
-        #         ),
-        #     ]
-        # )
-        # bank.actors.append(root_actor)
-        # bank.directory.actors[actor["id"]] = root_actor
+        root_actor_raw = objbank_writer.glover_objbank__object_root.build({
+            "obj_id": obj_id,
+            "bank_base_addr": 0,
+            "u2": 0,
+            "mesh_ptr": 0,
+            "u3": 0,
+            "u4": 0,
+            "animation_ptr": 0,
+            "mesh": None,
+            "animation": None,
+        })
+        root_actor = linkable.LinkableBytes(
+            data=root_actor_raw,
+            pointers=[
+                linkable.LinkablePointer(
+                    offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
+                    dtype = ">I",
+                    target = anim_data
+                ),
+                linkable.LinkablePointer(
+                    offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
+                    dtype = ">I",
+                    target = root_mesh
+                ),
+            ]
+        )
+        bank.actors.append(root_actor)
+        bank.directory.actors[obj_id] = root_actor
 
 
 def actor_to_gltf(obj_root, texture_db):
