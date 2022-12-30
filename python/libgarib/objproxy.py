@@ -49,6 +49,15 @@ class ListProxy(GenericProxy, list):
     ...
 
 class DictProxy(GenericProxy, dict):
+    def __init__(self, obj):
+        GenericProxy.__init__(self, obj)
+        # CPYTHON HACK: add a dummy object to the
+        # dict contents, which forces the internal
+        # 'ma_used' flag to true. this allows C
+        # modules like the json encoder to iterate
+        # over it
+        dict.__setitem__(self, ..., ...)
+
     def __iter__(self):
         it = self.obj.__iter__()
         try:
@@ -70,6 +79,15 @@ class DictProxy(GenericProxy, dict):
         return self.obj.get(*args, **kwargs)
 
 class ObjProxy(GenericProxy, dict):
+    def __init__(self, obj):
+        GenericProxy.__init__(self, obj)
+        # CPYTHON HACK: add a dummy object to the
+        # dict contents, which forces the internal
+        # 'ma_used' flag to true. this allows C
+        # modules like the json encoder to iterate
+        # over it
+        dict.__setitem__(self, ..., ...)
+
     def keys(self):
         all_attr = set()
         all_attr.update(k for k in self.obj.__dict__.keys() if not k.startswith("_"))
