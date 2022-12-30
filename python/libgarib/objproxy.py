@@ -45,10 +45,44 @@ class GenericProxy(object):
     def __setitem__(self, key, value):
         self.obj.__setitem__(key, value)
 
-class ListProxy(GenericProxy, list):
+class PseudoList(list):
     ...
 
+class PseudoDict(dict):
+    ...
+
+class ListProxy(GenericProxy, list):
+    def __new__(cls, obj=None):
+        # For dpath segment creation; if someone tries
+        # to create an empty collection of the same "type"
+        # as a proxy class, actually give them a proper
+        # empty collection rather than a proxy class pointing
+        # to None
+        if obj is None:
+            s = PseudoList.__new__(cls)
+            s.__class__ = PseudoList
+            return s
+        return super().__new__(cls, obj)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return str(list(i for i in self))
+
 class DictProxy(GenericProxy, dict):
+    def __new__(cls, obj=None):
+        # For dpath segment creation; if someone tries
+        # to create an empty collection of the same "type"
+        # as a proxy class, actually give them a proper
+        # empty collection rather than a proxy class pointing
+        # to None
+        if obj is None:
+            s = PseudoDict.__new__(cls)
+            s.__class__ = PseudoDict
+            return s
+        return super().__new__(cls, obj)
+
     def __init__(self, obj):
         GenericProxy.__init__(self, obj)
         # CPYTHON HACK: add a dummy object to the
@@ -66,6 +100,12 @@ class DictProxy(GenericProxy, dict):
         except StopIteration:
             return
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return str(dict(self.items()))
+
     def keys(self):
         return self.obj.keys()
 
@@ -79,6 +119,18 @@ class DictProxy(GenericProxy, dict):
         return self.obj.get(*args, **kwargs)
 
 class ObjProxy(GenericProxy, dict):
+    def __new__(cls, obj=None):
+        # For dpath segment creation; if someone tries
+        # to create an empty collection of the same "type"
+        # as a proxy class, actually give them a proper
+        # empty collection rather than a proxy class pointing
+        # to None
+        if obj is None:
+            s = PseudoDict.__new__(cls)
+            s.__class__ = PseudoDict
+            return s
+        return super().__new__(cls, obj)
+
     def __init__(self, obj):
         GenericProxy.__init__(self, obj)
         # CPYTHON HACK: add a dummy object to the
