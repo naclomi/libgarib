@@ -7,6 +7,7 @@ import struct
 
 from . import animation
 
+import numpy as np
 import pygltflib as gltf
 
 TSR_INHERITANCE_EXTENSION = "EXT_node_tsr_inheritance"
@@ -152,9 +153,6 @@ def findSampler(file, material):
     ))
     return len(file.samplers) - 1
 
-def gltfMaterialToGloverMaterial(gltf_material, file):
-    # TODO
-    return Material()
 
 def hashGLTFMesh(gltf_mesh, file):
     materials = collections.OrderedDict()
@@ -188,6 +186,35 @@ def hashGLTFMesh(gltf_mesh, file):
 
     return data_hash
 
+
+def gltfMeshToFlattenedVertexCache(gltf_mesh, file):
+    # TODO: merge/compress vertices where possible
+    vert_count = 0
+    attrs = {
+        "material": np.array([], dtype="I"),
+        "indices": np.array([], dtype="I")
+    }
+    for primitives in gltf_mesh.primitives:
+        p_vert_count = None
+        for attr_name, accessor_idx in vars(primitives):
+            data = getDataFromAccessor(file, accessor_idx)
+            if attr_name not in attrs:
+                attrs[attr_name] = np.zeros((vert_count, *data.shape[1:]))
+            attrs[attr_name] = np.concatenate((attrs[attr_name], data))
+            if p_vert_count is None:
+                p_vert_count = data.shape[0]
+
+        attrs["material"] = np.concatenate((attrs["material"], np.full(p_vert_count, primitives.material)))
+
+        if primitives.indices is not None:
+            p_indices = getDataFromAccessor(file, primitives.indices)
+            p_indices += vert_count
+        else:
+            p_indices = np.arange(start=vert_count, stop=vert_count+p_vert_count, dtype="I")
+        attrs["indices"] = np.concatenate((attrs["indices"], p_indices))
+
+        vert_count += p_vert_count
+    return attrs
 
 def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
     ###############################################
@@ -586,3 +613,57 @@ def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
         uri=idToTexturePath(sprite_material.texture_id),
     ))
 
+
+def getDataFromAccessor(file, accessor_idx):
+    accessor = file.accessors[accessor_idx]
+    bufferView = file.bufferViews[accessor.bufferView]
+    buffer = file.buffers[bufferView.buffer]
+    data = file.get_data_from_buffer_uri(buffer.uri)
+
+    component_dimension = {
+
+    }
+
+    component_count, component_dimension = {
+        gltf.SCALAR: (1,0),
+        gltf.VEC2: (2,1),
+        gltf.VEC3: (3,1),
+        gltf.VEC4: (4,1),
+        gltf.MAT2: (4,2),
+        gltf.MAT3: (9,2),
+        gltf.MAT4: (16,2),
+    }[accessor.type]
+
+    component_dtype = {
+        gltf.BYTE: "b",
+        gltf.UNSIGNED_BYTE: "B",
+        gltf.SHORT: "h",
+        gltf.UNSIGNED_SHORT: "H",
+        gltf.UNSIGNED_INT: "I",
+        gltf.FLOAT: "f"
+    }[accessor.componentType]
+
+    attr_struct = "<{:}{:}".format(component_count, component_dtype)
+    attr_size = struct.calcsize(attr_struct)
+    stride = bufferView.byteStride or attr_size
+
+    if component_dimension == 0:
+        data_shape = accessor.count
+    elif component_dimension == 1:
+        data_shape = (accessor.count, component_count)
+    elif component_dimension == 2:
+        mat_size = int(math.sqrt(component_count))
+        mat_shape = (mat_size, mat_size)
+        data_shape = (accessor.count, mat_size, mat_size)
+
+    data = np.zeros(data_shape, dtype=component_dtype)
+
+    cursor = bufferView.byteOffset + accessor.byteOffset
+    for idx in range(accessor.count):
+        vals = struct.unpack(attr_struct, data[cursor:cursor+attr_size])
+        if component_dimension == 2:
+            vals = np.reshape(vals, mat_shape)
+        data[idx:idx+1] = vals
+        cursor += stride
+
+    return data

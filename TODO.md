@@ -13,14 +13,23 @@
 - deal with collision vs dlist
 - deal with vertex clamp attributes
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
-- vertex compressor?
 - animations should have slot as a property rather than just in name
 - use a dict to map slot names?
 - control export of global animation track via cmdline arg
 
 ## packing
 - compile new display lists
-- gltf meshes
+- vertex compressor
+
+## mapping
+- The "padding" at the end of each file seems
+  to almost always be (72b * total_meshses), or very
+  very slightly less than that.
+  Unclear what it's for -- doesn't seem to be accessed
+  by game code during normal operation
+
+
+
 
 # fla2.c
 - write C implementation

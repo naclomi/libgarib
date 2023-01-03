@@ -33,7 +33,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
     if rebuild_dl:
         # TODO: rebuild dl
         start_offset = 0
-        pass
+        raise Exception()
     else:
         # Import a Fast64-style insertable binary, based on the
         # spec here:
