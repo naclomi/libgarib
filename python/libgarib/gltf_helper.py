@@ -620,10 +620,6 @@ def getDataFromAccessor(file, accessor_idx):
     buffer = file.buffers[bufferView.buffer]
     data = file.get_data_from_buffer_uri(buffer.uri)
 
-    component_dimension = {
-
-    }
-
     component_count, component_dimension = {
         gltf.SCALAR: (1,0),
         gltf.VEC2: (2,1),
@@ -667,3 +663,12 @@ def getDataFromAccessor(file, accessor_idx):
         cursor += stride
 
     return data
+
+def getAllNodesInTree(file, root_node_idx):
+    result = set()
+    todo = [root_node_idx]
+    while len(todo) > 0:
+        node_idx = todo.pop()
+        result.add(node_idx)
+        todo += file.nodes[node_idx].children
+    return result

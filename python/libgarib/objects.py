@@ -130,19 +130,25 @@ def textureIdFromMaterial(material_idx, file):
 
 def packSprite(sprite_idx, file, texture_db):
     sprite_node = file.nodes[sprite_idx]
-    # TODO: ensure only one gltf prim
-    # TODO: pack geo
+
+    attrs = gltf_helper.gltfMeshToFlattenedVertexCache(sprite_node.mesh, file)
+    # TODO: do more than this half-assed validation:
+    if len(sprite_node.mesh.primitives) != 1 or len(attrs["indices"]) != 6:
+        raise gltf_helper.GLTFStructureException("Sprite mesh must be a 2-polygon square")
+
+    # TODO: also take xyz/scale from geo
+
     return objbank_writer.glover_objbank__sprite.build({
-        "texture_id": textureIdFromMaterial(sprite_node.mesh.primitives[0].material, file), # / Int32ub,
-        "runtime_data_ptr": 0, # / Int32ub,
+        "texture_id": textureIdFromMaterial(attrs["material"][0], file), # / Int32ub,
+        "runtime_data_ptr": 0,
         "x": sprite_node.translation[0],
         "y": sprite_node.translation[1],
         "z": sprite_node.translation[2],
         "width": sprite_node.scale[2]*3 if sprite_node.scale[0] == 1 else sprite_node.scale[0]*3, 
-        "height": sprite_node.scale[1]*3, # / Int16ub,
-        # "u5": , # / Int16ub,
-        # "u6": , # / Int16ub,
-        # "flags": , # / Int16ub,
+        "height": sprite_node.scale[1]*3, 
+        "u5": 0, # TODO
+        "u6": 0, # TODO
+        "flags": 0, # TODO
     })
 
 
@@ -227,17 +233,45 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     if "flags" in pack_list:
         geo_root.flags = linkable.LinkableBytes(data=attrs["_GLOVER_FLAGS"].astype("B").tobytes())
         setPtr("flags_ptr", geo_root.flags)
-    if "uvs" in pack_list:
-        # Convert to 11.5 format:
-        geo_root.uvs = linkable.LinkableBytes(data=(attrs["TEXCOORD_0"] * 32).astype(">H").tobytes())
-        setPtr("uvs_ptr", geo_root.flags)
-    if "texture_ids" in pack_list:
+    if "uvs" in pack_list or "texture_ids" in pack_list:
         toTextureIds = np.vectorize(textureIdFromMaterial)
-        geo_root.texture_ids = linkable.LinkableBytes(data=toTextureIds(attrs["material"], file).astype(">I").tobytes())
-        setPtr("texture_ids_ptr", geo_root.texture_ids)
+        texture_ids = toTextureIds(attrs["material"], file).astype(">I")
+
+        if "texture_ids" in pack_list:
+            geo_root.texture_ids = linkable.LinkableBytes(data=texture_ids.tobytes())
+            setPtr("texture_ids_ptr", geo_root.texture_ids)
+
+        if "uvs" in pack_list:
+            # Go from normalized coordinates to pixel coordinates
+            uvs = attrs["TEXCOORD_0"]
+            for idx in len(geo_root.uvs):
+                tex = texture_db.byId.get(texture_ids[idx])
+                if tex is None:
+                    raise Exception("Need dimensions of texture 0x{:08X} to pack mesh node {:}".format(texture_ids[idx], node.name))
+                uvs[idx] *= (tex.width, tex.height)
+
+            # Convert to 11.5 format
+            geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">H").tobytes())                
+            setPtr("uvs_ptr", geo_root.flags)
 
     return geo_root
 
+def packAnimChannel(channel_data, bank):
+    raw_keyframes = []
+    values = channel_data[0]
+    times = channel_data[1]
+    if values.shape[1] == 3:
+        for idx in range(len(values)):
+            raw_keyframes.append(struct.pack("4fI", *values[idx], 0, times[idx]))
+    elif values.shape[1] == 4:
+        for idx in range(len(values)):
+            raw_keyframes.append(struct.pack("4fI", *values[idx], times[idx]))
+    else:
+        raise gltf_helper.GLTFStructureException("Unexpected animation format")
+    raw_keyframes = b"".join(raw_keyframes)
+    keyframes = linkable.LinkableBytes(data=raw_keyframes)
+    bank.keyframes.append(keyframes)
+    return keyframes
 
 def packNode(node_idx, bank, file, texture_db, dopesheet):
     node = file.nodes[node_idx]
@@ -289,30 +323,34 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     else:
         sprite_alpha = 0
 
-    # TODO
-
-
     # Pack mesh metadata
     mesh_id = hash_str.hash_str(node.name)
+
+    scale_keys = len(dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation))
+    translation_keys = len(dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation))
+    rotation_keys = len(dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation))
 
     raw_mesh = b""
     raw_mesh = objbank_writer.glover_objbank__mesh.build({
         "id": mesh_id,
         "name": node.name[:8].encode().ljust(8, b"\0"),
-        "mesh_alpha": node.extras.get("alpha", 0xFF), # / Int8ub,
+        "mesh_alpha": node.extras.get("alpha", 0xFF),
         "sprite_alpha": sprite_alpha,
-        # "num_scale": , # / Int16ub,
-        # "num_translation": , # / Int16ub,
-        # "num_rotation": , # / Int16ub,
+        "num_scale": len(scale_keys[0]),
+        "num_translation": len(translation_keys[0]),
+        "num_rotation": len(rotation_keys[0]),
         "geometry_ptr": 0,
         "display_list_ptr": 0,
-        "scale_ptr": 0, # / Int32ub,
-        "translation_ptr": 0, # / Int32ub,
-        "rotation_ptr": 0, # / Int32ub,
+        "scale_ptr": 0,
+        "translation_ptr": 0,
+        "rotation_ptr": 0,
         "num_sprites": len(sprite_nodes),
         "sprites_ptr": 0,
         "num_children": len(children),
+
+        # TODO
         # "render_mode": , # / Int16ub,
+
         "child_ptr": 0,
         "sibling_ptr": 0,
         "runtime_collision_data_ptr": 0,
@@ -325,6 +363,23 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         "display_list": None,
         "sprites": None
     })
+
+    # Pack TRS/animation
+    pointers.append(linkable.LinkablePointer(
+        offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "translation_ptr"),
+        dtype = ">I",
+        target = packAnimChannel(translation_keys, bank),
+    ))
+    pointers.append(linkable.LinkablePointer(
+        offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "rotation_ptr"),
+        dtype = ">I",
+        target = packAnimChannel(rotation_keys, bank),
+    ))
+    pointers.append(linkable.LinkablePointer(
+        offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "scale_ptr"),
+        dtype = ">I",
+        target = packAnimChannel(scale_keys, bank),
+    ))
 
     # Pack geo
     if should_pack_geo(pack_list):
@@ -413,9 +468,6 @@ def actorAnimationMetadataToJson(obj):
     
     return properties
 
-class ActorDopesheet(object):
-    pass
-
 def setupActorAnimations(file, root_node_idx, bank):
     # TODO:
     # - identify all nodes in root tree, as set N
@@ -426,16 +478,54 @@ def setupActorAnimations(file, root_node_idx, bank):
     # - pack definitions based on dope sheet
     root_node = file.nodes[root_node_idx]
 
-    raw_defs = b""
+    # Find relevant animations
+    all_nodes = gltf_helper.getAllNodesInTree(file, root_node_idx)
 
-    # TODO: 
-    # for anim_def in actor["animations"]:
-    #     raw_defs += objbank_writer.glover_objbank__animation_definition.build({
-    #         "start_time": anim_def["start"],
-    #         "end_time": anim_def["end"],
-    #         "playback_speed": anim_def["speed"],
-    #         "unused": anim_def["unused"],
-    #     })
+    relevant_animations = []
+    for animation in file.animations:
+        for channel in animation:
+            if channel.target.node in all_nodes:
+                relevant_animations.append(animation)
+                break
+
+    # Build global timeline
+
+    raw_defs = b""
+    global_time = 0
+    dopesheet = {
+        "translation": {},
+        "rotation": {},
+        "scale": {}
+    }
+
+    for animation in relevant_animations:
+        for channel in animation:
+            sampler = animation.samplers[channel.sampler]
+            key_data = gltf_helper.getDataFromAccessor(file, sampler.input)
+            key_times = gltf_helper.getDataFromAccessor(file, sampler.output)
+
+            ##########
+            # TODO
+            scale_value = 1.0
+            playback_speed = 1.0
+            ##########
+
+            key_times *= scale_value
+            key_times += global_time
+
+            dopesheet_channel = dopesheet[channel.target.path].get(channel.target.node, [numpy.array(),numpy.array()])
+            dopesheet_channel[0] = np.concat(dopesheet_channel[0], key_data)
+            dopesheet_channel[1] = np.concat(dopesheet_channel[1], key_data)
+            dopesheet[channel.target.path][channel.target.node] = dopesheet_channel
+
+            raw_defs += objbank_writer.glover_objbank__animation_definition.build({
+                "start_time": global_time,
+                "end_time": max(key_times) + 1,
+                "playback_speed": playback_speed,
+                "unused": 0,
+            })
+
+            global_time = max(key_times) + 1
 
     anim_defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
     bank.anim_defs.append(anim_defs)
@@ -443,7 +533,7 @@ def setupActorAnimations(file, root_node_idx, bank):
     anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, file)
     bank.anim_props.append(anim_props)
 
-    return ActorDopesheet(), anim_props
+    return dopesheet, anim_props
 
 def packActor(file, bank, texture_db):
 

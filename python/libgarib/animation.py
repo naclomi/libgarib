@@ -1,9 +1,16 @@
 import math
 
+import numpy as np
+
 from dataclasses import dataclass
 from .parsers.glover_objbank import GloverObjbank
 
 FRAME_TO_SEC = 1/29.97
+
+
+neutralTranslationAnimation = [np.zeros((1,3)), np.zeros(1)]
+neutralRotationAnimation = [np.zeros((1,4)), np.zeros(1)]
+neutralScaleAnimation = [np.ones((1,3)), np.zeros(1)]
 
 @dataclass
 class InterpolatedFrame:

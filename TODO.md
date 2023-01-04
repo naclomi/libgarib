@@ -3,6 +3,7 @@
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
 
 # objbank-tool
+- Refactor pack list so it is less prone to silent errors
 
 ## dumping
 - animation: instead of just saving playback_time as a property,
