@@ -298,7 +298,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
                 ))
 
     # Pack sprites
-
     if len(sprite_nodes) > 0:     
         raw_sprites = []
         sprite_alpha = None
@@ -332,17 +331,17 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     render_mode.sync_to_global_clock = node.mesh.extras.get("sync_to_global_clock", 0)
     render_mode.cloud = node.mesh.extras.get("cloud", 0)
     render_mode = render_mode.toInt()
+    # TODO:
+    #   per_vertex_cn = not unlit and and "normals" in pack_list?
+    #   xlu = material.alphaMode == gltf.BLEND
+    #   masked = material.alphaMode == gltf.MASK
+    #   unlit = "KHR_materials_unlit" in material.extensions
     if "render_mode" in node.mesh.extras:
         render_misc = node.mesh.extras["render_mode"]
         render_misc_mask = node.mesh.extras.get("render_mode_mask", 0xFFFF)
         render_misc &= render_misc_mask
         render_mode = (render_mode & ~render_misc_mask) | render_misc
 
-    # TODO:
-    #   per_vertex_cn
-    #   xlu
-    #   masked
-    #   unlit
 
     scale_keys = len(dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation))
     translation_keys = len(dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation))
@@ -365,7 +364,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         "num_sprites": len(sprite_nodes),
         "sprites_ptr": 0,
         "num_children": len(children),
-        "render_mode": render_mode,
+        # "render_mode": render_mode, # TODO
         "child_ptr": 0,
         "sibling_ptr": 0,
         "runtime_collision_data_ptr": 0,
