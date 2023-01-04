@@ -18,6 +18,7 @@ from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
 from .parsers.construct import glover_objbank as objbank_writer
 from . import hash as hash_str
+from . import animation
 from . import linkable
 from . import gltf_helper
 from . import display_lists
@@ -326,6 +327,23 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     # Pack mesh metadata
     mesh_id = hash_str.hash_str(node.name)
 
+    render_mode = RenderMode()
+    render_mode.ripple = node.mesh.extras.get("ripple", 0)
+    render_mode.sync_to_global_clock = node.mesh.extras.get("sync_to_global_clock", 0)
+    render_mode.cloud = node.mesh.extras.get("cloud", 0)
+    render_mode = render_mode.toInt()
+    if "render_mode" in node.mesh.extras:
+        render_misc = node.mesh.extras["render_mode"]
+        render_misc_mask = node.mesh.extras.get("render_mode_mask", 0xFFFF)
+        render_misc &= render_misc_mask
+        render_mode = (render_mode & ~render_misc_mask) | render_misc
+
+    # TODO:
+    #   per_vertex_cn
+    #   xlu
+    #   masked
+    #   unlit
+
     scale_keys = len(dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation))
     translation_keys = len(dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation))
     rotation_keys = len(dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation))
@@ -347,10 +365,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         "num_sprites": len(sprite_nodes),
         "sprites_ptr": 0,
         "num_children": len(children),
-
-        # TODO
-        # "render_mode": , # / Int16ub,
-
+        "render_mode": render_mode,
         "child_ptr": 0,
         "sibling_ptr": 0,
         "runtime_collision_data_ptr": 0,
@@ -816,7 +831,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
             gltf_mesh.extras["cloud"] = 1
         if render_mode.misc != 0:
             gltf_mesh.extras["render_mode"] = "0x{:4X}".format(render_mode.misc)
-            gltf_mesh.extras["render_mode mask"] = "0x{:4X}".format(render_mode.MISC_MASK)
+            gltf_mesh.extras["render_mode_mask"] = "0x{:4X}".format(render_mode.MISC_MASK)
 
         gltf_helper.addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data)
         if dl_encoded is not None:
