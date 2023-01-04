@@ -469,13 +469,6 @@ def actorAnimationMetadataToJson(obj):
     return properties
 
 def setupActorAnimations(file, root_node_idx, bank):
-    # TODO:
-    # - identify all nodes in root tree, as set N
-    # - identify animations that reference nodes in N, as set S
-    # - arrange animations based on slot idx into global order
-    # - create dope sheet structure
-    #   - for each animation, determine playback speed based on time precision
-    # - pack definitions based on dope sheet
     root_node = file.nodes[root_node_idx]
 
     # Find relevant animations
@@ -505,9 +498,9 @@ def setupActorAnimations(file, root_node_idx, bank):
             key_times = gltf_helper.getDataFromAccessor(file, sampler.output)
 
             ##########
-            # TODO
+            # TODO: automate
             scale_value = 1.0
-            playback_speed = 1.0
+            playback_speed = animation.extras.get("playback_speed", 1.0)
             ##########
 
             key_times *= scale_value
