@@ -601,7 +601,12 @@ def packActor(file, bank, texture_db):
 
 def actor_to_gltf(obj_root, texture_db):
     data = bytearray()
-    root_node = gltf.Node(name="0x{:08X}".format(obj_root.obj_id))
+    root_node = gltf.Node(
+        name="0x{:08X}".format(obj_root.obj_id),
+        extras={
+            "_root_node": True
+        }
+    )
 
     file = gltf.GLTF2(
         scene=0,
@@ -643,9 +648,12 @@ def actor_to_gltf(obj_root, texture_db):
             )
         )
 
-    if is_skeletal or len(billboard_nodes) > 0:
+    if any(gltf_helper.TSR_INHERITANCE_EXTENSION in n.extensions for n in file.nodes):
         file.extensionsUsed.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
         file.extensionsRequired.append(gltf_helper.TSR_INHERITANCE_EXTENSION)
+
+    if any("KHR_materials_unlit" in m.extensions for m in file.materials):
+        file.extensionsUsed.append("KHR_materials_unlit")
 
     # Export animations
     exported_anims = {}
@@ -656,7 +664,8 @@ def actor_to_gltf(obj_root, texture_db):
             animation_to_gltf(anim, obj_root.mesh, file, data)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
 
-    global_timeline_to_gltf(obj_root.mesh, file, data)
+    if len(exported_anims) > 0:
+        global_timeline_to_gltf(obj_root.mesh, file, data)
 
     animation_props = actorAnimationMetadataToJson(obj_root)
     file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
@@ -667,8 +676,9 @@ def actor_to_gltf(obj_root, texture_db):
 
     # Clean up internal properties
     for node in file.nodes:
-        if "_id" in node.extras:
-            del node.extras["_id"]
+        for key in list(node.extras.keys()):
+            if key.startswith("_"):
+                del node.extras[key]
 
     # Go through and compute all necessary mesh hashes, now that buffers are constructed
     for mesh in file.meshes:
@@ -860,9 +870,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
         translation=(t.v1, t.v2, t.v3),
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
-        extensions={
-            gltf_helper.TSR_INHERITANCE_EXTENSION: {"scale": False}
-        },
+        extensions={},
         extras={
             "_id": mesh.id,
             "alpha": mesh.mesh_alpha
@@ -870,6 +878,11 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     )
     gltf_parent.children.append(len(file.nodes))
     file.nodes.append(mesh_node)
+
+    if gltf_parent.extras.get("_root_node", False):
+        mesh_node.extensions[gltf_helper.TSR_INHERITANCE_EXTENSION] = {
+            "scale": False
+        }
 
     for idx, sprite in enumerate(mesh.sprites or []):
         gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh.sprite_alpha, mesh_node, file, data)
