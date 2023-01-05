@@ -317,9 +317,9 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         gltf_mesh = file.meshes[node.mesh]
 
         render_mode = RenderMode()
-        render_mode.ripple = gltf_mesh.extras.get("ripple", 0)
-        render_mode.sync_to_global_clock = gltf_mesh.extras.get("sync_to_global_clock", 0)
-        render_mode.cloud = gltf_mesh.extras.get("cloud", 0)
+        render_mode.ripple = bool(gltf_mesh.extras.get("ripple", 0))
+        render_mode.sync_to_global_clock = bool(gltf_mesh.extras.get("sync_to_global_clock", 0))
+        render_mode.cloud = bool(gltf_mesh.extras.get("cloud", 0))
 
         first_material = True
         for prims in gltf_mesh.primitives:
@@ -335,7 +335,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
             else:
                 if (render_mode.xlu != xlu or
                     render_mode.masked != masked or
-                    render_mode.masked != unlit):
+                    render_mode.unlit != unlit):
                     print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
 
         if "display_list" not in pack_list:
