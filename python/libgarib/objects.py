@@ -442,10 +442,10 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     return linkable_mesh
 
 
-def actorAnimationMetadataFromJson(props_json, defs, file):
+def actorAnimationMetadataFromJson(props_json, defs, num_defs, file):
     p = json.loads(props_json)
     raw_props = objbank_writer.glover_objbank__animation.build({
-        "num_animation_definitions": len(file.animations),
+        "num_animation_definitions": num_defs,
         "current_animation_idx": p["starting_props"]["idx"],
         "is_playing": p["starting_props"]["is_playing"],
         "time_delta": p["starting_props"]["time_delta"],
@@ -508,11 +508,9 @@ def setupActorAnimations(file, root_node_idx, bank):
                 relevant_animations.append(animation)
                 break
 
-    # TODO: respect animation slot placement, have a default def
-
     # Build global timeline
 
-    raw_defs = b""
+    raw_defs = []
     global_time = 0
     dopesheet = {
         "translation": {},
@@ -521,6 +519,11 @@ def setupActorAnimations(file, root_node_idx, bank):
     }
 
     for animation in relevant_animations:
+        slots = json.loads(animation.extras["slot"])
+        if not isinstance(slots, list):
+            slots = [slots]
+
+        anim_end = 0
         for channel in animation:
             sampler = animation.samplers[channel.sampler]
             key_data = gltf_helper.getDataFromAccessor(file, sampler.input)
@@ -540,22 +543,41 @@ def setupActorAnimations(file, root_node_idx, bank):
             dopesheet_channel[1] = np.concat(dopesheet_channel[1], key_data)
             dopesheet[channel.target.path][channel.target.node] = dopesheet_channel
 
-            raw_defs += objbank_writer.glover_objbank__animation_definition.build({
+            anim_end = max(anim_end, max(key_times))
+
+        for slot in slots:
+            if len(raw_defs) <= slot:
+                raw_defs += [None] * (len(raw_defs) - slot + 1)
+            raw_defs[slot] = objbank_writer.glover_objbank__animation_definition.build({
                 "start_time": global_time,
-                "end_time": max(key_times) + 1,
+                "end_time": anim_end,
                 "playback_speed": playback_speed,
                 "unused": 0,
             })
 
-            global_time = max(key_times) + 1
+        global_time = anim_end + 1
 
-    anim_defs = linkable.LinkableBytes(data=raw_defs, pointers=[])
+
+    # Default animation:
+    default_anim_def = objbank_writer.glover_objbank__animation_definition.build({
+        "start_time": 0,
+        "end_time": global_time,
+        "playback_speed": 1.0,
+        "unused": 0,
+    })
+
+    for idx in range(len(raw_defs)):
+        if raw_defs[idx] is None:
+            raw_defs[idx] = default_anim_def
+
+    anim_defs = linkable.LinkableBytes(data=b"".join(raw_defs), pointers=[])
     bank.anim_defs.append(anim_defs)
 
-    anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, file)
+    anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, len(raw_defs), file)
     bank.anim_props.append(anim_props)
 
     return dopesheet, anim_props
+
 
 def packActor(file, bank, texture_db):
 
@@ -669,7 +691,16 @@ def actor_to_gltf(obj_root, texture_db):
         if key not in exported_anims:
             exported_anims[key] = len(file.animations)
             animation_to_gltf(anim, obj_root.mesh, file, data)
+            file.animations[exported_anims[key]].extras["slot"] = []
+        file.animations[exported_anims[key]].extras["slot"].append(idx)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
+
+    for anim_idx in exported_anims.values():
+        slots = file.animations[anim_idx].extras["slot"]
+        if len(slots) == 1:
+            file.animations[anim_idx].extras["slot"] = str(slots[0])
+        else:
+            file.animations[anim_idx].extras["slot"] = json.dumps(slots)
 
     if len(exported_anims) > 0:
         global_timeline_to_gltf(obj_root.mesh, file, data)

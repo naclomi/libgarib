@@ -3,7 +3,15 @@
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
 
 # objbank-tool
+## common
 - Refactor pack list so it is less prone to silent errors
+
+## in-place tools
+- Create LinkableBytes derivative that's a view into a monolithic buffer, for parsing
+  pre-compiled object banks into new banks
+- split: One object bank with N objects to N object banks with 1 object
+- pack: Allow "base bank" to start from
+- pack: Allow for deleting existing objects by ID
 
 ## dumping
 - animation: instead of just saving playback_time as a property,
@@ -14,13 +22,14 @@
 - deal with collision vs dlist
 - deal with vertex clamp attributes
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
-- animations should have slot as a property rather than just in name
 - use a dict to map slot names?
 - control export of global animation track via cmdline arg
 
 ## packing
 - compile new display lists
 - vertex compressor
+- better validation
+- look for missing properties in parent nodes
 
 ## mapping
 - The "padding" at the end of each file seems
@@ -30,13 +39,11 @@
   by game code during normal operation
 
 
-
-
 # fla2.c
 - write C implementation
-- set up python bindings
-    - auto-fallback to python impl
-- set up build system
+    - set up python bindings
+        - auto-fallback to python impl
+    - set up build system
 
 # level editor
 
