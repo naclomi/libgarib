@@ -1,18 +1,12 @@
 import base64
 import dataclasses
-import io
-import os
 import json
 import math
-import re
 import struct
-import sys
 import typing
 
 import numpy as np
-import plyfile
 import pygltflib as gltf
-import pyrr
 
 from .gbi import F3DEX
 from .parsers.glover_objbank import GloverObjbank
@@ -120,15 +114,6 @@ def getConstructFieldOffset(construct_struct, field_name):
     else:
         raise Exception("Field not found")
 
-def textureIdFromMaterial(material_idx, file):
-    material = file.materials[material_idx]
-    texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
-    texture = file.textures[texture_idx]
-    image = file.images[texture.source]
-    basename = os.path.basename(image.uri)
-    # TODO: fallback chain -- first look in URI, then look in gltf image's name, then in material's name
-    return next(re.finditer("(0x[0-9A-Fa-f]+)|([0-9]+)", basename)).group(0)
-
 def packSprite(sprite_idx, file, texture_db):
     sprite_node = file.nodes[sprite_idx]
 
@@ -140,7 +125,7 @@ def packSprite(sprite_idx, file, texture_db):
     # TODO: also take xyz/scale from geo
 
     return objbank_writer.glover_objbank__sprite.build({
-        "texture_id": textureIdFromMaterial(attrs["material"][0], file), # / Int32ub,
+        "texture_id": gltf_helper.textureIdFromMaterial(attrs["material"][0], file), # / Int32ub,
         "runtime_data_ptr": 0,
         "x": sprite_node.translation[0],
         "y": sprite_node.translation[1],
@@ -235,7 +220,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
         geo_root.flags = linkable.LinkableBytes(data=attrs["_GLOVER_FLAGS"].astype("B").tobytes())
         setPtr("flags_ptr", geo_root.flags)
     if "uvs" in pack_list or "texture_ids" in pack_list:
-        toTextureIds = np.vectorize(textureIdFromMaterial)
+        toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
         texture_ids = toTextureIds(attrs["material"], file).astype(">I")
 
         if "texture_ids" in pack_list:

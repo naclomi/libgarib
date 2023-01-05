@@ -1,8 +1,6 @@
 import math
 import os
-import re
 import struct
-import sys
 
 import json
 import PIL.Image

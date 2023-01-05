@@ -2,6 +2,8 @@ import collections
 from dataclasses import dataclass, replace
 import hashlib
 import json
+import os
+import re
 import math
 import struct
 
@@ -153,6 +155,30 @@ def findSampler(file, material):
     ))
     return len(file.samplers) - 1
 
+def textureIdFromMaterial(material_or_idx, file):
+    if isinstance(material_or_idx, int):
+        material = file.materials[material_or_idx]
+    else:
+        material = material_or_idx
+    texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
+    texture = file.textures[texture_idx]
+    image = file.images[texture.source]
+    basename = os.path.basename(image.uri)
+    # TODO: fallback chain -- first look in URI, then look in gltf image's name, then in material's name
+    return next(re.finditer("(0x[0-9A-Fa-f]+)|([0-9]+)", basename)).group(0)
+
+def gltfMaterialToGloverMaterial(gltf_material, file):
+    if gltf_material.pbrMetallicRoughness is None or gltf_material.pbrMetallicRoughness.baseColorTexture is None:
+        return Material()
+    texture = file.textures[gltf_material.pbrMetallicRoughness.baseColorTexture.index]
+    sampler = file.samplers[texture.sampler]
+    return Material(
+        clamp_s=sampler.wrapS == gltf.CLAMP_TO_EDGE,
+        clamp_t=sampler.wrapT == gltf.CLAMP_TO_EDGE,
+        mirror_s=sampler.wrapS == gltf.MIRRORED_REPEAT,
+        mirror_t=sampler.wrapT == gltf.MIRRORED_REPEAT,
+        texture_id=textureIdFromMaterial(gltf_material, file)
+    )
 
 def hashGLTFMesh(gltf_mesh, file):
     materials = collections.OrderedDict()
