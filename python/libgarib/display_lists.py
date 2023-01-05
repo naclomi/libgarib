@@ -14,14 +14,10 @@ from .gbi import F3DEX, Vertex as GbiVertex
 def gltfNodeToDisplayList(node_idx, bank, file):
     pointers = []
     node = file.nodes[node_idx]
-
-    if len(node.meshes) > 1:
-        raise gltf_helper.GLTFStructureException("There must be only one mesh per node")
-    mesh_idx = node.meshes[0]
+    mesh = file.meshes[node.mesh]
 
     raw_dl = b""
     rebuild_dl = True
-    mesh = file.meshes[mesh_idx]
     if "display_list" in mesh.extras:
         if "data_hash" in mesh.extras:
             mesh_hash = gltf_helper.hashGLTFMesh(mesh, file).hexdigest()

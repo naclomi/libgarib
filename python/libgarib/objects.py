@@ -116,10 +116,11 @@ def getConstructFieldOffset(construct_struct, field_name):
 
 def packSprite(sprite_idx, file, texture_db):
     sprite_node = file.nodes[sprite_idx]
+    mesh = file.meshes[sprite_node.mesh]
 
     attrs = gltf_helper.gltfMeshToFlattenedVertexCache(sprite_node.mesh, file)
     # TODO: do more than this half-assed validation:
-    if len(sprite_node.mesh.primitives) != 1 or len(attrs["indices"]) != 6:
+    if len(mesh.primitives) != 1 or len(attrs["indices"]) != 6:
         raise gltf_helper.GLTFStructureException("Sprite mesh must be a 2-polygon square")
 
     # TODO: also take xyz/scale from geo
@@ -245,7 +246,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
 def packAnimChannel(channel_data, bank):
     raw_keyframes = []
     values = channel_data[0]
-    times = channel_data[1]
+    times = channel_data[1].astype("i")
     if values.shape[1] == 3:
         for idx in range(len(values)):
             raw_keyframes.append(struct.pack("4fI", *values[idx], 0, times[idx]))
@@ -310,53 +311,59 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     # Set up mesh metadata
     mesh_id = hash_str.hash_str(node.name)
+    
+    
+    if node.mesh is not None:
+        gltf_mesh = file.meshes[node.mesh]
 
-    render_mode = RenderMode()
-    render_mode.ripple = node.mesh.extras.get("ripple", 0)
-    render_mode.sync_to_global_clock = node.mesh.extras.get("sync_to_global_clock", 0)
-    render_mode.cloud = node.mesh.extras.get("cloud", 0)
-    render_mode = render_mode.toInt()
+        render_mode = RenderMode()
+        render_mode.ripple = gltf_mesh.extras.get("ripple", 0)
+        render_mode.sync_to_global_clock = gltf_mesh.extras.get("sync_to_global_clock", 0)
+        render_mode.cloud = gltf_mesh.extras.get("cloud", 0)
 
-    first_material = True
-    for prims in node.mesh.primitives:
-        material = file.materials[prims.material]
-        xlu = material.alphaMode == gltf.BLEND
-        masked = material.alphaMode == gltf.MASK
-        unlit = "KHR_materials_unlit" in material.extensions
-        if first_material:
-            render_mode.xlu = xlu
-            render_mode.masked = masked
-            render_mode.unlit = unlit
-            first_material = False
-        else:
-            if (render_mode.xlu != xlu or
-                render_mode.masked != masked or
-                render_mode.masked != unlit):
-                print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
+        first_material = True
+        for prims in gltf_mesh.primitives:
+            material = file.materials[prims.material]
+            xlu = material.alphaMode == gltf.BLEND
+            masked = material.alphaMode == gltf.MASK
+            unlit = "KHR_materials_unlit" in material.extensions
+            if first_material:
+                render_mode.xlu = xlu
+                render_mode.masked = masked
+                render_mode.unlit = unlit
+                first_material = False
+            else:
+                if (render_mode.xlu != xlu or
+                    render_mode.masked != masked or
+                    render_mode.masked != unlit):
+                    print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
 
-    if "display_list" not in pack_list:
-        render_mode.per_vertex_cn = render_mode.unlit
-        if render_mode.per_vertex_cn and "colors" not in pack_list:
-            print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
-        elif not render_mode.per_vertex_cn and "normals" not in pack_list:
-            print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
+        if "display_list" not in pack_list:
+            render_mode.per_vertex_cn = render_mode.unlit
+            if render_mode.per_vertex_cn and "colors" not in pack_list:
+                print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
+            elif not render_mode.per_vertex_cn and "normals" not in pack_list:
+                print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
 
-    if "render_mode" in node.mesh.extras:
-        render_misc = node.mesh.extras["render_mode"]
-        render_misc_mask = node.mesh.extras.get("render_mode_mask", 0xFFFF)
-        render_misc &= render_misc_mask
-        render_mode = (render_mode & ~render_misc_mask) | render_misc
+        render_mode = render_mode.toInt()
+        if "render_mode" in gltf_mesh.extras:
+            render_misc = gltf_mesh.extras["render_mode"]
+            render_misc_mask = gltf_mesh.extras.get("render_mode_mask", 0xFFFF)
+            render_misc &= render_misc_mask
+            render_mode = (render_mode & ~render_misc_mask) | render_misc
+    else:
+        render_mode = 0
 
     # Pack mesh
 
-    scale_keys = len(dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation))
-    translation_keys = len(dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation))
-    rotation_keys = len(dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation))
+    scale_keys = dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation)
+    translation_keys = dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation)
+    rotation_keys = dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation)
 
     raw_mesh = b""
     raw_mesh = objbank_writer.glover_objbank__mesh.build({
         "id": mesh_id,
-        "name": node.name[:8].encode().ljust(8, b"\0"),
+        "name": node.name[:8].ljust(8, "\0"),
         "mesh_alpha": node.extras.get("alpha", 0xFF),
         "sprite_alpha": sprite_alpha,
         "num_scale": len(scale_keys[0]),
@@ -370,7 +377,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         "num_sprites": len(sprite_nodes),
         "sprites_ptr": 0,
         "num_children": len(children),
-        # "render_mode": render_mode, # TODO
+        "render_mode": render_mode,
         "child_ptr": 0,
         "sibling_ptr": 0,
         "runtime_collision_data_ptr": 0,
@@ -401,25 +408,25 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         target = packAnimChannel(scale_keys, bank),
     ))
 
-    # Pack geo
-    if should_pack_geo(pack_list):
-        geo_root = packGeo(node_idx, bank, file, pack_list, texture_db)
-        pointers.append(linkable.LinkablePointer(
-            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
-            dtype = ">I",
-            target = geo_root,
-        ))
+    if node.mesh is not None:
+        # Pack geo
+        if should_pack_geo(pack_list):
+            geo_root = packGeo(node_idx, bank, file, pack_list, texture_db)
+            pointers.append(linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
+                dtype = ">I",
+                target = geo_root,
+            ))
 
-    # Pack DL
-    if "display_list" in pack_list:
-        display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, bank, file)
-        pointers.append(linkable.LinkablePointer(
-            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
-            dtype = ">I",
-            target = display_list,
-            target_offset = dl_start_offset
-        ))
-
+        # Pack DL
+        if "display_list" in pack_list:
+            display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, bank, file)
+            pointers.append(linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
+                dtype = ">I",
+                target = display_list,
+                target_offset = dl_start_offset
+            ))
 
     # Fix up child ptr
     if len(children) > 0:
@@ -431,7 +438,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     # Finalize structure
     linkable_mesh = linkable.LinkableBytes(data=raw_mesh, pointers=pointers) 
-    bank.meshses.append(linkable_mesh)
+    bank.meshes.append(linkable_mesh)
     return linkable_mesh
 
 
@@ -746,7 +753,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
     return primitives
 
 def should_pack_geo(pack_list):
-    return set(("faces", "colors", "uvs", "norms", "flags", "textures")).union(set(pack_list))
+    return len(set(("faces", "colors", "uvs", "norms", "flags", "textures")).intersection(set(pack_list))) > 0
 
 def mesh_to_pack_list(mesh):
     pack_list = []

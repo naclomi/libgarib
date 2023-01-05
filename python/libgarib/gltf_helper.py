@@ -518,7 +518,7 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
         addChannel(mesh.scale, gltf.VEC3, "scale")
 
 def gltfNodeIsBillboard(node_idx, file):
-    mesh = file.meshes[file.nodes[node_idx].meshes[0]]
+    mesh = file.meshes[file.nodes[node_idx].mesh]
     return mesh.extras.get("billboard", False)
 
 def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
