@@ -323,7 +323,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     else:
         sprite_alpha = 0
 
-    # Pack mesh metadata
+    # Set up mesh metadata
     mesh_id = hash_str.hash_str(node.name)
 
     render_mode = RenderMode()
@@ -331,17 +331,38 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     render_mode.sync_to_global_clock = node.mesh.extras.get("sync_to_global_clock", 0)
     render_mode.cloud = node.mesh.extras.get("cloud", 0)
     render_mode = render_mode.toInt()
-    # TODO:
-    #   per_vertex_cn = not unlit and and "normals" in pack_list?
-    #   xlu = material.alphaMode == gltf.BLEND
-    #   masked = material.alphaMode == gltf.MASK
-    #   unlit = "KHR_materials_unlit" in material.extensions
+
+    first_material = True
+    for prims in node.mesh.primitives:
+        material = file.materials[prims.material]
+        xlu = material.alphaMode == gltf.BLEND
+        masked = material.alphaMode == gltf.MASK
+        unlit = "KHR_materials_unlit" in material.extensions
+        if first_material:
+            render_mode.xlu = xlu
+            render_mode.masked = masked
+            render_mode.unlit = unlit
+            first_material = False
+        else:
+            if (render_mode.xlu != xlu or
+                render_mode.masked != masked or
+                render_mode.masked != unlit):
+                print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
+
+    if "display_list" not in pack_list:
+        render_mode.per_vertex_cn = render_mode.unlit
+        if render_mode.per_vertex_cn and "colors" not in pack_list:
+            print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
+        elif not render_mode.per_vertex_cn and "normals" not in pack_list:
+            print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
+
     if "render_mode" in node.mesh.extras:
         render_misc = node.mesh.extras["render_mode"]
         render_misc_mask = node.mesh.extras.get("render_mode_mask", 0xFFFF)
         render_misc &= render_misc_mask
         render_mode = (render_mode & ~render_misc_mask) | render_misc
 
+    # Pack mesh
 
     scale_keys = len(dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation))
     translation_keys = len(dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation))
@@ -494,6 +515,8 @@ def setupActorAnimations(file, root_node_idx, bank):
             if channel.target.node in all_nodes:
                 relevant_animations.append(animation)
                 break
+
+    # TODO: respect animation slot placement, have a default def
 
     # Build global timeline
 
