@@ -14,12 +14,46 @@ from .gbi import F3DEX, Vertex as GbiVertex
 class LinkableDisplayList(linkable.LinkableBytes):
     pass
 
-def gltfNodeToDisplayList(node_idx, bank, file):
+def rawDisplayListToLinkable(raw_mesh_dl):
+    # Import a Fast64-style insertable binary, based on the
+    # spec here:
+    # https://github.com/Fast-64/fast64/blob/main/fast64_internal/sm64/README.md#insertable-binary-exporting
+    #
+    #   0x00-0x04 : Data Type
+    #       0 = Display List
+    #       1 = Geolayout
+    #       2 = Animation
+    #       3 = Collision
+    #   0x04-0x08 : Data Size (size in bytes of Data Section)
+    #   0x08-0x0C : Start Address (start address of data, relative to start of Data Section)
+    #   0x0C-0x10 : Number of Pointer Addresses (number of pointer addresses to be resolved)
+    #   0x10-N    : List of 4-byte pointer addresses. Each address relative to start of Data Section.
+    #   N-end     : Data Section (actual binary data)
     pointers = []
+    data_type = struct.unpack(">I", raw_mesh_dl[0:4])[0]
+    data_size = struct.unpack(">I", raw_mesh_dl[4:8])[0]
+    start_offset = struct.unpack(">I", raw_mesh_dl[8:0xC])[0]
+    num_ptrs = struct.unpack(">I", raw_mesh_dl[0xC:0x10])[0]
+    if data_type != 0:
+        raise Exception("Relocatable binary is not a display list")
+    cursor = 0x10
+    for _ in range(num_ptrs):
+        ptr_offset = struct.unpack(">I", raw_mesh_dl[cursor:cursor+4])[0]
+        pointers.append(linkable.LinkablePointer(
+            offset=ptr_offset,
+            dtype=">I",
+            target=None, # Relative
+            target_offset=struct.unpack(">I", raw_mesh_dl[ptr_offset:ptr_offset+4])[0]
+        ))
+        cursor += 4
+    raw_dl = raw_mesh_dl[cursor:cursor+data_size]
+    return LinkableDisplayList(data=raw_dl, pointers=pointers), start_offset
+
+
+def gltfNodeToDisplayList(node_idx, bank, file):
     node = file.nodes[node_idx]
     mesh = file.meshes[node.mesh]
 
-    raw_dl = b""
     rebuild_dl = True
     if "display_list" in mesh.extras:
         if "data_hash" in mesh.extras:
@@ -34,40 +68,8 @@ def gltfNodeToDisplayList(node_idx, bank, file):
         start_offset = 0
         raise Exception()
     else:
-        # Import a Fast64-style insertable binary, based on the
-        # spec here:
-        # https://github.com/Fast-64/fast64/blob/main/fast64_internal/sm64/README.md#insertable-binary-exporting
-        #
-        #   0x00-0x04 : Data Type
-        #       0 = Display List
-        #       1 = Geolayout
-        #       2 = Animation
-        #       3 = Collision
-        #   0x04-0x08 : Data Size (size in bytes of Data Section)
-        #   0x08-0x0C : Start Address (start address of data, relative to start of Data Section)
-        #   0x0C-0x10 : Number of Pointer Addresses (number of pointer addresses to be resolved)
-        #   0x10-N    : List of 4-byte pointer addresses. Each address relative to start of Data Section.
-        #   N-end     : Data Section (actual binary data)
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])
-        data_type = struct.unpack(">I", raw_mesh_dl[0:4])[0]
-        data_size = struct.unpack(">I", raw_mesh_dl[4:8])[0]
-        start_offset = struct.unpack(">I", raw_mesh_dl[8:0xC])[0]
-        num_ptrs = struct.unpack(">I", raw_mesh_dl[0xC:0x10])[0]
-        if data_type != 0:
-            raise Exception("Relocatable binary is not a display list")
-        cursor = 0x10
-        for _ in range(num_ptrs):
-            ptr_offset = struct.unpack(">I", raw_mesh_dl[cursor:cursor+4])[0]
-            pointers.append(linkable.LinkablePointer(
-                offset=ptr_offset,
-                dtype=">I",
-                target=None, # Relative
-                target_offset=len(raw_dl) + struct.unpack(">I", raw_mesh_dl[ptr_offset:ptr_offset+4])[0]
-            ))
-            cursor += 4
-        raw_dl += raw_mesh_dl[cursor:cursor+data_size]
-
-    linkable_dl = LinkableDisplayList(data=raw_dl, pointers=pointers)
+        linkable_dl, start_offset = rawDisplayListToLinkable(raw_mesh_dl)
     bank.display_lists.append(linkable_dl)
     return linkable_dl, start_offset
 
