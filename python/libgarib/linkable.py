@@ -76,7 +76,7 @@ class LinkableBytes(Linkable):
 class LinkableStruct(Linkable):
     def __init__(self, data: typing.List[Linkable] = None):
         super().__init__()
-        self.data = data or list()
+        self.data = data or []
 
     def __len__(self):
         return padLen(sum(len(d) for d in self.data))

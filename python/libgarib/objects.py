@@ -42,22 +42,24 @@ class LinkableDirectory(linkable.LinkableBytes):
         self.data += b"\0" * 8
 
 class LinkableGeometry(linkable.LinkableStruct):
-    verts: linkable.LinkableBytes
-    faces: linkable.LinkableBytes
-    vertex_cn: linkable.LinkableBytes
-    face_cn: linkable.LinkableBytes
-    texture_ids: linkable.LinkableBytes
-    uvs: linkable.LinkableBytes
-    flags: linkable.LinkableBytes
+    def __init__(self):
+        super().__init__()
+        self.verts = None
+        self.faces = None
+        self.vertex_cn = None
+        self.face_cn = None
+        self.texture_ids = None
+        self.uvs = None
+        self.flags = None
+        self.root = None
 
-    root: linkable.LinkableBytes
     def finalize(self):
         self.data = []
         for attr in (self.verts, self.faces,
             self.vertex_cn, self.face_cn,
             self.uvs, self.flags, self.texture_ids
         ):
-            if len(attr) > 0:
+            if attr is not None and len(attr) > 0:
                 self.data.append(attr)
         self.data.append(self.root)
         super().finalize()
@@ -83,15 +85,20 @@ class LinkableActor(linkable.LinkableBytes):
 class LinkableObjectBank(linkable.LinkableStruct):
     def __init__(self):
         super().__init__()
-        self.directory: LinkableDirectory = LinkableDirectory()
-        self.display_lists: typing.List[display_lists.LinkableDisplayList] = []
-        self.geometries: typing.List[LinkableGeometry] = []
-        self.keyframes: typing.List[LinkableKeyframes] = []
-        self.sprites: typing.List[LinkableSprites] = []
-        self.meshes: typing.List[LinkableMesh] = []
-        self.anim_defs: typing.List[LinkableAnimDefs] = []
-        self.anim_props: typing.List[LinkableAnimProps] = []
-        self.actors: typing.List[LinkableActor] = []
+        self.directory = LinkableDirectory()
+        self.segments = {
+            LinkableGeometry: [],
+            LinkableKeyframes: [],
+            LinkableSprites: [],
+            LinkableMesh: [],
+            LinkableAnimDefs: [],
+            LinkableAnimProps: [],
+            LinkableActor: [],
+            display_lists.LinkableDisplayList: [],
+        }
+
+    def include(self, segment):
+        self.segments[type(segment)].append(segment)
 
     def extract(self, obj_id): 
         segments = []
@@ -102,19 +109,15 @@ class LinkableObjectBank(linkable.LinkableStruct):
             segments.append(node)
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
+                    if pointer.target is None:
+                        continue
                     to_scan.append(pointer.target)
 
         new_bank = LinkableObjectBank()
         new_bank.directory.actors[obj_id] = actor
 
-        attr_types = typing.get_type_hints(new_bank)
-        print(attr_types)
         for segment in segments:
-            desired_attr_type = typing.List[type(segment)]
-            for attr_name, attr_type in attr_types.items():
-                if attr_type is desired_attr_type:
-                    seg_list = getattr(new_bank, attr_name)
-                    seg_list.append(segment)
+            new_bank.segments[type(segment)].append(segment)
 
         return new_bank
 
@@ -128,41 +131,35 @@ class LinkableObjectBank(linkable.LinkableStruct):
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
                     to_scan.append(pointer.target)
-        attr_types = typing.get_type_hints(new_bank)
+
         for segment in segments:
-            desired_attr_type = typing.List[type(segment)]
-            for attr_name, attr_type in attr_types.items():
-                if attr_type is desired_attr_type:
-                    old_list = getattr(self, attr_name)
-                    new_list = [x for x in old_list if x is not segment]
-                    setattr(self, attr_name, new_list)
+            old_list = self.segments[type(segment)]
+            new_list = [x for x in old_list if x is not segment]
+            self.segments[type(segment)] = new_list
+
         del self.directory.actors[obj_id]
 
     def merge(self, other):
-        for obj_id, obj in other.directory.actors.items():
+        for obj_id in other.directory.actors:
             if obj_id in self.directory.actors:
                 self.delete(obj_id)
         self.directory.actors.update(other.directory.actors)
-        self.display_lists += other.display_lists
-        self.geometries += other.geometries
-        self.keyframes += other.keyframes
-        self.sprites += other.sprites
-        self.meshes += other.meshes
-        self.anim_defs += other.anim_defs
-        self.anim_props += other.anim_props
-        self.actors += other.actors
+        for seg_type, seg_list in enumerate(self.segments):
+            seg_list += other.segments[seg_type]
 
     def finalize(self):
+        # Maintain original bank ordering rather than just
+        # a simple iteration over the segments dictionary:
         self.data = (
             [self.directory] +
-            self.display_lists +
-            self.geometries +
-            self.keyframes + 
-            self.sprites + 
-            self.meshes + 
-            self.anim_defs + 
-            self.anim_props +
-            self.actors
+            self.segments[display_lists.LinkableDisplayList] +
+            self.segments[LinkableGeometry] +
+            self.segments[LinkableKeyframes] +
+            self.segments[LinkableSprites] +
+            self.segments[LinkableMesh] +
+            self.segments[LinkableAnimDefs] + 
+            self.segments[LinkableAnimProps] +
+            self.segments[LinkableActor]
             # TODO: mysterious 72B*n_mesh end padding?
         )
         for segment in self.data:
@@ -221,7 +218,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     mesh = file.meshes[node.mesh]
 
     geo_root = LinkableGeometry()
-    bank.geometries.append(geo_root)
+    bank.include(geo_root)
 
     pack_list = node.extras["pack_list"]
 
@@ -334,7 +331,7 @@ def packAnimChannel(channel_data, bank):
         raise gltf_helper.GLTFStructureException("Unexpected animation format")
     raw_keyframes = b"".join(raw_keyframes)
     keyframes = LinkableKeyframes(data=raw_keyframes)
-    bank.keyframes.append(keyframes)
+    bank.include(keyframes)
     return keyframes
 
 def packNode(node_idx, bank, file, texture_db, dopesheet):
@@ -377,7 +374,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
         raw_sprites = b"".join(raw_sprites)
         sprites = LinkableSprites(data=raw_sprites)
-        bank.sprites.append(sprites)
+        bank.include(sprites)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
             dtype = ">I",
@@ -515,7 +512,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     # Finalize structure
     linkable_mesh = LinkableMesh(data=raw_mesh, pointers=pointers) 
-    bank.meshes.append(linkable_mesh)
+    bank.include(linkable_mesh)
     return linkable_mesh
 
 
@@ -648,10 +645,10 @@ def setupActorAnimations(file, root_node_idx, bank):
             raw_defs[idx] = default_anim_def
 
     anim_defs = LinkableAnimDefs(data=b"".join(raw_defs), pointers=[])
-    bank.anim_defs.append(anim_defs)
+    bank.include(anim_defs)
 
     anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, len(raw_defs), file)
-    bank.anim_props.append(anim_props)
+    bank.include(anim_props)
 
     return dopesheet, anim_props
 
@@ -701,7 +698,7 @@ def packActor(file, bank, texture_db):
                 ),
             ]
         )
-        bank.actors.append(root_actor)
+        bank.include(root_actor)
         bank.directory.actors[obj_id] = root_actor
 
 ###########################################
@@ -730,11 +727,11 @@ def getKaitaiFieldOffset(kaitai_obj, field_name):
 
 def kaitaiAnimDataToLinkable(kaitai_anim, bank):
     anim_props = LinkableAnimProps(data=kaitaiObjectToBytes(kaitai_anim), pointers=[])
-    bank.anim_props.append(anim_props)
+    bank.include(anim_props)
 
     if kaitai_anim.animation_definitions is not None:
         anim_defs = LinkableAnimDefs(data=kaitaiObjectToBytes(kaitai_anim, "animation_definitions"), pointers=[])
-        bank.anim_defs.append(anim_defs)
+        bank.include(anim_defs)
 
         anim_props.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_anim, "animation_definitions_ptr"),
@@ -746,7 +743,7 @@ def kaitaiAnimDataToLinkable(kaitai_anim, bank):
 
 def kaitaiMeshToLinkable(kaitai_mesh, bank):
     linkable_mesh = LinkableMesh(data=kaitaiObjectToBytes(kaitai_mesh), pointers=[])
-    bank.meshes.append(linkable_mesh)
+    bank.include(linkable_mesh)
 
     if kaitai_mesh.geometry is not None:
         geo = kaitai_mesh.geometry
@@ -812,7 +809,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
                 target = linkable_geo.texture_ids
             ))
 
-        bank.geometries.append(linkable_geo)
+        bank.include(linkable_geo)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "geometry_ptr"),
             dtype = ">I",
@@ -822,17 +819,18 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
     if kaitai_mesh.display_list is not None:
         raw_dl = display_lists.dump_f3dex_dl(kaitai_mesh.display_list)
-        linkable_dl = display_lists.rawDisplayListToLinkable(raw_dl)
-        bank.display_lists.append(linkable_dl)
+        linkable_dl, dl_offset = display_lists.rawDisplayListToLinkable(raw_dl)
+        bank.include(linkable_dl)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "display_list_ptr"),
             dtype = ">I",
-            target = linkable_dl
+            target = linkable_dl,
+            target_offset = dl_offset
         ))
 
     if kaitai_mesh.sprites is not None:
         sprites = LinkableSprites(data=kaitaiObjectToBytes(kaitai_mesh, "sprites"))
-        bank.sprites.append(sprites)
+        bank.include(sprites)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "sprites_ptr"),
             dtype = ">I",
@@ -841,7 +839,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
     if kaitai_mesh.translation is not None:
         keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "translation"))
-        bank.keyframes.append(keyframes)
+        bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "translation_ptr"),
             dtype = ">I",
@@ -850,7 +848,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
     if kaitai_mesh.rotation is not None:
         keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "rotation"))
-        bank.keyframes.append(keyframes)
+        bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "rotation_ptr"),
             dtype = ">I",
@@ -859,7 +857,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
     if kaitai_mesh.scale is not None:
         keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "scale"))
-        bank.keyframes.append(keyframes)
+        bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "scale_ptr"),
             dtype = ">I",
@@ -896,7 +894,7 @@ def kaitaiActorToLinkable(kaitai_obj, bank):
             dtype = ">I",
             target = kaitaiMeshToLinkable(kaitai_obj.mesh, bank)
         ))
-    bank.actors.append(actor)
+    bank.include(actor)
     return actor
 
 def kaitaiBankToLinkable(kaitai_bank):

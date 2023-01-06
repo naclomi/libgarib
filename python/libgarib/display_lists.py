@@ -70,7 +70,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
     else:
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])
         linkable_dl, start_offset = rawDisplayListToLinkable(raw_mesh_dl)
-    bank.display_lists.append(linkable_dl)
+    bank.include(linkable_dl)
     return linkable_dl, start_offset
 
 ################################
