@@ -62,18 +62,94 @@ class LinkableGeometry(linkable.LinkableStruct):
         self.data.append(self.root)
         super().finalize()
 
+class LinkableKeyframes(linkable.LinkableBytes):
+    pass
+
+class LinkableSprites(linkable.LinkableBytes):
+    pass
+
+class LinkableMeshes(linkable.LinkableBytes):
+    pass
+
+class LinkableAnimDefs(linkable.LinkableBytes):
+    pass
+
+class LinkableAnimProps(linkable.LinkableBytes):
+    pass
+
+class LinkableActor(linkable.LinkableBytes):
+    pass
+
 class LinkableObjectBank(linkable.LinkableStruct):
     def __init__(self):
         super().__init__()
         self.directory: LinkableDirectory = LinkableDirectory()
-        self.display_lists: typing.List[linkable.LinkableBytes] = []
+        self.display_lists: typing.List[display_lists.LinkableDisplayList] = []
         self.geometries: typing.List[LinkableGeometry] = []
-        self.keyframes: typing.List[linkable.LinkableBytes] = []
-        self.sprites: typing.List[linkable.LinkableBytes] = []
-        self.meshes: typing.List[linkable.LinkableBytes] = []
-        self.anim_defs: typing.List[linkable.LinkableBytes] = []
-        self.anim_props: typing.List[linkable.LinkableBytes] = []
-        self.actors: typing.List[linkable.LinkableBytes] = []
+        self.keyframes: typing.List[LinkableKeyframes] = []
+        self.sprites: typing.List[LinkableSprites] = []
+        self.meshes: typing.List[LinkableMeshes] = []
+        self.anim_defs: typing.List[LinkableAnimDefs] = []
+        self.anim_props: typing.List[LinkableAnimProps] = []
+        self.actors: typing.List[LinkableActor] = []
+
+    def extract(self, obj_id): 
+        segments = []
+        actor = self.directory.actors[obj_id]
+        to_scan = [actor]
+        while len(to_scan) > 0:
+            node = to_scan.pop()
+            segments.append(node)
+            if hasattr(node, "pointers"):
+                for pointer in node.pointers:
+                    to_scan.append(pointer.dst)
+
+        new_bank = LinkableObjectBank()
+        new_bank.directory.actors[obj_id] = actor
+
+        attr_types = typing.get_type_hints(self)
+        for segment in segments:
+            desired_attr_type = typing.List[type(segment)]
+            for attr_name, attr_type in attr_types.items():
+                if attr_type is desired_attr_type:
+                    seg_list = getattr(new_bank, attr_name)
+                    seg_list.append(segment)
+
+        return new_bank
+
+    def delete(self, obj_id):
+        segments = []
+        actor = self.directory.actors[obj_id]
+        to_scan = [actor]
+        while len(to_scan) > 0:
+            node = to_scan.pop()
+            segments.append(node)
+            if hasattr(node, "pointers"):
+                for pointer in node.pointers:
+                    to_scan.append(pointer.dst)
+        attr_types = typing.get_type_hints(self)
+        for segment in segments:
+            desired_attr_type = typing.List[type(segment)]
+            for attr_name, attr_type in attr_types.items():
+                if attr_type is desired_attr_type:
+                    old_list = getattr(self, attr_name)
+                    new_list = [x for x in old_list if x is not segment]
+                    setattr(self, attr_name, new_list)
+        del self.directory.actors[obj_id]
+
+    def merge(self, other):
+        for obj_id, obj in other.directory.actors.items():
+            if obj_id in self.directory.actors:
+                self.delete(obj_id)
+        self.directory.actors.update(other.directory.actors)
+        self.display_lists += other.display_lists
+        self.geometries += other.geometries
+        self.keyframes += other.keyframes
+        self.sprites += other.sprites
+        self.meshes += other.meshes
+        self.anim_defs += other.anim_defs
+        self.anim_props += other.anim_props
+        self.actors += other.actors
 
     def finalize(self):
         self.data = (
@@ -256,7 +332,7 @@ def packAnimChannel(channel_data, bank):
     else:
         raise gltf_helper.GLTFStructureException("Unexpected animation format")
     raw_keyframes = b"".join(raw_keyframes)
-    keyframes = linkable.LinkableBytes(data=raw_keyframes)
+    keyframes = LinkableKeyframes(data=raw_keyframes)
     bank.keyframes.append(keyframes)
     return keyframes
 
@@ -299,7 +375,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
             sprite_alpha = 0xFF
 
         raw_sprites = b"".join(raw_sprites)
-        sprites = linkable.LinkableBytes(data=raw_sprites)
+        sprites = LinkableSprites(data=raw_sprites)
         bank.sprites.append(sprites)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
@@ -437,7 +513,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         ))
 
     # Finalize structure
-    linkable_mesh = linkable.LinkableBytes(data=raw_mesh, pointers=pointers) 
+    linkable_mesh = LinkableMesh(data=raw_mesh, pointers=pointers) 
     bank.meshes.append(linkable_mesh)
     return linkable_mesh
 
@@ -465,7 +541,7 @@ def actorAnimationMetadataFromJson(props_json, defs, num_defs, file):
         dtype = ">I",
         target = defs
     )
-    props = linkable.LinkableBytes(data=raw_props, pointers=[anim_ptr])
+    props = LinkableAnimProps(data=raw_props, pointers=[anim_ptr])
     return props
 
 
@@ -570,7 +646,7 @@ def setupActorAnimations(file, root_node_idx, bank):
         if raw_defs[idx] is None:
             raw_defs[idx] = default_anim_def
 
-    anim_defs = linkable.LinkableBytes(data=b"".join(raw_defs), pointers=[])
+    anim_defs = LinkableAnimDefs(data=b"".join(raw_defs), pointers=[])
     bank.anim_defs.append(anim_defs)
 
     anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, len(raw_defs), file)
@@ -609,7 +685,7 @@ def packActor(file, bank, texture_db):
             "mesh": None,
             "animation": None,
         })
-        root_actor = linkable.LinkableBytes(
+        root_actor = LinkableActor(
             data=root_actor_raw,
             pointers=[
                 linkable.LinkablePointer(

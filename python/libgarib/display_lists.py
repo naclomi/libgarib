@@ -11,6 +11,9 @@ from .gbi import F3DEX, Vertex as GbiVertex
 ################################
 # Packing
 
+class LinkableDisplayList(linkable.LinkableBytes):
+    pass
+
 def gltfNodeToDisplayList(node_idx, bank, file):
     pointers = []
     node = file.nodes[node_idx]
@@ -64,7 +67,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
             cursor += 4
         raw_dl += raw_mesh_dl[cursor:cursor+data_size]
 
-    linkable_dl = linkable.LinkableBytes(data=raw_dl, pointers=pointers)
+    linkable_dl = LinkableDisplayList(data=raw_dl, pointers=pointers)
     bank.display_lists.append(linkable_dl)
     return linkable_dl, start_offset
 

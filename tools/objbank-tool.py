@@ -70,6 +70,18 @@ def bankmap(args):
                 segment.name))
  
 
+def split(args):
+    texture_db = build_texture_db(args.textures)
+
+    for bank_filename in args.bank_file:
+        os.makedirs(args.output_dir, exist_ok=True)
+        with open(bank_filename, "rb") as f:
+            bank_data = data_from_stream(f)
+        bank = GloverObjbank.from_bytes(bank_data)
+
+        # TODO: convert to linkable, extract and finalize
+        raise Exception()
+
 def unpack(args):
     texture_db = build_texture_db(args.textures)
 
@@ -169,6 +181,10 @@ if __name__=="__main__":
     unpack_parser.add_argument("-t", "--textures", action="append", type=str,
                         help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
 
+    split_parser = subparsers.add_parser('split', help='Split one object bank into individual objects')
+    split_parser.add_argument("bank_file", type=str, nargs="+",
+                        help="Object bank file (potentially FLA2-compressed)")
+
     map_parser = subparsers.add_parser('map', help='Dump memory map of object banks')
     map_parser.add_argument("bank_file", type=str, nargs="+",
                         help="Object bank file (potentially FLA2-compressed)")
@@ -188,6 +204,8 @@ if __name__=="__main__":
         pack(args)
     elif args.command == "unpack":
         unpack(args)
+    elif args.command == "split":
+        split(args)
     elif args.command == "map":
         bankmap(args)
     elif args.command == "query":
