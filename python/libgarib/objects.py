@@ -144,8 +144,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
             if obj_id in self.directory.actors:
                 self.delete(obj_id)
         self.directory.actors.update(other.directory.actors)
-        for seg_type, seg_list in enumerate(self.segments):
-            seg_list += other.segments[seg_type]
+        for seg_type in self.segments.keys():
+            self.segments[seg_type] += other.segments[seg_type]
 
     def finalize(self):
         # Maintain original bank ordering rather than just

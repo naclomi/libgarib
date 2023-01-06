@@ -107,11 +107,19 @@ def pack(args):
 
     root = libgarib.objects.LinkableObjectBank()
 
-    for actor_filename in args.actor_file:
-        with open(actor_filename, "r") as f:
-            file = gltf.GLTF2.load(actor_filename)
-            libgarib.objects.packActor(file, root, texture_db)
- 
+    for filename in args.actor_or_bank_file:
+        with open(filename, "rb") as f:
+            header = f.read(4)
+            f.seek(0)
+            if header == b"glTF" or header[0] == b"{":
+                file = gltf.GLTF2.load(filename)
+                libgarib.objects.packActor(file, root, texture_db)
+            else:
+                bank_data = data_from_stream(f)
+                bank = GloverObjbank.from_bytes(bank_data)
+                linkable_bank = libgarib.objects.kaitaiBankToLinkable(bank)
+                root.merge(linkable_bank)
+
     root.finalize()
     bank = root.link()
 
@@ -166,8 +174,8 @@ if __name__=="__main__":
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     pack_parser = subparsers.add_parser('pack', help='Build object banks from raw model assets')
-    pack_parser.add_argument("actor_file", type=str, nargs="+",
-                        help="glTF2 file to pack")
+    pack_parser.add_argument("actor_or_bank_file", type=str, nargs="+",
+                        help="glTF2 file or object bank to pack")
     pack_parser.add_argument("--output-file", type=str, required=True,
                         help="File to write bank into")
     pack_parser.add_argument("--compress", action="store_true",
