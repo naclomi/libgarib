@@ -102,12 +102,13 @@ class LinkableObjectBank(linkable.LinkableStruct):
             segments.append(node)
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
-                    to_scan.append(pointer.dst)
+                    to_scan.append(pointer.target)
 
         new_bank = LinkableObjectBank()
         new_bank.directory.actors[obj_id] = actor
 
-        attr_types = typing.get_type_hints(self)
+        attr_types = typing.get_type_hints(new_bank)
+        print(attr_types)
         for segment in segments:
             desired_attr_type = typing.List[type(segment)]
             for attr_name, attr_type in attr_types.items():
@@ -126,8 +127,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
             segments.append(node)
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
-                    to_scan.append(pointer.dst)
-        attr_types = typing.get_type_hints(self)
+                    to_scan.append(pointer.target)
+        attr_types = typing.get_type_hints(new_bank)
         for segment in segments:
             desired_attr_type = typing.List[type(segment)]
             for attr_name, attr_type in attr_types.items():
@@ -706,17 +707,21 @@ def packActor(file, bank, texture_db):
 ###########################################
 ## Bank manipulation
 
-def kaitaiObjectToBytes(kaitai_obj):
-    if isinstance(kaitai_obj, list):
-        start_obj = kaitai_obj[0]
-        end_obj = kaitai_obj[-1]
+def kaitaiObjectToBytes(parent, field=None):
+    if field is None:
+        start_pos = parent._debug[parent.SEQ_FIELDS[0]]["start"]
+        end_pos = parent._debug[parent.SEQ_FIELDS[-1]]["end"]
+    elif field in parent._debug:
+        start_pos = parent._debug[field]["start"]
+        end_pos = parent._debug[field]["end"]
     else:
-        start_obj = kaitai_obj
-        end_obj = kaitai_obj
-    start_pos = start_obj._debug[start_obj.SEQ_FIELDS[0]]["start"]
-    end_pos = end_obj._debug[end_obj.SEQ_FIELDS[-1]]["end"]
-    start_obj._io.seek(start_pos)
-    return start_obj._io.read_bytes(end_pos - start_pos)
+        getattr(parent, field) # Force lazy load of Kaitai object instance (grrl, ew)
+        instance_name = "_m_{:}".format(field)
+        start_pos = parent._debug[instance_name]["start"]
+        end_pos = parent._debug[instance_name]["end"]
+
+    parent._io.seek(start_pos)
+    return parent._io.read_bytes(end_pos - start_pos)
 
 def getKaitaiFieldOffset(kaitai_obj, field_name):
     struct_start_pos = kaitai_obj._debug[kaitai_obj.SEQ_FIELDS[0]]["start"]
@@ -728,7 +733,7 @@ def kaitaiAnimDataToLinkable(kaitai_anim, bank):
     bank.anim_props.append(anim_props)
 
     if kaitai_anim.animation_definitions is not None:
-        anim_defs = LinkableAnimDefs(data=kaitaiObjectToBytes(kaitai_anim.animation_definitions), pointers=[])
+        anim_defs = LinkableAnimDefs(data=kaitaiObjectToBytes(kaitai_anim, "animation_definitions"), pointers=[])
         bank.anim_defs.append(anim_defs)
 
         anim_props.pointers.append(linkable.LinkablePointer(
@@ -744,18 +749,68 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
     bank.meshes.append(linkable_mesh)
 
     if kaitai_mesh.geometry is not None:
+        geo = kaitai_mesh.geometry
+
         linkable_geo = LinkableGeometry()
         linkable_geo.root = linkable.LinkableBytes(
-            data=kaitaiObjectToBytes(kaitai_mesh.geometry), pointers=[])
+            data=kaitaiObjectToBytes(geo), pointers=[])
 
-        # TODO
-        # verts
-        # faces
-        # vertex_cn
-        # face_cn
-        # texture_ids
-        # uvs
-        # flags
+        if geo.vertices is not None:
+            linkable_geo.verts = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "vertices"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "vertices_ptr"),
+                dtype = ">I",
+                target = linkable_geo.verts
+            ))
+
+        if geo.faces is not None:
+            linkable_geo.faces = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "faces"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "faces_ptr"),
+                dtype = ">I",
+                target = linkable_geo.faces
+            ))
+
+        if geo.face_cn is not None:
+            linkable_geo.face_cn = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "face_cn"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "face_cn_ptr"),
+                dtype = ">I",
+                target = linkable_geo.face_cn
+            ))
+
+        if geo.vertex_cn is not None:
+            linkable_geo.vertex_cn = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "vertex_cn"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "vertex_cn_ptr"),
+                dtype = ">I",
+                target = linkable_geo.vertex_cn
+            ))
+
+        if geo.uvs is not None:
+            linkable_geo.uvs = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "uvs"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "uvs_ptr"),
+                dtype = ">I",
+                target = linkable_geo.uvs
+            ))
+
+        if geo.flags is not None:
+            linkable_geo.flags = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "flags"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "flags_ptr"),
+                dtype = ">I",
+                target = linkable_geo.flags
+            ))
+
+
+        if geo.texture_ids is not None:
+            linkable_geo.texture_ids = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "texture_ids"), pointers=[])
+            linkable_geo.root.pointers.append(linkable.LinkablePointer(
+                offset = getKaitaiFieldOffset(geo, "texture_ids_ptr"),
+                dtype = ">I",
+                target = linkable_geo.texture_ids
+            ))
 
         bank.geometries.append(linkable_geo)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
@@ -766,7 +821,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
 
     if kaitai_mesh.display_list is not None:
-        raw_dl = display_lists.dump_f3dex_dl(kaitai_mesh.display_list, bank)
+        raw_dl = display_lists.dump_f3dex_dl(kaitai_mesh.display_list)
         linkable_dl = display_lists.rawDisplayListToLinkable(raw_dl)
         bank.display_lists.append(linkable_dl)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
@@ -776,7 +831,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         ))
 
     if kaitai_mesh.sprites is not None:
-        sprites = LinkableSprites(data=kaitaiObjectToBytes(kaitai_mesh.sprites))
+        sprites = LinkableSprites(data=kaitaiObjectToBytes(kaitai_mesh, "sprites"))
         bank.sprites.append(sprites)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "sprites_ptr"),
@@ -785,7 +840,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         ))
 
     if kaitai_mesh.translation is not None:
-        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh.translation))
+        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "translation"))
         bank.keyframes.append(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "translation_ptr"),
@@ -794,7 +849,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         ))
 
     if kaitai_mesh.rotation is not None:
-        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh.rotation))
+        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "rotation"))
         bank.keyframes.append(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "rotation_ptr"),
@@ -803,7 +858,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         ))
 
     if kaitai_mesh.scale is not None:
-        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh.scale))
+        keyframes = LinkableKeyframes(data=kaitaiObjectToBytes(kaitai_mesh, "scale"))
         bank.keyframes.append(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "scale_ptr"),
@@ -1100,7 +1155,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     if mesh.display_list is None:
         dl_encoded = None
     else:
-        dl_raw = display_lists.dump_f3dex_dl(mesh.display_list, mesh._io._io.getbuffer())
+        dl_raw = display_lists.dump_f3dex_dl(mesh.display_list)
         dl_encoded = base64.b64encode(dl_raw).decode()
 
     if len(primitives) > 0:

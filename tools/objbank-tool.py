@@ -71,16 +71,19 @@ def bankmap(args):
  
 
 def split(args):
-    texture_db = build_texture_db(args.textures)
-
     for bank_filename in args.bank_file:
         os.makedirs(args.output_dir, exist_ok=True)
         with open(bank_filename, "rb") as f:
             bank_data = data_from_stream(f)
         bank = GloverObjbank.from_bytes(bank_data)
-
-        # TODO: convert to linkable, extract and finalize
-        raise Exception()
+        linkable_bank = libgarib.objects.kaitaiBankToLinkable(bank)
+        for entry in bank.directory:
+            if entry.obj_root is None:
+                continue
+            single_bank = linkable_bank.extract(entry.obj_id)
+            single_bank.finalize()
+            with open(os.path.join(args.output_dir, "0x{:08x}-{:}.obj.bin".format(entry.obj_root.obj_id, entry.obj_root.mesh.name.strip("\0"))), "wb") as f:
+                f.write(single_bank.link())
 
 def unpack(args):
     texture_db = build_texture_db(args.textures)
@@ -95,7 +98,6 @@ def unpack(args):
             obj = entry.obj_root
             if obj is None:
                 continue
-
             with open(os.path.join(args.output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
                 f.write(libgarib.objects.actor_to_gltf(obj, texture_db))
 
@@ -184,6 +186,8 @@ if __name__=="__main__":
     split_parser = subparsers.add_parser('split', help='Split one object bank into individual objects')
     split_parser.add_argument("bank_file", type=str, nargs="+",
                         help="Object bank file (potentially FLA2-compressed)")
+    split_parser.add_argument("--output-dir", type=str, default=os.getcwd(),
+                        help="Directory to output bank contents")
 
     map_parser = subparsers.add_parser('map', help='Dump memory map of object banks')
     map_parser.add_argument("bank_file", type=str, nargs="+",

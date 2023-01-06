@@ -164,7 +164,7 @@ def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
     return primitives
 
 
-def dump_f3dex_dl(display_list, bank):
+def dump_f3dex_dl(display_list):
     # Dump a Fast64-style insertable binary, based on the
     # spec here:
     # https://github.com/Fast-64/fast64/blob/main/fast64_internal/sm64/README.md#insertable-binary-exporting
@@ -215,6 +215,7 @@ def dump_f3dex_dl(display_list, bank):
         ptr_start = payload_start + dl_offset
         ptr_end = ptr_start + 4
         output[ptr_start: ptr_end] = struct.pack(">I", len(output) - payload_start)
-        output += bank[region_offset: region_offset + region_size]
+        display_list[0]._io.seek(region_offset)
+        output += display_list[0]._io.read_bytes(region_size)
 
     return output
