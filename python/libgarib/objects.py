@@ -246,7 +246,7 @@ def packSprite(sprite_idx, file, texture_db):
         "flags": 0, # TODO
     })
 
-DEFAULT_PACK_LIST = ["display_list", "faces", "verts", "norms"]
+DEFAULT_PACK_LIST = '["display_list", "faces", "verts", "norms"]'
 
 def packGeo(node_idx, bank, file, pack_list, texture_db):
     node = file.nodes[node_idx]
@@ -255,100 +255,104 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     geo_root = LinkableGeometry()
     bank.include(geo_root)
 
-    pack_list = node.extras.get("pack_list", DEFAULT_PACK_LIST)
+    pack_list = json.loads(node.extras.get("pack_list", DEFAULT_PACK_LIST))
+    if should_pack_geo(pack_list):
+        attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
+        raw_geo_root = objbank_writer.glover_objbank__geometry.build({
+            "num_faces": len(attrs["indices"]),
+            "num_vertices": len(attrs["POSITION"]),
+            "vertices_ptr": 0,
+            "faces_ptr": 0,
+            "face_cn_ptr": 0,
+            "uvs_ptr": 0,
+            "uvs_unmodified_ptr": 0,
+            "vertex_cn_ptr": 0,
+            "flags_ptr": 0,
+            "texture_ids_ptr": 0,
+            "texture_ids": None,
+            "faces": None,
+            "vertex_cn": None,
+            "uvs_unmodified": None,
+            "flags": None,
+            "vertices": None,
+            "uvs": None,
+            "face_cn": None,
+        })
+        geo_root.root = LinkableGeometryRoot(
+            data=raw_geo_root,
+            pointers=[]
+        )
+        def setPtr(name, dst):
+            geo_root.root.pointers.append(linkable.LinkablePointer(
+                offset = getConstructFieldOffset(objbank_writer.glover_objbank__geometry, name),
+                dtype = ">I",
+                target = dst
+            ))
 
-    attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
+        if "faces" in pack_list:
+            geo_root.faces = linkable.LinkableBytes(data=attrs["indices"].astype(">H").tobytes())
+            setPtr("faces_ptr", geo_root.faces)
+        if "verts" in pack_list:
+            geo_root.verts = linkable.LinkableBytes(data=attrs["POSITION"].astype(">f").tobytes())
+            setPtr("vertices_ptr", geo_root.verts)
+        if "colors" in pack_list:
+            ubyte_values = (attrs["COLOR_0"]*255).astype("B")
+            raw_colors = b"".join(struct.pack("4B", *color[:2], 0) for color in ubyte_values)
+            geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
+            setPtr("vertex_cn_ptr", geo_root.vertex_cn)
+        if "norms" in pack_list:
+            # Have to recalculate face norms
+            raw_norms = []
+            for base_idx in range(0, len(attrs["indices"]), 3):
+                # Calculate ortho vector
+                v0 = attrs["POSITION"][attrs["indices"][base_idx]]
+                v1 = attrs["POSITION"][attrs["indices"][base_idx+1]]
+                v2 = attrs["POSITION"][attrs["indices"][base_idx+2]]
+                n = np.cross(v1-v0, v2-v0)
 
-    raw_geo_root = objbank_writer.glover_objbank__geometry.build({
-        "num_faces": len(attrs["indices"]),
-        "num_vertices": len(attrs["POSITION"]),
-        "vertices_ptr": 0,
-        "faces_ptr": 0,
-        "face_cn_ptr": 0,
-        "uvs_ptr": 0,
-        "uvs_unmodified_ptr": 0,
-        "vertex_cn_ptr": 0,
-        "flags_ptr": 0,
-        "texture_ids_ptr": 0,
-        "texture_ids": None,
-        "faces": None,
-        "vertex_cn": None,
-        "uvs_unmodified": None,
-        "flags": None,
-        "vertices": None,
-        "uvs": None,
-        "face_cn": None,
-    })
-    geo_root.root = LinkableGeometryRoot(
-        data=raw_geo_root,
-        pointers=[]
-    )
-    def setPtr(name, dst):
-        geo_root.root.pointers.append(linkable.LinkablePointer(
-            offset = getConstructFieldOffset(objbank_writer.glover_objbank__geometry, name),
-            dtype = ">I",
-            target = dst
-        ))
+                # Normalize
+                n_mag = math.sqrt(sum(n**2))
+                n /= n_mag
 
-    if "faces" in pack_list:
-        geo_root.faces = linkable.LinkableBytes(data=attrs["indices"].astype(">H").tobytes())
-        setPtr("faces_ptr", geo_root.faces)
-    if "verts" in pack_list:
-        geo_root.verts = linkable.LinkableBytes(data=attrs["POSITION"].astype(">f").tobytes())
-        setPtr("vertices_ptr", geo_root.verts)
-    if "colors" in pack_list:
-        ubyte_values = (attrs["COLOR_0"]*255).astype("B")
-        raw_colors = b"".join(struct.pack("4B", *color[:2], 0) for color in ubyte_values)
-        geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
-        setPtr("vertex_cn_ptr", geo_root.vertex_cn)
-    if "norms" in pack_list:
-        # Have to recalculate face norms
-        raw_norms = []
-        for base_idx in range(0, len(attrs["indices"]), 3):
-            # Calculate ortho vector
-            v0 = attrs["POSITION"][attrs["indices"][base_idx]]
-            v1 = attrs["POSITION"][attrs["indices"][base_idx+1]]
-            v2 = attrs["POSITION"][attrs["indices"][base_idx+2]]
-            n = np.cross(v1-v0, v2-v0)
+                # Correct orientation
+                v0n = attrs["NORMAL"][attrs["indices"][base_idx]]
+                if np.dot(n, v0n) < 0:
+                    n *= -1
 
-            # Normalize
-            n_mag = math.sqrt(sum(n**2))
-            n /= n_mag
+                # Cast to s8 format
+                n *= 127
+                raw_norms.append(struct.pack("bbbB", *n.astype("b"), 0))
 
-            # Correct orientation
-            v0n = attrs["NORMAL"][attrs["indices"][base_idx]]
-            if np.dot(n, v0n) < 0:
-                n *= -1
+            geo_root.face_cn = linkable.LinkableBytes(data=b"".join(raw_norms))
+            setPtr("face_cn_ptr", geo_root.face_cn)   
+        if "flags" in pack_list:
+            geo_root.flags = linkable.LinkableBytes(data=attrs["_GLOVER_FLAGS"].astype("B").tobytes())
+            setPtr("flags_ptr", geo_root.flags)
+        if "uvs" in pack_list or "texture_ids" in pack_list:
+            toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
+            texture_ids = toTextureIds(attrs["material"], file).astype(">I")
 
-            # Cast to s8 format
-            n *= 127
-            raw_norms.append(struct.pack("bbbB", *n.astype("b"), 0))
+            if "texture_ids" in pack_list:
+                geo_root.texture_ids = linkable.LinkableBytes(data=texture_ids.tobytes())
+                setPtr("texture_ids_ptr", geo_root.texture_ids)
 
-        geo_root.face_cn = linkable.LinkableBytes(data=b"".join(raw_norms))
-        setPtr("face_cn_ptr", geo_root.face_cn)   
-    if "flags" in pack_list:
-        geo_root.flags = linkable.LinkableBytes(data=attrs["_GLOVER_FLAGS"].astype("B").tobytes())
-        setPtr("flags_ptr", geo_root.flags)
-    if "uvs" in pack_list or "texture_ids" in pack_list:
-        toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
-        texture_ids = toTextureIds(attrs["material"], file).astype(">I")
+            if "uvs" in pack_list:
+                # Go from normalized coordinates to pixel coordinates
+                uvs = attrs["TEXCOORD_0"]
+                for idx in len(geo_root.uvs):
+                    tex = texture_db.byId.get(texture_ids[idx])
+                    if tex is None:
+                        raise Exception("Need dimensions of texture 0x{:08X} to pack mesh node {:}".format(texture_ids[idx], node.name))
+                    uvs[idx] *= (tex.width, tex.height)
 
-        if "texture_ids" in pack_list:
-            geo_root.texture_ids = linkable.LinkableBytes(data=texture_ids.tobytes())
-            setPtr("texture_ids_ptr", geo_root.texture_ids)
-
-        if "uvs" in pack_list:
-            # Go from normalized coordinates to pixel coordinates
-            uvs = attrs["TEXCOORD_0"]
-            for idx in len(geo_root.uvs):
-                tex = texture_db.byId.get(texture_ids[idx])
-                if tex is None:
-                    raise Exception("Need dimensions of texture 0x{:08X} to pack mesh node {:}".format(texture_ids[idx], node.name))
-                uvs[idx] *= (tex.width, tex.height)
-
-            # Convert to 11.5 format
-            geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">H").tobytes())                
-            setPtr("uvs_ptr", geo_root.flags)
+                # Convert to 11.5 format
+                geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">H").tobytes())                
+                setPtr("uvs_ptr", geo_root.flags)
+    else:
+        geo_root.root = LinkableGeometryRoot(
+            data=b"\0" * objbank_writer.glover_objbank__geometry.sizeof(),
+            pointers=[]
+        )
 
     return geo_root
 
@@ -372,7 +376,7 @@ def packAnimChannel(channel_data, bank):
 def packNode(node_idx, bank, file, texture_db, dopesheet):
     node = file.nodes[node_idx]
 
-    pack_list = node.extras.get("pack_list", DEFAULT_PACK_LIST)
+    pack_list = json.loads(node.extras.get("pack_list", DEFAULT_PACK_LIST))
 
     pointers = []
 
@@ -524,14 +528,13 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     if node.mesh is not None:
         # Pack geo
-        if should_pack_geo(pack_list):
-            geo_root = packGeo(node_idx, bank, file, pack_list, texture_db)
-            pointers.append(linkable.LinkablePointer(
-                offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
-                dtype = ">I",
-                target = geo_root,
-                target_offset = geo_root.root
-            ))
+        geo_root = packGeo(node_idx, bank, file, pack_list, texture_db)
+        pointers.append(linkable.LinkablePointer(
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
+            dtype = ">I",
+            target = geo_root,
+            target_offset = geo_root.root
+        ))
 
         # Pack DL
         if "display_list" in pack_list:
