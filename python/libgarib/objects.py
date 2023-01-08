@@ -44,6 +44,9 @@ class LinkableDirectory(linkable.LinkableBytes):
         self.data += b"\0" * 8
         super().finalize()
 
+class LinkableGeometryRoot(linkable.LinkableBytes):
+    pass
+
 class LinkableGeometry(linkable.LinkableStruct):
     def __init__(self):
         super().__init__()
@@ -112,6 +115,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
         to_scan = [actor]
         while len(to_scan) > 0:
             node = to_scan.pop()
+            if node in segments:
+                continue
             segments.add(node)
             if isinstance(node, linkable.LinkableStruct):
                 for member in node.data:
@@ -138,6 +143,8 @@ class LinkableObjectBank(linkable.LinkableStruct):
         to_scan = [actor]
         while len(to_scan) > 0:
             node = to_scan.pop()
+            if node in segments:
+                continue
             segments.add(node)
             if isinstance(node, linkable.LinkableStruct):
                 for member in node.data:
@@ -271,7 +278,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
         "uvs": None,
         "face_cn": None,
     })
-    geo_root.root = linkable.LinkableBytes(
+    geo_root.root = LinkableGeometryRoot(
         data=raw_geo_root,
         pointers=[]
     )
@@ -517,6 +524,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
                 offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
                 dtype = ">I",
                 target = geo_root,
+                target_offset = geo_root.root
             ))
 
         # Pack DL
@@ -776,7 +784,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         geo = kaitai_mesh.geometry
 
         linkable_geo = LinkableGeometry()
-        linkable_geo.root = linkable.LinkableBytes(
+        linkable_geo.root = LinkableGeometryRoot(
             data=kaitaiObjectToBytes(geo), pointers=[])
 
         if geo.vertices is not None:
@@ -840,7 +848,8 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "geometry_ptr"),
             dtype = ">I",
-            target = linkable_geo
+            target = linkable_geo,
+            target_offset = linkable_geo.root
         ))
 
 

@@ -44,7 +44,13 @@ class LinkablePointer(object):
 
     def rewrite(self, data: bytearray):
         size = struct.calcsize(self.dtype)
-        absolute_dst = self.target.absolute_offset() + self.target_offset
+        if isinstance(self.target_offset, int):
+            target_offset = self.target_offset
+        elif isinstance(self.target, LinkableStruct):
+            target_offset = self.target.field_offset(self.target_offset)
+        else:
+            raise Exception("Pointer target offset is a field, but target isn't a struct")
+        absolute_dst = self.target.absolute_offset() + target_offset
         data[self.offset: self.offset+size] = struct.pack(self.dtype, absolute_dst)
 
 class LinkableBytes(Linkable):
