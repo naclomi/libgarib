@@ -19,7 +19,6 @@ def padBytes(data):
 class Linkable(object):
     def __init__(self):
         self.parent_offset: int = 0
-        self._absolute_offset: typing.Union[None, int] = None
         self.parent: typing.Union[None, 'Linkable'] = None
 
     def finalize(self):
@@ -28,10 +27,7 @@ class Linkable(object):
     def absolute_offset(self) -> int:
         if self.parent is None:
             return 0
-        elif self._absolute_offset is None:
-            return self.parent.field_offset(self) + self.parent.absolute_offset()
-        else:
-            return self._absolute_offset
+        return self.parent.absolute_offset() + self.parent.field_offset(self)
 
     def __len__(self) -> int:
         return 0

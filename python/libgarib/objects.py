@@ -31,6 +31,8 @@ class LinkableDirectory(linkable.LinkableBytes):
         self.actors: typing.Dict[int, linkable.Linkable] = {}
 
     def finalize(self):
+        self.data.clear()
+        self.pointers = []
         for obj_id, actor in self.actors.items():
             self.data += struct.pack(">I", obj_id)
             self.pointers.append(linkable.LinkablePointer(
@@ -38,8 +40,9 @@ class LinkableDirectory(linkable.LinkableBytes):
                 dtype=">I",
                 target=actor
             ))
-            self.data +=  b"\0" * 4
+            self.data += b"\0" * 4
         self.data += b"\0" * 8
+        super().finalize()
 
 class LinkableGeometry(linkable.LinkableStruct):
     def __init__(self):
@@ -59,9 +62,11 @@ class LinkableGeometry(linkable.LinkableStruct):
             self.vertex_cn, self.face_cn,
             self.uvs, self.flags, self.texture_ids
         ):
-            if attr is not None and len(attr) > 0:
+            if attr is not None:
                 self.data.append(attr)
+                attr.parent = self
         self.data.append(self.root)
+        self.root.parent = self
         super().finalize()
 
 class LinkableKeyframes(linkable.LinkableBytes):
@@ -101,15 +106,19 @@ class LinkableObjectBank(linkable.LinkableStruct):
         self.segments[type(segment)].append(segment)
 
     def extract(self, obj_id): 
-        segments = []
+        self.finalize()
+        segments = set()
         actor = self.directory.actors[obj_id]
         to_scan = [actor]
         while len(to_scan) > 0:
             node = to_scan.pop()
-            segments.append(node)
+            segments.add(node)
+            if isinstance(node, linkable.LinkableStruct):
+                for member in node.data:
+                    to_scan.append(member)
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
-                    if pointer.target is None:
+                    if pointer.target is None or pointer.target is node:
                         continue
                     to_scan.append(pointer.target)
 
@@ -117,25 +126,33 @@ class LinkableObjectBank(linkable.LinkableStruct):
         new_bank.directory.actors[obj_id] = actor
 
         for segment in segments:
-            new_bank.segments[type(segment)].append(segment)
+            if type(segment) in new_bank.segments:
+                new_bank.include(segment)
 
         return new_bank
 
     def delete(self, obj_id):
-        segments = []
+        self.finalize()
+        segments = set()
         actor = self.directory.actors[obj_id]
         to_scan = [actor]
         while len(to_scan) > 0:
             node = to_scan.pop()
-            segments.append(node)
+            segments.add(node)
+            if isinstance(node, linkable.LinkableStruct):
+                for member in node.data:
+                    to_scan.append(member)
             if hasattr(node, "pointers"):
                 for pointer in node.pointers:
+                    if pointer.target is None or pointer.target is node:
+                        continue
                     to_scan.append(pointer.target)
 
         for segment in segments:
-            old_list = self.segments[type(segment)]
-            new_list = [x for x in old_list if x is not segment]
-            self.segments[type(segment)] = new_list
+            if type(segment) in self.segments:
+                old_list = self.segments[type(segment)]
+                new_list = [x for x in old_list if x is not segment]
+                self.segments[type(segment)] = new_list
 
         del self.directory.actors[obj_id]
 
@@ -170,14 +187,24 @@ def parent_str(parents):
     return ".".join(map(lambda m: m.name.strip("\x00"), parents))
 
 def for_each_mesh(mesh, callback, **kwargs):
-    updated_kwargs = callback(mesh, **kwargs)
-    if mesh.sibling is not None:
-        for_each_mesh(mesh.sibling, callback, **kwargs)
-    if mesh.child is not None:
-        child_kwargs = kwargs.copy()
-        if updated_kwargs is not None:
-            child_kwargs.update(updated_kwargs)
-        for_each_mesh(mesh.child, callback, **child_kwargs)
+    if mesh is None:
+        return
+    try:
+        updated_kwargs = callback(mesh, **kwargs)
+        if mesh.sibling is not None:
+            for_each_mesh(mesh.sibling, callback, **kwargs)
+        if mesh.child is not None:
+            child_kwargs = kwargs.copy()
+            if updated_kwargs is not None:
+                child_kwargs.update(updated_kwargs)
+            for_each_mesh(mesh.child, callback, **child_kwargs)
+    except Exception as e:
+        if "_exception_handlers" in kwargs:
+            for exc_type, handler in kwargs["_exception_handlers"].items():
+                if isinstance(e, exc_type):
+                    handler(e, mesh, **kwargs)
+        else:
+            raise e
 
 def getConstructFieldOffset(construct_struct, field_name):
     offset = 0
@@ -819,7 +846,7 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
 
     if kaitai_mesh.display_list is not None:
         raw_dl = display_lists.dump_f3dex_dl(kaitai_mesh.display_list)
-        linkable_dl, dl_offset = display_lists.rawDisplayListToLinkable(raw_dl)
+        linkable_dl, dl_offset = display_lists.relocatableDisplayListToLinkable(raw_dl)
         bank.include(linkable_dl)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "display_list_ptr"),
@@ -1255,7 +1282,7 @@ def kaitaiObjectRange(parent, field):
     else:
         getattr(parent, field) # Force lazy load of Kaitai object instance (grrl, ew)
         instance_name = "_m_{:}".format(field)
-        return parent._debug[instance_name]["start"], parent._debug[instance_name]["end"]
+        return parent._debug[instance_name]["start"], parent._debug[instance_name]["end"]            
     raise Exception(field)
 
 @dataclasses.dataclass
@@ -1269,15 +1296,24 @@ def scrapeBankSegments(bank_data):
 
     bank_map = []
     def bank_push(parent, field, dtype, name):
-        if parent is None:
+        try:
+            if parent is None:
+                return
+            if field is not None:
+                if not hasattr(parent, field):
+                    return
+                if getattr(parent, field) is None:
+                    return
+            memory_range = kaitaiObjectRange(parent, field)
+        except EOFError as e:
+            if hasattr(parent, field + "_ptr"):
+                ptr_val = ": 0x{:08X}".format(getattr(parent, field + "_ptr"))
+            else:
+                ptr_val = ""
+            print("ERROR: Bad pointer for {:} '{:}'{:}".format(dtype, name, ptr_val))
             return
-        if field is not None:
-            if not hasattr(parent, field):
-                return
-            if getattr(parent, field) is None:
-                return
         bank_map.append(BankSegment(
-            memory_range=kaitaiObjectRange(parent, field),
+            memory_range=memory_range,
             dtype=dtype,
             name=name
         ))
@@ -1288,55 +1324,54 @@ def scrapeBankSegments(bank_data):
         if actor is None:
             continue
         bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
-        if actor.mesh is not None:
 
-            def scrape_mesh(mesh, parents):
-                name = "{:08X}.".format(dir_entry.obj_id) + parent_str(parents + [mesh])
-                bank_push(mesh, None, "Mesh", name)
+        def scrape_mesh(mesh, parents):
+            name = "{:08X}.".format(dir_entry.obj_id) + parent_str(parents + [mesh])
+            bank_push(mesh, None, "Mesh", name)
 
-                if mesh.geometry is not None:
-                    geo = mesh.geometry
-                    bank_push(mesh, "geometry", "Geometry root", name)
-                    bank_push(geo, "norms", "Geometry (face normals)", name)
-                    bank_push(geo, "vertices", "Geometry (vertices)", name)
-                    bank_push(geo, "faces", "Geometry (faces)", name)
-                    bank_push(geo, "uvs", "Geometry (UVs)", name)
-                    bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
-                    bank_push(geo, "colors", "Geometry (vertex colors)", name)
-                    bank_push(geo, "flags", "Geometry (face properties)", name)
-                    bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
-                bank_push(mesh, "sprites", "Sprites", name)
-                bank_push(mesh, "scale", "Keyframes (scale)", name)
-                bank_push(mesh, "translation", "Keyframes (translation)", name)
-                bank_push(mesh, "rotation", "Keyframes (rotation)", name)
-                bank_push(mesh, "display_list", "Display list", name)
+            if mesh.geometry is not None:
+                geo = mesh.geometry
+                bank_push(mesh, "geometry", "Geometry root", name)
+                bank_push(geo, "norms", "Geometry (face normals)", name)
+                bank_push(geo, "vertices", "Geometry (vertices)", name)
+                bank_push(geo, "faces", "Geometry (faces)", name)
+                bank_push(geo, "uvs", "Geometry (UVs)", name)
+                bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
+                bank_push(geo, "colors", "Geometry (vertex colors)", name)
+                bank_push(geo, "flags", "Geometry (face properties)", name)
+                bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
+            bank_push(mesh, "sprites", "Sprites", name)
+            bank_push(mesh, "scale", "Keyframes (scale)", name)
+            bank_push(mesh, "translation", "Keyframes (translation)", name)
+            bank_push(mesh, "rotation", "Keyframes (rotation)", name)
+            bank_push(mesh, "display_list", "Display list", name)
 
-                if mesh.display_list is not None:
-                    def scrape_dl(file, offset):
-                        base_offset = offset
-                        while True:
-                            cmd, cmd_args = F3DEX.parse(file[offset: offset+8])
-                            offset += 8
-                            if cmd is F3DEX.byName["G_ENDDL"]:
-                                break
-                            elif cmd is F3DEX.byName["G_VTX"]:
-                                start = cmd_args["address"]
-                                end = start + cmd_args["length"] + 1
-                                bank_map.append(BankSegment(
-                                    memory_range=(start, end),
-                                    dtype="DL Vertex Data",
-                                    name="{:}.dl.cmd[{:08X}]".format(name, offset)
-                                ))
-                            elif (cmd is F3DEX.byName["G_MTX"]
-                             or cmd is F3DEX.byName["G_MOVEMEM"]
-                             or cmd is F3DEX.byName["G_DL"]
-                             or cmd is F3DEX.byName["G_BRANCH_Z"]):
-                                raise Exception("TODO: Not yet implemented: Scrape F3DEX command {:}".format(cmd))
-                    scrape_dl(bank_data, mesh._debug["_m_display_list"]["start"])
-                return {"parents": parents + [mesh]}
+            if mesh.display_list is not None:
+                def scrape_dl(file, offset):
+                    base_offset = offset
+                    while True:
+                        cmd, cmd_args = F3DEX.parse(file[offset: offset+8])
+                        offset += 8
+                        if cmd is F3DEX.byName["G_ENDDL"]:
+                            break
+                        elif cmd is F3DEX.byName["G_VTX"]:
+                            start = cmd_args["address"]
+                            end = start + cmd_args["length"] + 1
+                            bank_map.append(BankSegment(
+                                memory_range=(start, end),
+                                dtype="DL Vertex Data",
+                                name="{:}.dl.cmd[0x{:04X}]".format(name, offset-base_offset)
+                            ))
+                        elif (cmd is F3DEX.byName["G_MTX"]
+                         or cmd is F3DEX.byName["G_MOVEMEM"]
+                         or cmd is F3DEX.byName["G_DL"]
+                         or cmd is F3DEX.byName["G_BRANCH_Z"]):
+                            raise Exception("TODO: Not yet implemented: Scrape F3DEX command {:}".format(cmd))
+                scrape_dl(bank_data, mesh._debug["_m_display_list"]["start"])
+            return {"parents": parents + [mesh]}
 
+        for_each_mesh(actor.mesh, scrape_mesh, parents=[])
 
-            for_each_mesh(actor.mesh, scrape_mesh, parents=[])
         if actor.animation is not None:
             bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
             bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
@@ -1349,6 +1384,8 @@ def fillGaps(segments, bank_data):
 
     def gapDtype(start, end):
         padding = True
+        start = max(start,0)
+        end = min(end, len(bank_data))
         for addr in range(start, end):
             if bank_data[addr] != 0:
                 padding = False
@@ -1357,7 +1394,7 @@ def fillGaps(segments, bank_data):
 
 
     for segment in segments:
-        nextActiveSegments = [s for s in activeSegments if s.memory_range[1]  >= segment.memory_range[0]]
+        nextActiveSegments = [s for s in activeSegments if s.memory_range[1] >= segment.memory_range[0]]
         if len(activeSegments) > 0 and len(nextActiveSegments) == 0:
             lastEnd = max(s.memory_range[1] for s in activeSegments)
             gap_range = (lastEnd, segment.memory_range[0])

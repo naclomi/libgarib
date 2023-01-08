@@ -14,7 +14,7 @@ from .gbi import F3DEX, Vertex as GbiVertex
 class LinkableDisplayList(linkable.LinkableBytes):
     pass
 
-def rawDisplayListToLinkable(raw_mesh_dl):
+def relocatableDisplayListToLinkable(raw_mesh_dl):
     # Import a Fast64-style insertable binary, based on the
     # spec here:
     # https://github.com/Fast-64/fast64/blob/main/fast64_internal/sm64/README.md#insertable-binary-exporting
@@ -37,16 +37,17 @@ def rawDisplayListToLinkable(raw_mesh_dl):
     if data_type != 0:
         raise Exception("Relocatable binary is not a display list")
     cursor = 0x10
+    payload_base = cursor + num_ptrs * 4
     for _ in range(num_ptrs):
         ptr_offset = struct.unpack(">I", raw_mesh_dl[cursor:cursor+4])[0]
         pointers.append(linkable.LinkablePointer(
             offset=ptr_offset,
             dtype=">I",
             target=None, # Relative
-            target_offset=struct.unpack(">I", raw_mesh_dl[ptr_offset:ptr_offset+4])[0]
+            target_offset=struct.unpack(">I", raw_mesh_dl[payload_base+ptr_offset:payload_base+ptr_offset+4])[0]
         ))
         cursor += 4
-    raw_dl = raw_mesh_dl[cursor:cursor+data_size]
+    raw_dl = raw_mesh_dl[payload_base:payload_base+data_size]
     return LinkableDisplayList(data=raw_dl, pointers=pointers), start_offset
 
 
@@ -69,7 +70,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
         raise Exception()
     else:
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])
-        linkable_dl, start_offset = rawDisplayListToLinkable(raw_mesh_dl)
+        linkable_dl, start_offset = relocatableDisplayListToLinkable(raw_mesh_dl)
     bank.include(linkable_dl)
     return linkable_dl, start_offset
 
@@ -86,10 +87,7 @@ def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
     material = gltf_helper.Material()
     texture_size = (1,1)
 
-    # print("\n\n\n------------------")
-    # print(display_list[0]._parent.name.strip("\0"))
     for cmd, args in F3DEX.parseList(raw_dl):
-        # print(cmd.name, args)
         if cmd is F3DEX.byName["G_VTX"]:
             write_idx = args["v0"]
             for read_idx in range(args["n"]):
@@ -180,7 +178,6 @@ def dump_f3dex_dl(display_list):
     #   0x10-N    : List of 4-byte pointer addresses. Each address relative to start of Data Section.
     #   N-end     : Data Section (actual binary data)
     raw_dl = bytearray(b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list))
-    
     linked_data = []
     dl_offset = 0
     for cmd, args in F3DEX.parseList(raw_dl):
@@ -197,7 +194,7 @@ def dump_f3dex_dl(display_list):
 
     output = bytearray()
     output += struct.pack(">I", 0) # Data type (0/display list)
-    output += struct.pack(">I", len(raw_dl)) # Size of DL
+    output += struct.pack(">I", len(raw_dl) + sum(region[2] for region in linked_data)) # Size of DL and associated data
     output += struct.pack(">I", 0) # Start address/entry point of DL (for us, always 0)
     output += struct.pack(">I", len(linked_data)) # Number of pointers
 
