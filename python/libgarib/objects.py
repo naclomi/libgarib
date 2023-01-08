@@ -246,6 +246,7 @@ def packSprite(sprite_idx, file, texture_db):
         "flags": 0, # TODO
     })
 
+DEFAULT_PACK_LIST = ["display_list", "faces", "verts", "norms"]
 
 def packGeo(node_idx, bank, file, pack_list, texture_db):
     node = file.nodes[node_idx]
@@ -254,7 +255,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     geo_root = LinkableGeometry()
     bank.include(geo_root)
 
-    pack_list = node.extras["pack_list"]
+    pack_list = node.extras.get("pack_list", DEFAULT_PACK_LIST)
 
     attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
 
@@ -303,7 +304,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     if "norms" in pack_list:
         # Have to recalculate face norms
         raw_norms = []
-        for base_idx in range(len(0, len(attrs["indices"]), 3)):
+        for base_idx in range(0, len(attrs["indices"]), 3):
             # Calculate ortho vector
             v0 = attrs["POSITION"][attrs["indices"][base_idx]]
             v1 = attrs["POSITION"][attrs["indices"][base_idx+1]]
@@ -321,7 +322,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
 
             # Cast to s8 format
             n *= 127
-            raw_norms.append(struct.pack("bbbB", *n, 0))
+            raw_norms.append(struct.pack("bbbB", *n.astype("b"), 0))
 
         geo_root.face_cn = linkable.LinkableBytes(data=b"".join(raw_norms))
         setPtr("face_cn_ptr", geo_root.face_cn)   
@@ -371,7 +372,7 @@ def packAnimChannel(channel_data, bank):
 def packNode(node_idx, bank, file, texture_db, dopesheet):
     node = file.nodes[node_idx]
 
-    pack_list = node.extras.get("pack_list", ["display_list"])
+    pack_list = node.extras.get("pack_list", DEFAULT_PACK_LIST)
 
     pointers = []
 
@@ -431,10 +432,15 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
         first_material = True
         for prims in gltf_mesh.primitives:
-            material = file.materials[prims.material]
-            xlu = material.alphaMode == gltf.BLEND
-            masked = material.alphaMode == gltf.MASK
-            unlit = "KHR_materials_unlit" in material.extensions
+            if prims.material is None:
+                xlu = False
+                masked = False
+                unlit = False
+            else:
+                material = file.materials[prims.material]
+                xlu = material.alphaMode == gltf.BLEND
+                masked = material.alphaMode == gltf.MASK
+                unlit = "KHR_materials_unlit" in material.extensions
             if first_material:
                 render_mode.xlu = xlu
                 render_mode.masked = masked
@@ -552,29 +558,34 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
 
 def actorAnimationMetadataFromJson(props_json, defs, num_defs, file):
-    p = json.loads(props_json)
-    raw_props = objbank_writer.glover_objbank__animation.build({
-        "num_animation_definitions": num_defs,
-        "current_animation_idx": p["starting_props"]["idx"],
-        "is_playing": p["starting_props"]["is_playing"],
-        "time_delta": p["starting_props"]["time_delta"],
-        "next_anim_idx": [prop_set["idx"] for prop_set in p["prop_queue"]],
-        "next_is_playing": [prop_set["is_playing"] for prop_set in p["prop_queue"]],
-        "next_time_delta": [prop_set["time_delta"] for prop_set in p["prop_queue"]],
-        "next_anim_slot_idx": p["prop_queue_ptr"],
-        "cur_time": p["starting_time"],
-        "pad": 0,
-        "u3": p["unknown1"],
-        "u15": p["unknown2"],
-        "animation_definitions_ptr": 0,
-        "animation_definitions": None
-    })
-    anim_ptr = linkable.LinkablePointer(
-        offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
-        dtype = ">I",
-        target = defs
-    )
-    props = LinkableAnimProps(data=raw_props, pointers=[anim_ptr])
+    if props_json is not None:
+        p = json.loads(props_json)
+        raw_props = objbank_writer.glover_objbank__animation.build({
+            "num_animation_definitions": num_defs,
+            "current_animation_idx": p["starting_props"]["idx"],
+            "is_playing": p["starting_props"]["is_playing"],
+            "time_delta": p["starting_props"]["time_delta"],
+            "next_anim_idx": [prop_set["idx"] for prop_set in p["prop_queue"]],
+            "next_is_playing": [prop_set["is_playing"] for prop_set in p["prop_queue"]],
+            "next_time_delta": [prop_set["time_delta"] for prop_set in p["prop_queue"]],
+            "next_anim_slot_idx": p["prop_queue_ptr"],
+            "cur_time": p["starting_time"],
+            "pad": 0,
+            "u3": p["unknown1"],
+            "u15": p["unknown2"],
+            "animation_definitions_ptr": 0,
+            "animation_definitions": None
+        })
+    else:
+        raw_props = b"\0" * objbank_writer.glover_objbank__geometry.sizeof()
+    pointers = []
+    if num_defs > 0:
+        pointers.append(linkable.LinkablePointer(
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
+            dtype = ">I",
+            target = defs
+        ))
+    props = LinkableAnimProps(data=raw_props, pointers=pointers)
     return props
 
 
@@ -628,6 +639,9 @@ def setupActorAnimations(file, root_node_idx, bank):
     }
 
     for animation in relevant_animations:
+        if "slot" not in animation.extras:
+            print("WARNING: Not packing animation '{:}' as it has no slot assignment".format(animation.name))
+            continue
         slots = json.loads(animation.extras["slot"])
         if not isinstance(slots, list):
             slots = [slots]
@@ -682,7 +696,7 @@ def setupActorAnimations(file, root_node_idx, bank):
     anim_defs = LinkableAnimDefs(data=b"".join(raw_defs), pointers=[])
     bank.include(anim_defs)
 
-    anim_props = actorAnimationMetadataFromJson(root_node.extras["animation_props"], anim_defs, len(raw_defs), file)
+    anim_props = actorAnimationMetadataFromJson(root_node.extras.get("animation_props"), anim_defs, len(raw_defs), file)
     bank.include(anim_props)
 
     return dopesheet, anim_props
@@ -1102,7 +1116,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
     return primitives
 
 def should_pack_geo(pack_list):
-    return len(set(("faces", "colors", "uvs", "norms", "flags", "textures")).intersection(set(pack_list))) > 0
+    return len(set(("faces", "verts", "colors", "uvs", "norms", "flags", "textures")).intersection(set(pack_list))) > 0
 
 def mesh_to_pack_list(mesh):
     pack_list = []

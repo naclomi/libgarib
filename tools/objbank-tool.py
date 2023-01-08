@@ -111,7 +111,7 @@ def pack(args):
         with open(filename, "rb") as f:
             header = f.read(4)
             f.seek(0)
-            if header == b"glTF" or header[0] == b"{":
+            if header == b"glTF" or header[0] == ord("{"):
                 file = gltf.GLTF2.load(filename)
                 libgarib.objects.packActor(file, root, texture_db)
             else:

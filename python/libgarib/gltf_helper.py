@@ -222,7 +222,9 @@ def gltfMeshToFlattenedVertexCache(gltf_mesh, file):
     }
     for primitives in gltf_mesh.primitives:
         p_vert_count = None
-        for attr_name, accessor_idx in vars(primitives):
+        for attr_name, accessor_idx in vars(primitives.attributes).items():
+            if not isinstance(accessor_idx, int):
+                continue
             data = getDataFromAccessor(file, accessor_idx)
             if attr_name not in attrs:
                 attrs[attr_name] = np.zeros((vert_count, *data.shape[1:]))
@@ -644,7 +646,7 @@ def getDataFromAccessor(file, accessor_idx):
     accessor = file.accessors[accessor_idx]
     bufferView = file.bufferViews[accessor.bufferView]
     buffer = file.buffers[bufferView.buffer]
-    data = file.get_data_from_buffer_uri(buffer.uri)
+    src_data = file.get_data_from_buffer_uri(buffer.uri)
 
     component_count, component_dimension = {
         gltf.SCALAR: (1,0),
@@ -678,17 +680,17 @@ def getDataFromAccessor(file, accessor_idx):
         mat_shape = (mat_size, mat_size)
         data_shape = (accessor.count, mat_size, mat_size)
 
-    data = np.zeros(data_shape, dtype=component_dtype)
+    dst_data = np.zeros(data_shape, dtype=component_dtype)
 
     cursor = bufferView.byteOffset + accessor.byteOffset
     for idx in range(accessor.count):
-        vals = struct.unpack(attr_struct, data[cursor:cursor+attr_size])
+        vals = struct.unpack(attr_struct, src_data[cursor:cursor+attr_size])
         if component_dimension == 2:
             vals = np.reshape(vals, mat_shape)
-        data[idx:idx+1] = vals
+        dst_data[idx:idx+1] = vals
         cursor += stride
 
-    return data
+    return dst_data
 
 def getAllNodesInTree(file, root_node_idx):
     result = set()
