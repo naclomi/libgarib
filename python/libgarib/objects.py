@@ -456,7 +456,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
             render_mode.per_vertex_cn = render_mode.unlit
             if render_mode.per_vertex_cn and "colors" not in pack_list:
                 print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
-            elif not render_mode.per_vertex_cn and "normals" not in pack_list:
+            elif not render_mode.per_vertex_cn and "norms" not in pack_list:
                 print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
 
         render_mode = render_mode.toInt()
