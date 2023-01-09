@@ -51,6 +51,7 @@ class LinkablePointer(object):
         else:
             raise Exception("Pointer target offset is a field, but target isn't a struct")
         absolute_dst = self.target.absolute_offset() + target_offset
+        # print(type(self.target),hex(self.offset), hex(self.target.absolute_offset()), hex(target_offset), hex(absolute_dst))
         data[self.offset: self.offset+size] = struct.pack(self.dtype, absolute_dst)
 
 class LinkableBytes(Linkable):

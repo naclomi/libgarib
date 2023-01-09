@@ -207,12 +207,15 @@ def dump_f3dex_dl(display_list):
     output += raw_dl
 
     # Write subsequent linked data regions
+    io = display_list[0]._io
+    old_pos = io.pos()
     for dl_offset, region_offset, region_size in linked_data:
         # Rewrite dl pointer to relocated data
         ptr_start = payload_start + dl_offset
         ptr_end = ptr_start + 4
         output[ptr_start: ptr_end] = struct.pack(">I", len(output) - payload_start)
-        display_list[0]._io.seek(region_offset)
-        output += display_list[0]._io.read_bytes(region_size)
+        io.seek(region_offset)
+        output += io.read_bytes(region_size)
+    io.seek(old_pos)
 
     return output

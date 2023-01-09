@@ -8,9 +8,9 @@ from .parsers.glover_objbank import GloverObjbank
 FRAME_TO_SEC = 1/29.97
 
 
-neutralTranslationAnimation = [np.zeros((1,3)), np.zeros(1)]
-neutralRotationAnimation = [np.zeros((1,4)), np.zeros(1)]
-neutralScaleAnimation = [np.ones((1,3)), np.zeros(1)]
+neutralTranslationAnimation = [np.zeros((1,3), dtype="f"), np.zeros(1, dtype="i")]
+neutralRotationAnimation = [np.zeros((1,4), dtype="f"), np.zeros(1, dtype="i")]
+neutralScaleAnimation = [np.ones((1,3), dtype="f"), np.zeros(1, dtype="i")]
 
 @dataclass
 class InterpolatedFrame:

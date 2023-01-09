@@ -259,7 +259,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
     if should_pack_geo(pack_list):
         attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
         raw_geo_root = objbank_writer.glover_objbank__geometry.build({
-            "num_faces": len(attrs["indices"]),
+            "num_faces": len(attrs["indices"])//3,
             "num_vertices": len(attrs["POSITION"]),
             "vertices_ptr": 0,
             "faces_ptr": 0,
@@ -362,10 +362,10 @@ def packAnimChannel(channel_data, bank):
     times = channel_data[1].astype("i")
     if values.shape[1] == 3:
         for idx in range(len(values)):
-            raw_keyframes.append(struct.pack("4fI", *values[idx], 0, times[idx]))
+            raw_keyframes.append(struct.pack(">4fI", *values[idx], 0, times[idx]))
     elif values.shape[1] == 4:
         for idx in range(len(values)):
-            raw_keyframes.append(struct.pack("4fI", *values[idx], times[idx]))
+            raw_keyframes.append(struct.pack(">4fI", *values[idx], times[idx]))
     else:
         raise gltf_helper.GLTFStructureException("Unexpected animation format")
     raw_keyframes = b"".join(raw_keyframes)
@@ -474,6 +474,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     # Pack mesh
 
+    # TODO: use node TRS instead of neutral animation objects
     scale_keys = dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation)
     translation_keys = dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation)
     rotation_keys = dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation)
@@ -560,7 +561,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     return linkable_mesh
 
 
-def actorAnimationMetadataFromJson(props_json, defs, num_defs, file):
+def actorAnimationMetadataFromJson(props_json, num_defs):
     if props_json is not None:
         p = json.loads(props_json)
         raw_props = objbank_writer.glover_objbank__animation.build({
@@ -580,15 +581,8 @@ def actorAnimationMetadataFromJson(props_json, defs, num_defs, file):
             "animation_definitions": None
         })
     else:
-        raw_props = b"\0" * objbank_writer.glover_objbank__geometry.sizeof()
-    pointers = []
-    if num_defs > 0:
-        pointers.append(linkable.LinkablePointer(
-            offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
-            dtype = ">I",
-            target = defs
-        ))
-    props = LinkableAnimProps(data=raw_props, pointers=pointers)
+        raw_props = b"\0" * objbank_writer.glover_objbank__animation.sizeof()
+    props = LinkableAnimProps(data=raw_props, pointers=[])
     return props
 
 
@@ -625,10 +619,10 @@ def setupActorAnimations(file, root_node_idx, bank):
     all_nodes = gltf_helper.getAllNodesInTree(file, root_node_idx)
 
     relevant_animations = []
-    for animation in file.animations:
-        for channel in animation:
+    for gltf_animation in file.animations:
+        for channel in gltf_animation:
             if channel.target.node in all_nodes:
-                relevant_animations.append(animation)
+                relevant_animations.append(gltf_animation)
                 break
 
     # Build global timeline
@@ -641,30 +635,30 @@ def setupActorAnimations(file, root_node_idx, bank):
         "scale": {}
     }
 
-    for animation in relevant_animations:
-        if "slot" not in animation.extras:
+    for gltf_animation in relevant_animations:
+        if "slot" not in gltf_animation.extras:
             print("WARNING: Not packing animation '{:}' as it has no slot assignment".format(animation.name))
             continue
-        slots = json.loads(animation.extras["slot"])
+        slots = json.loads(gltf_animation.extras["slot"])
         if not isinstance(slots, list):
             slots = [slots]
 
         anim_end = 0
-        for channel in animation:
-            sampler = animation.samplers[channel.sampler]
+        for channel in gltf_animation:
+            sampler = gltf_animation.samplers[channel.sampler]
             key_data = gltf_helper.getDataFromAccessor(file, sampler.input)
             key_times = gltf_helper.getDataFromAccessor(file, sampler.output)
 
             ##########
             # TODO: automate
             scale_value = 1.0
-            playback_speed = animation.extras.get("playback_speed", 1.0)
+            playback_speed = gltf_animation.extras.get("playback_speed", 1.0)
             ##########
 
             key_times *= scale_value
             key_times += global_time
 
-            dopesheet_channel = dopesheet[channel.target.path].get(channel.target.node, [numpy.array(),numpy.array()])
+            dopesheet_channel = dopesheet[channel.target.path].get(channel.target.node, [np.array(),np.array()])
             dopesheet_channel[0] = np.concat(dopesheet_channel[0], key_data)
             dopesheet_channel[1] = np.concat(dopesheet_channel[1], key_data)
             dopesheet[channel.target.path][channel.target.node] = dopesheet_channel
@@ -696,11 +690,18 @@ def setupActorAnimations(file, root_node_idx, bank):
         if raw_defs[idx] is None:
             raw_defs[idx] = default_anim_def
 
-    anim_defs = LinkableAnimDefs(data=b"".join(raw_defs), pointers=[])
-    bank.include(anim_defs)
-
-    anim_props = actorAnimationMetadataFromJson(root_node.extras.get("animation_props"), anim_defs, len(raw_defs), file)
+    anim_props = actorAnimationMetadataFromJson(root_node.extras.get("animation_props"), len(raw_defs))
     bank.include(anim_props)
+
+    if len(raw_defs) > 0:
+        anim_defs = LinkableAnimDefs(data=b"".join(raw_defs), pointers=[])
+        bank.include(anim_defs)
+        anim_props.pointers.append(linkable.LinkablePointer(
+            offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
+            dtype = ">I",
+            target = anim_defs
+        ))
+
 
     return dopesheet, anim_props
 
@@ -769,8 +770,11 @@ def kaitaiObjectToBytes(parent, field=None):
         start_pos = parent._debug[instance_name]["start"]
         end_pos = parent._debug[instance_name]["end"]
 
+    old_pos = parent._io.pos()
     parent._io.seek(start_pos)
-    return parent._io.read_bytes(end_pos - start_pos)
+    data = parent._io.read_bytes(end_pos - start_pos)
+    parent._io.seek(old_pos)
+    return data
 
 def getKaitaiFieldOffset(kaitai_obj, field_name):
     struct_start_pos = kaitai_obj._debug[kaitai_obj.SEQ_FIELDS[0]]["start"]
@@ -1336,7 +1340,7 @@ def scrapeBankSegments(bank_data):
                 ptr_val = ": 0x{:08X}".format(getattr(parent, field + "_ptr"))
             else:
                 ptr_val = ""
-            print("ERROR: Bad pointer for {:} '{:}'{:}".format(dtype, name, ptr_val))
+            print("ERROR: Bad pointer for {:} '{:}'{:}, {:}".format(dtype, name, ptr_val, e))
             return
         bank_map.append(BankSegment(
             memory_range=memory_range,
@@ -1358,12 +1362,12 @@ def scrapeBankSegments(bank_data):
             if mesh.geometry is not None:
                 geo = mesh.geometry
                 bank_push(mesh, "geometry", "Geometry root", name)
-                bank_push(geo, "norms", "Geometry (face normals)", name)
+                bank_push(geo, "face_cn", "Geometry (face colors/normals)", name)
                 bank_push(geo, "vertices", "Geometry (vertices)", name)
                 bank_push(geo, "faces", "Geometry (faces)", name)
                 bank_push(geo, "uvs", "Geometry (UVs)", name)
                 bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
-                bank_push(geo, "colors", "Geometry (vertex colors)", name)
+                bank_push(geo, "vertex_cn", "Geometry (vertex colors/normals)", name)
                 bank_push(geo, "flags", "Geometry (face properties)", name)
                 bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
             bank_push(mesh, "sprites", "Sprites", name)
@@ -1398,9 +1402,12 @@ def scrapeBankSegments(bank_data):
 
         for_each_mesh(actor.mesh, scrape_mesh, parents=[])
 
-        if actor.animation is not None:
-            bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
-            bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
+        try:
+            if actor.animation is not None:
+                bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
+                bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
+        except EOFError as e:
+            print("ERROR: Bad pointer for actor 0x{:08X} animation data".format(dir_entry.obj_id))
     bank_map.sort(key=lambda s: s.memory_range[0])
     return bank_map
 
