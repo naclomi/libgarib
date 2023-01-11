@@ -8,6 +8,7 @@ import math
 import struct
 
 from . import animation
+from .hash import hash_str
 
 import numpy as np
 import pygltflib as gltf
@@ -156,16 +157,24 @@ def findSampler(file, material):
     return len(file.samplers) - 1
 
 def textureIdFromMaterial(material_or_idx, file):
-    if isinstance(material_or_idx, int):
-        material = file.materials[material_or_idx]
-    else:
+    if isinstance(material_or_idx, gltf.Material):
         material = material_or_idx
-    texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
-    texture = file.textures[texture_idx]
-    image = file.images[texture.source]
-    basename = os.path.basename(image.uri)
+    else:
+        material = file.materials[int(material_or_idx)]
+
     # TODO: fallback chain -- first look in URI, then look in gltf image's name, then in material's name
-    return next(re.finditer("(0x[0-9A-Fa-f]+)|([0-9]+)", basename)).group(0)
+    try:
+        texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
+        texture = file.textures[texture_idx]
+        image = file.images[texture.source]
+        basename = os.path.basename(image.uri)
+    except Exception:
+        basename = os.path.basename(material.name)
+
+    try:
+        return int(next(re.finditer("(0x[0-9A-Fa-f]{8})\.", basename)).group(1),16)
+    except StopIteration:
+        return hash_str(basename)
 
 def gltfMaterialToGloverMaterial(gltf_material, file):
     if gltf_material.pbrMetallicRoughness is None or gltf_material.pbrMetallicRoughness.baseColorTexture is None:

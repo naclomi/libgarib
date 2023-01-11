@@ -339,15 +339,15 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
             if "uvs" in pack_list:
                 # Go from normalized coordinates to pixel coordinates
                 uvs = attrs["TEXCOORD_0"]
-                for idx in len(geo_root.uvs):
+                for idx in range(len(uvs)):
                     tex = texture_db.byId.get(texture_ids[idx])
                     if tex is None:
                         raise Exception("Need dimensions of texture 0x{:08X} to pack mesh node {:}".format(texture_ids[idx], node.name))
                     uvs[idx] *= (tex.width, tex.height)
 
                 # Convert to 11.5 format
-                geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">H").tobytes())                
-                setPtr("uvs_ptr", geo_root.flags)
+                geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">h").tobytes())
+                setPtr("uvs_ptr", geo_root.uvs)
     else:
         geo_root.root = LinkableGeometryRoot(
             data=b"\0" * objbank_writer.glover_objbank__geometry.sizeof(),
@@ -474,10 +474,12 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     # Pack mesh
 
-    # TODO: use node TRS instead of neutral animation objects
-    scale_keys = dopesheet["scale"].get(node_idx, animation.neutralScaleAnimation)
-    translation_keys = dopesheet["translation"].get(node_idx, animation.neutralTranslationAnimation)
-    rotation_keys = dopesheet["rotation"].get(node_idx, animation.neutralRotationAnimation)
+    scale_keys = dopesheet["scale"].get(node_idx,
+        animation.vec3ToNeutralFrame(node.scale or (1,1,1)))
+    translation_keys = dopesheet["translation"].get(node_idx,
+        animation.vec3ToNeutralFrame(node.translation or (0,0,0)))
+    rotation_keys = dopesheet["rotation"].get(node_idx,
+        animation.vec4ToNeutralFrame(node.rotation or (0,0,0,0)))
 
     raw_mesh = b""
     raw_mesh = objbank_writer.glover_objbank__mesh.build({

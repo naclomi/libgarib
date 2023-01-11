@@ -8,9 +8,11 @@ from .parsers.glover_objbank import GloverObjbank
 FRAME_TO_SEC = 1/29.97
 
 
-neutralTranslationAnimation = [np.zeros((1,3), dtype="f"), np.zeros(1, dtype="i")]
-neutralRotationAnimation = [np.zeros((1,4), dtype="f"), np.zeros(1, dtype="i")]
-neutralScaleAnimation = [np.ones((1,3), dtype="f"), np.zeros(1, dtype="i")]
+def vec3ToNeutralFrame(v):
+ return [np.array([[*v,0]], dtype="f"), np.zeros(1, dtype="i")]
+
+def vec4ToNeutralFrame(v):
+ return [np.array([v], dtype="f"), np.zeros(1, dtype="i")]
 
 @dataclass
 class InterpolatedFrame:
