@@ -45,22 +45,22 @@ class GloverObjbank(KaitaiStruct):
 
         def _read(self):
             self._debug['u1']['start'] = self._io.pos()
-            self.u1 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.u1 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['u1']['end'] = self._io.pos()
             self._debug['v1']['start'] = self._io.pos()
-            self.v1 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.v1 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['v1']['end'] = self._io.pos()
             self._debug['u2']['start'] = self._io.pos()
-            self.u2 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.u2 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['u2']['end'] = self._io.pos()
             self._debug['v2']['start'] = self._io.pos()
-            self.v2 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.v2 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['v2']['end'] = self._io.pos()
             self._debug['u3']['start'] = self._io.pos()
-            self.u3 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.u3 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['u3']['end'] = self._io.pos()
             self._debug['v3']['start'] = self._io.pos()
-            self.v3 = GloverObjbank.Fixed115(self._io, self, self._root)
+            self.v3 = GloverObjbank.S105(self._io, self, self._root)
             self._debug['v3']['end'] = self._io.pos()
 
 
@@ -643,29 +643,6 @@ class GloverObjbank(KaitaiStruct):
             return self._m_sprites if hasattr(self, '_m_sprites') else None
 
 
-    class Fixed115(KaitaiStruct):
-        SEQ_FIELDS = ["raw"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['raw']['start'] = self._io.pos()
-            self.raw = self._io.read_u2be()
-            self._debug['raw']['end'] = self._io.pos()
-
-        @property
-        def value(self):
-            if hasattr(self, '_m_value'):
-                return self._m_value if hasattr(self, '_m_value') else None
-
-            self._m_value = (self.raw / 32.0)
-            return self._m_value if hasattr(self, '_m_value') else None
-
-
     class Geometry(KaitaiStruct):
         SEQ_FIELDS = ["num_faces", "num_vertices", "vertices_ptr", "faces_ptr", "face_cn_ptr", "uvs_ptr", "uvs_unmodified_ptr", "vertex_cn_ptr", "flags_ptr", "texture_ids_ptr"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -882,6 +859,29 @@ class GloverObjbank(KaitaiStruct):
                 self._io.seek(_pos)
 
             return self._m_face_cn if hasattr(self, '_m_face_cn') else None
+
+
+    class S105(KaitaiStruct):
+        SEQ_FIELDS = ["raw"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['raw']['start'] = self._io.pos()
+            self.raw = self._io.read_s2be()
+            self._debug['raw']['end'] = self._io.pos()
+
+        @property
+        def value(self):
+            if hasattr(self, '_m_value'):
+                return self._m_value if hasattr(self, '_m_value') else None
+
+            self._m_value = (self.raw / 32.0)
+            return self._m_value if hasattr(self, '_m_value') else None
 
 
 

@@ -24,12 +24,12 @@ declare namespace GloverObjbank {
     __type: 'Uv';
     _io: any;
 
-    u1: GloverObjbank.Fixed115;
-    v1: GloverObjbank.Fixed115;
-    u2: GloverObjbank.Fixed115;
-    v2: GloverObjbank.Fixed115;
-    u3: GloverObjbank.Fixed115;
-    v3: GloverObjbank.Fixed115;
+    u1: GloverObjbank.S105;
+    v1: GloverObjbank.S105;
+    u2: GloverObjbank.S105;
+    v2: GloverObjbank.S105;
+    u3: GloverObjbank.S105;
+    v3: GloverObjbank.S105;
 
     _debug: {
       u1: DebugPosition;
@@ -312,21 +312,6 @@ declare namespace GloverObjbank {
 }
 
 declare namespace GloverObjbank {
-  class Fixed115 {
-    constructor(io: any, parent?: any, root?: any);
-    __type: 'Fixed115';
-    _io: any;
-
-    value: number;
-    raw: number;
-
-    _debug: {
-      raw: DebugPosition;
-    };
-  }
-}
-
-declare namespace GloverObjbank {
   class Geometry {
     constructor(io: any, parent?: any, root?: any);
     __type: 'Geometry';
@@ -362,6 +347,21 @@ declare namespace GloverObjbank {
       vertexCnPtr: DebugPosition;
       flagsPtr: DebugPosition;
       textureIdsPtr: DebugPosition;
+    };
+  }
+}
+
+declare namespace GloverObjbank {
+  class S105 {
+    constructor(io: any, parent?: any, root?: any);
+    __type: 'S105';
+    _io: any;
+
+    value: number;
+    raw: number;
+
+    _debug: {
+      raw: DebugPosition;
     };
   }
 }

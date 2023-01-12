@@ -220,22 +220,22 @@ types:
   uv:
     seq:
       - id: u1
-        type: fixed_11_5
+        type: s10_5
       - id: v1
-        type: fixed_11_5
+        type: s10_5
       - id: u2
-        type: fixed_11_5
+        type: s10_5
       - id: v2
-        type: fixed_11_5
+        type: s10_5
       - id: u3
-        type: fixed_11_5
+        type: s10_5
       - id: v3
-        type: fixed_11_5
+        type: s10_5
 
-  fixed_11_5:
+  s10_5:
     seq:
       - id: raw
-        type: u2
+        type: s2
     instances:
       value:
         value: raw / 32.0

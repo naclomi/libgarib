@@ -2,12 +2,12 @@ from construct import *
 from construct.lib import *
 
 glover_objbank__uv = Struct(
-	'u1' / LazyBound(lambda: glover_objbank__fixed_11_5),
-	'v1' / LazyBound(lambda: glover_objbank__fixed_11_5),
-	'u2' / LazyBound(lambda: glover_objbank__fixed_11_5),
-	'v2' / LazyBound(lambda: glover_objbank__fixed_11_5),
-	'u3' / LazyBound(lambda: glover_objbank__fixed_11_5),
-	'v3' / LazyBound(lambda: glover_objbank__fixed_11_5),
+	'u1' / LazyBound(lambda: glover_objbank__s10_5),
+	'v1' / LazyBound(lambda: glover_objbank__s10_5),
+	'u2' / LazyBound(lambda: glover_objbank__s10_5),
+	'v2' / LazyBound(lambda: glover_objbank__s10_5),
+	'u3' / LazyBound(lambda: glover_objbank__s10_5),
+	'v3' / LazyBound(lambda: glover_objbank__s10_5),
 )
 
 glover_objbank__vertex = Struct(
@@ -121,11 +121,6 @@ glover_objbank__mesh = Struct(
 	'sprites' / Pointer(this.sprites_ptr, If(this.sprites_ptr != 0, Array(this.num_sprites, LazyBound(lambda: glover_objbank__sprite)))),
 )
 
-glover_objbank__fixed_11_5 = Struct(
-	'raw' / Int16ub,
-	'value' / Computed(lambda this: (this.raw / 32.0)),
-)
-
 glover_objbank__geometry = Struct(
 	'num_faces' / Int16ub,
 	'num_vertices' / Int16ub,
@@ -145,6 +140,11 @@ glover_objbank__geometry = Struct(
 	'vertices' / Pointer(this.vertices_ptr, If(this.vertices_ptr != 0, Array(this.num_vertices, LazyBound(lambda: glover_objbank__vertex)))),
 	'uvs' / Pointer(this.uvs_ptr, If(this.uvs_ptr != 0, Array(this.num_faces, LazyBound(lambda: glover_objbank__uv)))),
 	'face_cn' / Pointer(this.face_cn_ptr, If(this.face_cn_ptr != 0, Array(this.num_faces, Int32ub))),
+)
+
+glover_objbank__s10_5 = Struct(
+	'raw' / Int16sb,
+	'value' / Computed(lambda this: (this.raw / 32.0)),
 )
 
 glover_objbank = Struct(

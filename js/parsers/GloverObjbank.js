@@ -46,22 +46,22 @@ var GloverObjbank = (function() {
     }
     Uv.prototype._read = function() {
       this._debug.u1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u1 = new Fixed115(this._io, this, this._root);
+      this.u1 = new S105(this._io, this, this._root);
       this._debug.u1.end = this._io.pos;
       this._debug.v1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.v1 = new Fixed115(this._io, this, this._root);
+      this.v1 = new S105(this._io, this, this._root);
       this._debug.v1.end = this._io.pos;
       this._debug.u2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u2 = new Fixed115(this._io, this, this._root);
+      this.u2 = new S105(this._io, this, this._root);
       this._debug.u2.end = this._io.pos;
       this._debug.v2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.v2 = new Fixed115(this._io, this, this._root);
+      this.v2 = new S105(this._io, this, this._root);
       this._debug.v2.end = this._io.pos;
       this._debug.u3 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u3 = new Fixed115(this._io, this, this._root);
+      this.u3 = new S105(this._io, this, this._root);
       this._debug.u3.end = this._io.pos;
       this._debug.v3 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.v3 = new Fixed115(this._io, this, this._root);
+      this.v3 = new S105(this._io, this, this._root);
       this._debug.v3.end = this._io.pos;
     }
 
@@ -678,34 +678,6 @@ var GloverObjbank = (function() {
     return Mesh;
   })();
 
-  var Fixed115 = GloverObjbank.Fixed115 = (function() {
-    function Fixed115(_io, _parent, _root) {
-      this.__type = 'Fixed115';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    Fixed115.prototype._read = function() {
-      this._debug.raw = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.raw = this._io.readU2be();
-      this._debug.raw.end = this._io.pos;
-    }
-    Object.defineProperty(Fixed115.prototype, 'value', {
-      get: function() {
-        if (this._m_value !== undefined)
-          return this._m_value;
-        this._debug._m_value = {  };
-        this._m_value = (this.raw / 32.0);
-        return this._m_value;
-      }
-    });
-
-    return Fixed115;
-  })();
-
   var Geometry = GloverObjbank.Geometry = (function() {
     function Geometry(_io, _parent, _root) {
       this.__type = 'Geometry';
@@ -918,6 +890,34 @@ var GloverObjbank = (function() {
     });
 
     return Geometry;
+  })();
+
+  var S105 = GloverObjbank.S105 = (function() {
+    function S105(_io, _parent, _root) {
+      this.__type = 'S105';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    S105.prototype._read = function() {
+      this._debug.raw = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.raw = this._io.readS2be();
+      this._debug.raw.end = this._io.pos;
+    }
+    Object.defineProperty(S105.prototype, 'value', {
+      get: function() {
+        if (this._m_value !== undefined)
+          return this._m_value;
+        this._debug._m_value = {  };
+        this._m_value = (this.raw / 32.0);
+        return this._m_value;
+      }
+    });
+
+    return S105;
   })();
 
   return GloverObjbank;
