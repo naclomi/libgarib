@@ -5,15 +5,10 @@
 # objbank-tool
 ## common
 - Refactor pack list so it is less prone to silent errors
-
-## in-place tools
-- Create LinkableBytes derivative that's a view into a monolithic buffer, for parsing
-  pre-compiled object banks into new banks
-- split: One object bank with N objects to N object banks with 1 object
-- pack: Allow "base bank" to start from
-- pack: Allow for deleting existing objects by ID
+- Try turning an extracted display list into a packed geo object and viewing it in model viewer
 
 ## dumping
+- make sure metadata is placed consistently in heirarchy
 - animation: instead of just saving playback_time as a property,
              scale time timeline with it (it's only used to determine u16
              time code precision)
@@ -22,7 +17,7 @@
 - deal with collision vs dlist
 - deal with vertex clamp attributes
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
-- use a dict to map slot names?
+- use a dict to map animation slot names?
 - control export of global animation track via cmdline arg
 
 ## packing

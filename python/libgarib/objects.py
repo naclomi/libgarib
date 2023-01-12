@@ -326,14 +326,30 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
             geo_root.face_cn = linkable.LinkableBytes(data=b"".join(raw_norms))
             setPtr("face_cn_ptr", geo_root.face_cn)   
         if "flags" in pack_list:
-            geo_root.flags = linkable.LinkableBytes(data=attrs["_GLOVER_FLAGS"].astype("B").tobytes())
+            raw_attr = []
+            for base_idx in range(0, len(attrs["indices"]), 3):
+                v0 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx]]
+                v1 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx+1]]
+                v2 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx+2]]
+                raw_attr.append(struct.pack("B", v0))
+                if v1 != v2 or v1 != v0:
+                    print("WARNING: Inconsistent vertex flags in {:}".format(node.name))
+            geo_root.flags = linkable.LinkableBytes(data=b"".join(raw_attr))
             setPtr("flags_ptr", geo_root.flags)
         if "uvs" in pack_list or "texture_ids" in pack_list:
             toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
             texture_ids = toTextureIds(attrs["material"], file).astype(">I")
 
             if "texture_ids" in pack_list:
-                geo_root.texture_ids = linkable.LinkableBytes(data=texture_ids.tobytes())
+                raw_attr = []
+                for base_idx in range(0, len(attrs["indices"]), 3):
+                    v0 = texture_ids[attrs["indices"][base_idx]]
+                    v1 = texture_ids[attrs["indices"][base_idx+1]]
+                    v2 = texture_ids[attrs["indices"][base_idx+2]]
+                    raw_attr.append(struct.pack(">I", v0))
+                    if v1 != v2 or v1 != v0:
+                        print("WARNING: Inconsistent texture ids in {:}".format(node.name))
+                geo_root.texture_ids = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("texture_ids_ptr", geo_root.texture_ids)
 
             if "uvs" in pack_list:
@@ -346,7 +362,17 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
                     uvs[idx] *= (tex.width, tex.height)
 
                 # Convert to 11.5 format
-                geo_root.uvs = linkable.LinkableBytes(data=(uvs * 32).astype(">h").tobytes())
+                uvs *= 32
+                uvs = uvs.astype(">h")
+
+                # Per-vertex -> per-face
+                raw_attr = []
+                for base_idx in range(0, len(attrs["indices"]), 3):
+                    v0 = uvs[attrs["indices"][base_idx]]
+                    v1 = uvs[attrs["indices"][base_idx+1]]
+                    v2 = uvs[attrs["indices"][base_idx+2]]
+                    raw_attr.append(struct.pack(">6h", *v0, *v1, *v2))
+                geo_root.uvs = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("uvs_ptr", geo_root.uvs)
     else:
         geo_root.root = LinkableGeometryRoot(
