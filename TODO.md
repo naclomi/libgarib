@@ -21,6 +21,11 @@
 - control export of global animation track via cmdline arg
 
 ## packing
+- Test:
+    - Animation
+    - Child/sib nodes
+    - Alpha
+    - Geopacking: Multiple materials
 - compile new display lists
 - vertex compressor
 - better validation

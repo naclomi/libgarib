@@ -6,7 +6,12 @@ import sys
 
 MAGIC_NUMBER_FLA = b"FLA2"
 
-def compress(src, dst, src_length=None, progress_callback=None):
+try:
+    from .cppcore.fla2 import compress as cpp_compress
+except:
+    cpp_compress = None
+
+def py_compress(src, dst, src_length=None, progress_callback=None):
     # pypy/cpython cross-compatability hack:
     # cpython treats single-byte slices of a bytestring
     # as integers, while pypy treats them as characters,
@@ -22,26 +27,6 @@ def compress(src, dst, src_length=None, progress_callback=None):
 
     window = [None] * 0x1000
     window_wr_cursor = 0
-
-    def buildToken(window_start, src_cursor):
-        local_window_wr_cursor = window_wr_cursor
-
-        window_rd_cursor = (window_start + 1) & 0xfff
-        for _ in range(16):
-            if src_cursor >= src_length:
-                src_cursor += 1
-                break
-            next_src_byte = src[src_cursor]
-            next_window_byte = window[window_rd_cursor]
-            if next_window_byte != next_src_byte:
-                break
-
-            window[local_window_wr_cursor] = next_src_byte
-            local_window_wr_cursor = (local_window_wr_cursor + 1) & 0xfff
-
-            window_rd_cursor = (window_rd_cursor + 1) & 0xfff
-            src_cursor += 1
-        return (window_start, (window_rd_cursor - window_start) & 0xfff)
 
     progress_delta = src_length / 100
     progress_counter = progress_delta
@@ -65,7 +50,24 @@ def compress(src, dst, src_length=None, progress_callback=None):
             search_cursor = (window_wr_cursor - 2) & 0xfff
             while ((search_cursor - window_wr_cursor) & 0xfff) >= 1:
                 if window[search_cursor] == next_byte:
-                    token = buildToken(search_cursor, read_cursor)
+                    # Build token
+                    local_window_wr_cursor = window_wr_cursor
+                    src_cursor = read_cursor
+                    window_rd_cursor = (search_cursor + 1) & 0xfff
+                    for _ in range(16):
+                        if src_cursor >= src_length:
+                            break
+                        next_src_byte = src[src_cursor]
+                        next_window_byte = window[window_rd_cursor]
+                        if next_window_byte != next_src_byte:
+                            break
+
+                        window[local_window_wr_cursor] = next_src_byte
+                        local_window_wr_cursor = (local_window_wr_cursor + 1) & 0xfff
+
+                        window_rd_cursor = (window_rd_cursor + 1) & 0xfff
+                        src_cursor += 1
+                    token = (search_cursor, (window_rd_cursor - search_cursor) & 0xfff)
                     if token[1] > best_token[1]:
                         best_token = token
                     if ((window_wr_cursor - search_cursor) & 0xFFF) <= token[1]:
@@ -83,7 +85,6 @@ def compress(src, dst, src_length=None, progress_callback=None):
                 backref_start = (window_wr_cursor - 1 - best_token[0]) & 0xfff
                 backref_len = (best_token[1] - 2) & 0xF
                 backref = ((backref_start & 0xFF) << 8) | ((backref_start & 0xF00) >> 4) | backref_len
-                
                 dst.write(struct.pack("<H", backref))                
                 # Debug: write tokens out in ASCII:
                 # dst.write(("{:}".format(str((backref_start, backref_len+2)))).encode())
@@ -115,9 +116,13 @@ def compress(src, dst, src_length=None, progress_callback=None):
         if done and cmd_bit == 7:
             dst.write(b"\x80\x00\x00")
 
-
-    return 0
-
+def compress(src, dst, src_length=None, progress_callback=None, force_pure_python=False):
+    if cpp_compress is None or force_pure_python:
+        py_compress(src, dst, src_length, progress_callback)
+    else:
+        src_bytes = src.read(src_length)
+        dst_bytes = cpp_compress(src_bytes)
+        dst.write(dst_bytes)
 
 def decompress(src, dst):
     if type(src) is bytes:
