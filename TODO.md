@@ -1,3 +1,6 @@
+# rom-asset-tool
+- ROM freeze theory: banks don't end up 64-bit addr aligned, which breaks DMA?
+
 # texbank-tool
 - there used to be a creepy bug in IA tex packing whereby every other X coordinate
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
@@ -38,12 +41,7 @@
   Unclear what it's for -- doesn't seem to be accessed
   by game code during normal operation
 
-
 # fla2.c
-- write C implementation
-    - set up python bindings
-        - auto-fallback to python impl
-    - set up build system
 
 # level editor
 
