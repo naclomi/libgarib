@@ -511,8 +511,9 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     raw_mesh = objbank_writer.glover_objbank__mesh.build({
         "id": mesh_id,
         "name": node.name[:8].ljust(8, "\0"),
-        "mesh_alpha": node.extras.get("alpha", 0xFF),
-        "sprite_alpha": sprite_alpha,
+        # TODO: figure out alpha
+        "mesh_alpha": 0, #node.extras.get("alpha", 0xFF),
+        "sprite_alpha": node.extras.get("alpha", 0xFF), #sprite_alpha,
         "num_scale": len(scale_keys[0]),
         "num_translation": len(translation_keys[0]),
         "num_rotation": len(rotation_keys[0]),

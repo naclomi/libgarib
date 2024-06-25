@@ -34,6 +34,7 @@ if __name__ == "__main__":
                         compression_progress_callback(0)
                     compress(f_in, f_out, progress_callback=compression_progress_callback, force_pure_python=args.pure_python)
                     if not args.quiet:
+                        compression_progress_callback(100)
                         sys.stdout.write("\n")
     else:
         for in_name in args.file:

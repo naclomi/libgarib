@@ -1,3 +1,8 @@
+# test rom
+- when modified mupen is hanging on patched roms it seems to be
+  getting stuck in the audio subsystem, I think there is more
+  to asset patching than is currently being handled by the tool
+
 # texbank-tool
 - there used to be a creepy bug in IA tex packing whereby every other X coordinate
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)

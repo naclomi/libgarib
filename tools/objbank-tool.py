@@ -125,11 +125,12 @@ def pack(args):
 
     if args.compress:
         def compression_progress_callback(percent):
-            sys.stdout.write("\rCompressing ({:}%)".format(percent));
+            sys.stdout.write("\rCompressing ({:}%)".format(percent))
         with open(args.output_file, "wb") as f:
             bank_stream = io.BytesIO(bank)
             compression_progress_callback(0)
             compress(bank_stream, f, progress_callback=compression_progress_callback)
+            compression_progress_callback(100)
             sys.stdout.write("\n")
     else:
         with open(args.output_file, "wb") as f:
