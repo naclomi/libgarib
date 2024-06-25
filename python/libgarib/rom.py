@@ -226,6 +226,11 @@ class Region(object):
     def __repr__(self):
         return str(self.key())
 
+    def pad(self, boundary=4):
+        gap = len(self.data) % boundary
+        if gap != 0:
+            self.data += b"\0" * gap
+
     def size(self):
         return len(self.data)
 
@@ -312,18 +317,25 @@ class BoundedArrayRegion(Region):
 
         self.offset = start_pointer
         self.data = []
+        self.pad_data = b""
         cursor = start_pointer
         while cursor < end_pointer:
             elem_len = struct.unpack(">I", rom_data[cursor:cursor+4])[0]
             self.data.append(rom_data[cursor:cursor+elem_len])
             cursor += elem_len
 
+    def pad(self, boundary=4):
+        gap = self.size() % boundary
+        if gap != 0:
+            self.pad_data += b"\0" * gap
+
     def size(self):
-        return sum(len(data) for data in self.data)
+        return sum(len(data) for data in self.data) + len(self.pad_data)
 
     def dump_to_buffer(self, buffer):
         for elem in self.data:
             buffer.write(elem)
+        buffer.write(self.pad_data)
 
     def dump_to_file(self, basepath):
         if self.descriptor["data_type"] in file_extensions:
@@ -405,6 +417,7 @@ class Rom(object):
         rom_data = io.BytesIO()
         for region in self.data:
             region.offset = cursor
+            region.pad(8)
             cursor += region.size()
             region.dump_to_buffer(rom_data)
         for region in self.data:
