@@ -1,7 +1,7 @@
-# test rom
-- when modified mupen is hanging on patched roms it seems to be
-  getting stuck in the audio subsystem, I think there is more
-  to asset patching than is currently being handled by the tool
+# rom-asset-tool
+- patched ROMs seem to freeze on some emulators. notes:
+  - game seems to be getting stuck in the audio subsystem
+  - theory: banks don't end up 64-bit addr aligned, which breaks DMA?
 
 # texbank-tool
 - there used to be a creepy bug in IA tex packing whereby every other X coordinate
@@ -43,12 +43,7 @@
   Unclear what it's for -- doesn't seem to be accessed
   by game code during normal operation
 
-
 # fla2.c
-- write C implementation
-    - set up python bindings
-        - auto-fallback to python impl
-    - set up build system
 
 # level editor
 
