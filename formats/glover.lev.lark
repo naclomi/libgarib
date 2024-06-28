@@ -1,0 +1,140 @@
+// https://www.lark-parser.org/ide/
+%import common.WS
+%ignore WS
+
+?start: landscape
+landscape : cmds+
+?cmds: standalone | enemy
+
+!?standalone :
+    | "UNKNOWN_SOUND_0XBD"
+    | "ENVIRONMENTAL_SOUND"
+    | "UNKNOWN_0XA9"
+    | "MR_TIP"
+    | "DIFFUSE_LIGHT"
+    | "AMBIENT_LIGHT"
+    | "GLOVER_SPAWN_POINT"
+    | "BALL_SPAWN_POINT"
+    | "CAMERA_SPAWN_POINT"
+    | "FOG_CONFIGURATION"
+    | "ACTOR_0XBF"
+    | "ANIMATED_BACKGROUND_ACTOR"
+    | "BACKGROUND_ACTOR"
+    | "LAND_ACTOR"
+    | "SET_ACTOR_ROTATION"
+    | "SET_ACTOR_SCALE"
+    | "WIND"
+    | "WATER"
+    | "BACKDROP"
+
+    | "CAMEO"
+    | "CAMEO_INST"
+
+    | "PUZZLE"
+    | "PUZZLE_AND"
+    | "PUZZLE_OR"
+    | "PUZZLE_NUMTIMES"
+    | "PUZZLE_ANY"
+    | "PUZZLE_COND"
+    | "PUZZLE_ACTION"
+
+    | "GARIB_GROUP"
+    | "GARIB"
+    | "POWERUP"
+
+    | "PLAT_MVSPN_0X58"
+    | "PLAT_MVSPN_0X59"
+    | "PLAT_MVSPN_0X5A"
+    | "PLAT_SET_PARENT"
+    | "PLAT_MVSPN_0X73"
+    | "PLAT_MVSPN_0X74"
+    | "PLAT_COPY_SPIN_FROM_PARENT"
+
+    | "PLAT_SPECIAL_0XB8"
+    | "PLAT_ACTOR_ENABLE_WATER_ANIMATION"
+    | "SET_GLOBAL_0XB7"
+
+    | "BUZZER"
+    | "BUZZER_DUTY_CYCLE"
+
+    | "SET_OBJECT_SPARKLE"
+    | "PLAT_SPECIAL_0XB9"
+    | "SET_EXIT"
+    | "PLAT_CAT_0X69"
+    | "PLATFORM_CONVEYOR"
+    | "PLAT_SPECIAL_0X9E"
+    | "SET_TELEPORT"
+    | "PLAT_FAN_0X8A"
+    | "PLAT_MAGNET_0X8B"
+    | "PLAT_CHECKPOINT"
+    | "PLAT_CRUMB_0X67"
+    | "PLAT_SPECIAL_0XC7"
+    | "PLAT_SPECIAL_0X6E"
+    | "PLAT_SPECIAL_0X8E"
+    | "PLAT_PUSH_0X5B"
+    | "PLAT_CONF_0X72"
+
+    | "PLAT_ORBIT_SOUND_0XC4"
+    | "PLAT_0XC6"
+    | "PLAT_ORBIT_AROUND_POINT"
+    | "PLAT_ORBIT_PAUSE"
+    | "PLAT_ORBIT_FLIP_0X77"
+
+    | "PLAT_0XC3"
+    | "PLAT_SPIN_SOUND_0XC5"
+    | "PLAT_0X9F"
+    | "PLAT_SPIN_PAUSE_0X7C"
+    | "PLAT_SPIN_FLIP"
+    | "PLAT_0X7E"
+    | "PLAT_CONSTANT_SPIN"
+    | "PLAT_SPIN_0X80"
+    | "PLAT_TOPPLE_0X81"
+    | "LOOK_AT_HAND_0X60"
+    | "LOOK_AT_BALL_0X61"
+    | "PLAT_ROCKING"
+    | "PLAT_0X78"
+
+    | "PLAT_SOUND_0XC1"
+    | "PLAT_SOUND_0XC2"
+    | "PLAT_TURN_TOWARDS_PATH_POINT"
+    | "PLAT_GO_FORWARDS_0X5F"
+    | "PLAT_PATH_POINT"
+    | "PLAT_MAX_VELOCITY"
+    | "PLAT_PATH_ACCELERATION"
+    | "PLAT_POS_0XA7"
+    | "PLAT_SET_INITIAL_POS"
+
+    | "PLAT_PLAY_OBJECT_ANIMATION"
+    | "PLAT_0XA4"
+    | "PLAT_VENT_ADVANCE_FRAMES"
+    | "PLAT_NO_CLIP"
+    | "PLAT_DESTRUCTIBLE"
+    | "PLAT_DESTRUCTIBLE_SOUND"
+    | "PLAT_0X9D"
+    | "PLAT_0X66"
+    | "PLAT_ACTOR_SURFACE_TYPE"
+    | "PLAT_SET_TAG"
+    | "PLAT_SPIKE"
+    | "PLAT_SCALE"
+    | "PLAT_STR_0X7A"
+
+    | "ROPE"
+    | "PLAT_SINE"
+    | "PLAT_ORBIT"
+
+    | "VENT"
+    | "VENT_DUTY_CYCLE"
+
+    | "PLATFORM"
+    | "NULL_PLATFORM"
+
+    | "END_LEVEL_DATA"
+
+
+!enemy: "ENEMY" (enemy_cmds*) "ENEMY_FINALIZE"
+!?enemy_cmds: "ENEMY_SET_ATTENTION_BBOX"
+    | "ENEMY_0XBA"
+    | "ENEMY_NORMAL_INSTRUCTION"
+    | "ENEMY_CONDITIONAL_INSTRUCTION"
+    | "ENEMY_ATTACK_INSTRUCTION"
+
