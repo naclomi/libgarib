@@ -16,8 +16,64 @@ def assemble(args):
     pass
 
 
+import xml.etree.cElementTree as ET
+import kaitaistruct
+import enum
+
+HEX_CUTOFF = 10000
+def kaitaiSubElement(node, obj, skip=None, extra=None):
+    tag_name = type(obj).__name__.split(".")[-1]
+
+    attribs = {}
+    for attr_name in obj.SEQ_FIELDS:
+        if skip is not None and attr_name in skip:
+            continue
+        attr_val = None
+        raw_attr_val = getattr(obj, attr_name)
+        if type(raw_attr_val) is str:
+            attr_val = raw_attr_val.rstrip('\x00')
+        elif type(raw_attr_val) is int and raw_attr_val > HEX_CUTOFF:
+            attr_val = "0x{:08X}".format(raw_attr_val)
+        elif isinstance(raw_attr_val, enum.Enum):
+            attr_val = raw_attr_val._name_
+        elif type(raw_attr_val) in (int, float):
+            attr_val = str(raw_attr_val)
+        else:
+            raise Exception("Can't disassemble attribute {:}.{:} (type {:})".format(tag_name, attr_name, type(raw_attr_val)))
+        attribs[attr_name] = attr_val
+    if extra is not None:
+        attribs.update(extra)
+
+    return ET.SubElement(node, tag_name, attrib=attribs)
+
+
 def disassemble(args):
-    pass
+
+    root = ET.Element("Level")
+
+    for level_filename in args.level_binary_file:
+        with open(level_filename, "rb") as f:
+            raw_level = GloverLevel.from_io(f)
+        for raw_cmd in raw_level.body:
+            cmd_body = raw_cmd.params
+            if type(cmd_body) is GloverLevel.PuzzleCond:
+                kaitaiSubElement(root, cmd_body.body)
+            elif type(cmd_body) is GloverLevel.PuzzleAction:
+                kaitaiSubElement(root, cmd_body.body)
+            elif type(cmd_body) is GloverLevel.CameoInst:
+                kaitaiSubElement(root, cmd_body.body)
+            elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
+                                    GloverLevel.EnemyConditionalInstruction: "conditional",
+                                    GloverLevel.EnemyAttackInstruction: "attack"}.get(
+                                        type(cmd_body), None)):
+                instr_node = kaitaiSubElement(root, cmd_body.instr, skip=["params"], extra={"context": instr_context})
+                kaitaiSubElement(instr_node, cmd_body.instr.params)
+            else:
+                kaitaiSubElement(root, cmd_body)
+
+        tree = ET.ElementTree(root)
+        ET.indent(tree, space='   ', level=0)
+        tree.write(sys.stdout, encoding='unicode')
 
 
 def validate(args):
