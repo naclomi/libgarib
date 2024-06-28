@@ -140,11 +140,11 @@ def pack(args):
 def query(args):
     json_banks = {}
     for bank_filename in args.bank_file:
-            with open(bank_filename, "rb") as f:
-                bank_data = data_from_stream(f)
+        with open(bank_filename, "rb") as f:
+            bank_data = data_from_stream(f)
 
-            bank = GloverObjbank.from_bytes(bank_data)
-            json_banks[bank_filename] = libgarib.objects.objBankToJson(bank)
+        bank = GloverObjbank.from_bytes(bank_data)
+        json_banks[bank_filename] = libgarib.objects.objBankToJson(bank)
 
     def run_query(query_txt):
         results = {}
