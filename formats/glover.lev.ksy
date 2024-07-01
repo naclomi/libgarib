@@ -927,6 +927,8 @@ types:
     #   <0: visible, not collectable
     #   ==0: invisible, uncollectable
     #   >0: visible, collectable
+    -semantic:
+      sets: LATEST_GARIB_GROUP
     seq:
       - id: group_id
         type: u2
@@ -934,6 +936,8 @@ types:
         type: s2
 
   garib:
+    -semantic:
+      refs: LATEST_GARIB_GROUP
     # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
