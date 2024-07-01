@@ -40,10 +40,10 @@ types:
             0x8C: wind
             0xA0: water
             0x99: backdrop
-            
+
             0xAA: cameo
             0xAB: cameo_inst
-            
+
             0x04: puzzle
             0x05: puzzle_and
             0x06: puzzle_or
@@ -267,7 +267,7 @@ types:
       - id: x
         type: f4
       - id: y
-        type: f4  
+        type: f4
       - id: z
         type: f4
 
@@ -281,7 +281,7 @@ types:
     #      returning to the castle cave
     #   3: ball does not contribute to game completion progress
     #      (eg, bonus stages and cutscenes)
-    #       
+    #
     # If missing, Glover will start level holding ball
     #
     # TODO: on rare occasions based on the type field and internal parser state,
@@ -844,7 +844,7 @@ types:
       - id: u32_0x24
         type: u4
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
   puzzle_action_0x49_0x4d:
     seq:
@@ -855,7 +855,7 @@ types:
       - id: u32_0x2c
         type: u4
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
   puzzle_action_0x4a:
     seq:
@@ -864,7 +864,7 @@ types:
       - id: u32_0x24_0x0c
         type: u4
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
 
   puzzle_action_0x54:
@@ -884,7 +884,7 @@ types:
       - id: u32_0x10
         type: u2
       - id: u16_0x0e
-        type: u2 
+        type: u2
       - id: u32_0x24
         type: u4
       - id: u32_0x28
@@ -892,14 +892,14 @@ types:
       - id: u32_0x2c
         type: u4
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
   puzzle_action_0x55:
     seq:
       - id: u32_0x24
         type: u4
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
   puzzle_action_0x56:
     seq:
@@ -911,12 +911,12 @@ types:
         type: u2
 
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
   puzzle_action_0x4b_0x4c:
     seq:
       - id: u16_0x0a
-        type: u2 
+        type: u2
 
 ###############################################################
 ### Collectibles
@@ -929,23 +929,23 @@ types:
     #   >0: visible, collectable
     seq:
       - id: group_id
-        type: u2 
+        type: u2
       - id: initial_state
-        type: s2 
+        type: s2
 
   garib:
     # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
-        type: f4 
+        type: f4
       - id: y
-        type: f4 
+        type: f4
       - id: z
-        type: f4 
+        type: f4
       - id: type
-        type: u2 
+        type: u2
       - id: dynamic_shadow
-        type: u2 
+        type: u2
 
   powerup:
     seq:
@@ -956,11 +956,11 @@ types:
       - id: u16_0x04
         type: u2
       - id: x
-        type: f4 
+        type: f4
       - id: y
-        type: f4 
+        type: f4
       - id: z
-        type: f4 
+        type: f4
 
 
 ###############################################################
@@ -1588,9 +1588,9 @@ types:
     # valid flag bits are 0, 1, and 2
     # flag bit 0 means glover can fist-pound it apart
     seq:
-      - id: flags 
+      - id: flags
         type: u2
-      - id: num_fragments 
+      - id: num_fragments
         type: u4
       - id: fragment_object_id
         type: u4
@@ -1607,7 +1607,7 @@ types:
         type: u2
       - id: pitch
         type: u2
-    
+
   plat_0x9d: # 0x9d
     seq: []
 
@@ -1619,7 +1619,7 @@ types:
     seq:
       - id: value
         type: u2
-    
+
 
   plat_set_tag: # 0x6f
     seq:
@@ -1637,7 +1637,7 @@ types:
         type: f4
       - id: z
         type: f4
-    
+
   plat_str_0x7a: # 0x7a
     seq:
       - id: u32_0x0c
@@ -2106,7 +2106,7 @@ types:
         type: s4
       - id: anim_idx_2
         type: s4
- 
+
   enemy_instruction_rest:
     seq:
       - id: flags
