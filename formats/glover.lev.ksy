@@ -922,13 +922,13 @@ types:
 ### Collectibles
 
   garib_group:
-    # TODO: investigate furhter
+    # TODO: investigate further
     # initial_state:
     #   <0: visible, not collectable
     #   ==0: invisible, uncollectable
     #   >0: visible, collectable
     seq:
-      - id: puzzle_identifier_0xd2
+      - id: group_id
         type: u2 
       - id: initial_state
         type: s2 
