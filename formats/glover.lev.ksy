@@ -1495,6 +1495,8 @@ types:
 ### Platform misc properties
 
   plat_sound_0xc1: # 0xc1
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: sound_id
         type: u2
@@ -1504,6 +1506,8 @@ types:
         type: u2
 
   plat_sound_0xc2: # 0xc2
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: sound_id
         type: u2
@@ -1513,6 +1517,8 @@ types:
         type: u2
 
   plat_turn_towards_path_point: # 0x5e
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: input_1
         type: u4
@@ -1523,6 +1529,8 @@ types:
     # TODO: empty seq if there isn't an active
     #       platform
     # does some sort of thing with radians
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x2c_0x6c
         type: u4
@@ -1534,6 +1542,8 @@ types:
         type: u4
 
   plat_path_point: # 0x6b
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: duration
         type: s2
@@ -1545,21 +1555,29 @@ types:
         type: f4
 
   plat_max_velocity: # 0x6c
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: velocity
         type: f4
 
   plat_path_acceleration: # 0x6d
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: acceleration
         type: f4
 
   plat_pos_0xa7: # 0xa7
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u8_idx
         type: u2
 
   plat_set_initial_pos: # 0xa6
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: x
         type: f4
@@ -1572,13 +1590,18 @@ types:
   plat_play_object_animation: # 0xc0
     # Plays the skeletal animation at index 0 in the platform actor's
     # animation data
+    -semantic:
+      modifies: PLATFORM
     seq: []
 
   plat_0xa4: # 0xa4
+    -semantic:
+      modifies: PLATFORM
     seq: []
 
   plat_vent_advance_frames: # 0x5c
-    # TODO: active type
+    -semantic:
+      modifies: [PLATFORM, VENT]
     seq:
       - id: num_frames
         type: u2
