@@ -194,7 +194,7 @@ types:
       - id: h_0x04
         type: u2
 
-  environmental_sound:
+  environmental_sound: # 0xbe
     # TODO: unclear how flags works, or any of the unknown halfs
     seq:
       - id: sound_id
@@ -337,7 +337,7 @@ types:
       - id: child_mesh_id
         type: u4
 
-  animated_background_actor:
+  animated_background_actor: # 0xbc
     # Sets up a background actor and queues it to play
     # anim idx 0. Hard-coded to start paused on the intro
     # and outro cutscenes and carnival boss, otherwise
@@ -514,9 +514,14 @@ types:
 # TODO: understand what these are
 
   cameo:
+    -semantic:
+      declares: CAMEO
     seq: []
 
   cameo_inst:
+    # Up to 20 per cameo
+    -semantic:
+      modifies: CAMEO
     seq:
       - id: inst_type
         type: u2
@@ -636,26 +641,38 @@ types:
 
 # TODO: investigate how these work
 
-  puzzle:
+  puzzle: # 0x04
+    -semantic:
+      declares: PUZZLE
     seq: []
 
-  puzzle_and:
+  puzzle_and: # 0x05
+    -semantic:
+      modifies: PUZZLE
     seq: []
 
-  puzzle_or:
+  puzzle_or: # 0x06
+    -semantic:
+      modifies: PUZZLE
     seq: []
 
-  puzzle_numtimes:
+  puzzle_numtimes: # 0x07
+    -semantic:
+      modifies: PUZZLE
     seq:
       - id: n
         type: u2
 
-  puzzle_any:
+  puzzle_any: # 0x08
+    -semantic:
+      modifies: PUZZLE
     seq:
       - id: op
         type: u2
 
-  puzzle_cond:
+  puzzle_cond: # 0x95
+    -semantic:
+      modifies: PUZZLE
     seq:
       - id: cond_type
         type: u2
@@ -746,7 +763,9 @@ types:
       - id: i_0x10
         type: u4
 
-  puzzle_action:
+  puzzle_action: # 0x96
+    -semantic:
+      modifies: PUZZLE
     seq:
       - id: action_type
         type: u2
@@ -971,6 +990,8 @@ types:
 ### Platform movement
 
   plat_mvspn_0x58:
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x14
         type: u2
@@ -978,6 +999,8 @@ types:
         type: u4
 
   plat_mvspn_0x59:
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x24
         type: u2
@@ -992,18 +1015,24 @@ types:
         type: u4
 
   plat_mvspn_0x5a:
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x1c
         type: u2
       - id: u32_0x18
         type: u4
 
-  plat_set_parent:
+  plat_set_parent: # 0x71
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: tag
         type: u2
 
   plat_mvspn_0x73:
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x0c
         type: u2
@@ -1015,6 +1044,8 @@ types:
         type: u4
 
   plat_mvspn_0x74:
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x34
         type: u4
@@ -1023,16 +1054,22 @@ types:
       - id: u32_0x3c
         type: u4
 
-  plat_copy_spin_from_parent:
+  plat_copy_spin_from_parent: #0x7b
+    -semantic:
+      modifies: PLATFORM
     seq: []
 
 ###############################################################
 ### Platform special
 
   plat_special_0xb8: # 0xb8
+    -semantic:
+      modifies: PLATFORM
     seq: []
 
   plat_actor_enable_water_animation: # 0xb3
+    -semantic:
+      modifies: [PLATFORM, ACTOR]
     seq: []
 
   set_global_0xb7: # 0xb7
@@ -1050,6 +1087,8 @@ types:
     # here.
     #
     # TODO: document draw flags
+    -semantic:
+      declares: BUZZER
     seq:
       - id: tag
         type: u2
@@ -1093,6 +1132,8 @@ types:
         type: f4
 
   buzzer_duty_cycle: # 0xb6
+    -semantic:
+      modifies: BUZZER
     seq:
       - id: frames_off
         type: u2
@@ -1101,6 +1142,8 @@ types:
 
   set_object_sparkle: # 0xb4
     # Works on active actor or platform
+    -semantic:
+      modifies: [PLATFORM, ACTOR]
     seq:
       - id: period
         type: u2
@@ -1108,16 +1151,22 @@ types:
   plat_special_0xb9: # 0xb9
     # TODO: ORs 0x20000000 into a flags field of active  platform or actor
     #       affects physics calculations in FUN_80157708
+    -semantic:
+      modifies: [PLATFORM, ACTOR]
     seq: []
 
   set_exit: # 0xa8
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: type # TODO: enumerate types
         type: u2
-      - id: visible
+      - id: plat_flags
         type: u2
 
   plat_cat_0x69: # 0x69
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x20
         type: u2
@@ -1139,6 +1188,8 @@ types:
         type: u4
 
   platform_conveyor: # 0x68
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: vel_x
         type: f4
@@ -1148,6 +1199,8 @@ types:
         type: f4
 
   plat_special_0x9e: # 0x9e
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x5c
         type: u4
@@ -1160,6 +1213,8 @@ types:
         type: u4
 
   set_teleport: # 0x89
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: target_tag
         type: u2
@@ -1178,6 +1233,8 @@ types:
         type: u4
 
   plat_fan_0x8a: # 0x8a
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x0c
         type: u2
@@ -1203,6 +1260,8 @@ types:
         type: u4
 
   plat_magnet_0x8b: # 0x8b
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x0c
         type: u2
@@ -1229,6 +1288,8 @@ types:
   plat_checkpoint: # 0x63
     # TODO: input seems to influence camera angle on spawn?
     # theta is in radians
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x17
         type: u2
@@ -1236,6 +1297,8 @@ types:
         type: f4
 
   plat_crumb_0x67: # 0x67
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x02
         type: u2
@@ -1245,6 +1308,8 @@ types:
         type: u4
 
   plat_special_0xc7: # 0xc7
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x2a
         type: u2
@@ -1255,6 +1320,8 @@ types:
 
   plat_special_0x6e: # 0x6e
     # TODO: bits 0-2 are valid flags, figure out what they do
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: flags
         type: u2
@@ -1264,12 +1331,16 @@ types:
   plat_special_0x8e: # 0x8e
     # TODO: if enable is nonzero, ORs 0x4000 into plat->u32_0x14
     #       figure out what this does
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: enable
         type: u2
 
   plat_push_0x5b: # 0x5b
     # TODO: bits 0-2 are valid flags, figure out what they do
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: flags
         type: u2
@@ -1281,6 +1352,8 @@ types:
         type: u4
 
   plat_conf_0x72: # 0x72
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x00
         type: u4
@@ -1300,6 +1373,8 @@ types:
 ### Platform Orbit
 
   plat_orbit_sound_0xc4: # 0xc4
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x3a
         type: u2
@@ -1309,6 +1384,8 @@ types:
         type: u2
 
   plat_0xc6: # 0xc6
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x4a
         type: u2
@@ -1323,6 +1400,8 @@ types:
     #       but it's hard to detect this in a grammar because it
     #       relies on parser state. blah. probably fine to not model
     #       this behavior, but it's ugly.
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: axis
         type: u2
@@ -1340,6 +1419,8 @@ types:
   plat_orbit_pause: # 0x76
     # TODO: the parser doesn't consume these bytes if the platform already
     #       "has ORBITFLIP specified".
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: num_frames
         type: u2
@@ -1350,6 +1431,8 @@ types:
   plat_orbit_flip_0x77: # 0x77
     # TODO: the parser doesn't consume these bytes if the platform already
     #       "has ORBITPAUSE specified".
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x08
         type: u2
@@ -1362,6 +1445,8 @@ types:
 ### Platform Misc Spin
 
   plat_0xc3: # 0xc3
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x86
         type: u2
@@ -1371,6 +1456,8 @@ types:
         type: u2
 
   plat_spin_sound_0xc5: # 0xc5
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: sound_id
         type: u2
@@ -1380,6 +1467,8 @@ types:
         type: u2
 
   plat_0x9f: # 0x9f
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x6c
         type: u4
@@ -1391,6 +1480,8 @@ types:
         type: u4
 
   plat_spin_pause_0x7c: # 0x7c
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x0c
         type: u2
@@ -1399,6 +1490,8 @@ types:
 
   plat_spin_flip: # 0x7d
     # Only parses when SPINPAUSE is not specified
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: cooldown_timer
         type: u2
@@ -1406,12 +1499,16 @@ types:
         type: f4
 
   plat_0x7e: # 0x7e
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x28
         type: u4
 
   plat_constant_spin: # 0x7f
     # TODO: axis is enum: {"0": "x", "1": "y", "2": "z"}
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: axis
         type: u2
@@ -1421,6 +1518,8 @@ types:
         type: f4
 
   plat_spin_0x80: # 0x80
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: idx
         type: u2
@@ -1438,6 +1537,8 @@ types:
         type: u2
 
   plat_topple_0x81: # 0x81
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: idx
         type: u2
@@ -1458,6 +1559,8 @@ types:
 
   look_at_hand_0x60: # 0x60
     # TODO: doesn't parse if error, yadda yadda yadda
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x6c
         type: u4
@@ -1466,6 +1569,8 @@ types:
 
   look_at_ball_0x61: # 0x61
     # TODO: doesn't parse if error, yadda yadda yadda
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u32_0x6c
         type: u4
@@ -1473,6 +1578,8 @@ types:
         type: u4
 
   plat_rocking: # 0x70
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: axis
         type: u2
@@ -1486,6 +1593,8 @@ types:
         type: u2
 
   plat_0x78: # 0x78
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: u16_0x08
         type: u2
@@ -1841,6 +1950,8 @@ types:
 ### Misc
 
   vent: # 0xa2
+    -semantic:
+      declares: VENT
     seq:
       - id: type
         type: u2
@@ -1864,6 +1975,8 @@ types:
         type: f4
 
   vent_duty_cycle: # 0xa3
+    -semantic:
+      modifies: VENT
     seq:
       - id: frames_off
         type: s2
@@ -1883,6 +1996,8 @@ types:
 
 
   null_platform: # 0x5d
+    -semantic:
+      declares: PLATFORM
     seq: []
 
   enemy: # 0x83
