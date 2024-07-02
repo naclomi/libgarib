@@ -2562,7 +2562,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class GaribGroup(KaitaiStruct):
-        SEQ_FIELDS = ["puzzle_identifier_0xd2", "initial_state"]
+        SEQ_FIELDS = ["group_id", "initial_state"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2571,9 +2571,9 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['puzzle_identifier_0xd2']['start'] = self._io.pos()
-            self.puzzle_identifier_0xd2 = self._io.read_u2be()
-            self._debug['puzzle_identifier_0xd2']['end'] = self._io.pos()
+            self._debug['group_id']['start'] = self._io.pos()
+            self.group_id = self._io.read_u2be()
+            self._debug['group_id']['end'] = self._io.pos()
             self._debug['initial_state']['start'] = self._io.pos()
             self.initial_state = self._io.read_s2be()
             self._debug['initial_state']['end'] = self._io.pos()
@@ -3953,3 +3953,31 @@ class GloverLevel(KaitaiStruct):
 
 
 
+
+#############
+# PATCHED BY ./tools/ksy-copy-private-fields.py
+private_fields = {
+    'GloverLevel.GaribGroup': {'semantic': {'sets': 'LATEST_GARIB_GROUP'}},
+    'GloverLevel.Garib': {'semantic': {'refs': 'LATEST_GARIB_GROUP'}},
+    'GloverLevel.PlatNoClip': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.PlatDestructible': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.PlatDestructibleSound': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.Plat0X9D': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.Plat0X66': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.PlatActorSurfaceType': {'semantic': {'refs': 'LATEST_ACTIVE_TYPE'}},
+    'GloverLevel.PlatSetTag': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.PlatSpike': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.PlatScale': {'semantic': {'refs': 'LATEST_PLATFORM'}},
+    'GloverLevel.Platform': {'semantic': {'sets': ['LATEST_PLATFORM', 'LATEST_ACTIVE_TYPE']}},
+}
+
+import sys
+@classmethod
+def getPrivate(cls, field_name, default=None):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        return default
+    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+KaitaiStruct.getPrivate = getPrivate
+#############

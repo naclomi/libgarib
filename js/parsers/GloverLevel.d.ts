@@ -1907,11 +1907,11 @@ declare namespace GloverLevel {
     __type: 'GaribGroup';
     _io: any;
 
-    puzzleIdentifier0xd2: number;
+    groupId: number;
     initialState: number;
 
     _debug: {
-      puzzleIdentifier0xd2: DebugPosition;
+      groupId: DebugPosition;
       initialState: DebugPosition;
     };
   }

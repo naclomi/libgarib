@@ -677,7 +677,7 @@ glover_level__garib = Struct(
 )
 
 glover_level__garib_group = Struct(
-	'puzzle_identifier_0xd2' / Int16ub,
+	'group_id' / Int16ub,
 	'initial_state' / Int16sb,
 )
 

@@ -14,6 +14,8 @@ parsers:
 		formats/glover.objbank.ksy \
 		formats/glover.texbank.ksy
 
+	./tools/ksy-copy-private-fields.py formats/*.ksy --compiled-directory build_artifacts/python
+
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct
 	mv build_artifacts/javascript/* js/parsers

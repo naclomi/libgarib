@@ -3154,9 +3154,9 @@ var GloverLevel = (function() {
       this._read();
     }
     GaribGroup.prototype._read = function() {
-      this._debug.puzzleIdentifier0xd2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.puzzleIdentifier0xd2 = this._io.readU2be();
-      this._debug.puzzleIdentifier0xd2.end = this._io.pos;
+      this._debug.groupId = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.groupId = this._io.readU2be();
+      this._debug.groupId.end = this._io.pos;
       this._debug.initialState = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.initialState = this._io.readS2be();
       this._debug.initialState.end = this._io.pos;

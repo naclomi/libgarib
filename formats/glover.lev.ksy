@@ -1578,6 +1578,7 @@ types:
     seq: []
 
   plat_vent_advance_frames: # 0x5c
+    # TODO: active type
     seq:
       - id: num_frames
         type: u2
@@ -1585,12 +1586,16 @@ types:
       xref: [platform, vent]
 
   plat_no_clip: # 0x64
+    -semantic:
+      refs: LATEST_PLATFORM
     seq: []
 
   plat_destructible: # 0x65
     # TODO: figure flags out
     # valid flag bits are 0, 1, and 2
     # flag bit 0 means glover can fist-pound it apart
+    -semantic:
+      refs: LATEST_PLATFORM
     seq:
       - id: flags
         type: u2
@@ -1604,6 +1609,8 @@ types:
         size: 8
 
   plat_destructible_sound: # 0xc8
+    -semantic:
+      refs: LATEST_PLATFORM
     seq:
       - id: sound_id
         type: u2
@@ -1613,12 +1620,18 @@ types:
         type: u2
 
   plat_0x9d: # 0x9d
+    -semantic:
+      refs: LATEST_PLATFORM
     seq: []
 
   plat_0x66: # 0x66
+    -semantic:
+      refs: LATEST_PLATFORM
     seq: []
 
   plat_actor_surface_type: # 0x6a
+    -semantic:
+      refs: LATEST_ACTIVE_TYPE
     # TODO: figure out what value means. 6 = insta-death on contact
     seq:
       - id: value
@@ -1626,14 +1639,20 @@ types:
 
 
   plat_set_tag: # 0x6f
+    -semantic:
+      refs: LATEST_PLATFORM
     seq:
       - id: tag
         type: u2
 
   plat_spike: # 0x82
+    -semantic:
+      refs: LATEST_PLATFORM
     seq: []
 
   plat_scale: # 0x79
+    -semantic:
+      refs: LATEST_PLATFORM
     seq:
       - id: x
         type: f4
@@ -1831,6 +1850,8 @@ types:
         type: s2
 
   platform: # 0x62
+    -semantic:
+      sets: [LATEST_PLATFORM, LATEST_ACTIVE_TYPE]
     seq:
       - id: object_id
         type: u4

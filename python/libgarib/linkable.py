@@ -6,10 +6,10 @@ class LinkException(Exception):
     pass
 
 def padLen(size):
-    return size + (4 - size & 3)
+    return size + (8 - size & 7)
 
 def padBytes(data):
-    pad_len = 4 - len(data) & 3
+    pad_len = 8 - len(data) & 7
     if pad_len == 0:
         return data
     else:

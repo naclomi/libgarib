@@ -49,27 +49,53 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
 
 def disassemble(args):
 
+    nesting = not args.flat_output
     root = ET.Element("Level")
 
     for level_filename in args.level_binary_file:
         with open(level_filename, "rb") as f:
             raw_level = GloverLevel.from_io(f)
+
+        cursors = {
+            "root": root
+        }
+        previous_node = root
         for raw_cmd in raw_level.body:
             cmd_body = raw_cmd.params
+            semantic = cmd_body.getPrivate("semantic")
+
+            if nesting:
+                if semantic is not None and "refs" in semantic:
+                    parent_node = cursors[semantic["refs"]]
+                else:
+                    parent_node = cursors["root"]
+            else:
+                parent_node = cursors["root"]
+
             if type(cmd_body) is GloverLevel.PuzzleCond:
-                kaitaiSubElement(root, cmd_body.body)
+                new_node = kaitaiSubElement(parent_node, cmd_body.body)
             elif type(cmd_body) is GloverLevel.PuzzleAction:
-                kaitaiSubElement(root, cmd_body.body)
+                new_node = kaitaiSubElement(parent_node, cmd_body.body)
             elif type(cmd_body) is GloverLevel.CameoInst:
-                kaitaiSubElement(root, cmd_body.body)
+                kaitaiSubElement(parent_node, cmd_body.body)
             elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
                                     GloverLevel.EnemyConditionalInstruction: "conditional",
                                     GloverLevel.EnemyAttackInstruction: "attack"}.get(
                                         type(cmd_body), None)):
-                instr_node = kaitaiSubElement(root, cmd_body.instr, skip=["params"], extra={"context": instr_context})
-                kaitaiSubElement(instr_node, cmd_body.instr.params)
+                new_node = kaitaiSubElement(parent_node, cmd_body.instr, skip=["params"], extra={"context": instr_context})
+                kaitaiSubElement(new_node, cmd_body.instr.params)
             else:
-                kaitaiSubElement(root, cmd_body)
+                new_node = kaitaiSubElement(parent_node, cmd_body)
+
+            if semantic is not None and "sets" in semantic:
+                if type(semantic["sets"]) is str:
+                    cursor_names = [semantic["sets"]]
+                else:
+                    cursor_names = semantic["sets"]
+                for cursor_name in cursor_names:
+                    cursors[cursor_name] = new_node
+
+            previous_node = new_node
 
         tree = ET.ElementTree(root)
         ET.indent(tree, space='   ', level=0)
@@ -106,6 +132,9 @@ if __name__ == "__main__":
     disasm_parser.add_argument(
         "level_binary_file", type=str, nargs="+",
         help="Binary level file")
+    disasm_parser.add_argument(
+        "--flat-output", action="store_true",
+        help="Output raw command stream (don't nest tags, potentially reordering them)")
     disasm_parser.add_argument(
         "--output-dir", type=str, default=os.getcwd(),
         help="Directory to output XML level data")

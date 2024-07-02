@@ -7,8 +7,12 @@ import sys
 import yaml
 
 
-def canonicalize(string):
+def to_upper_camel(string):
     return re.sub(r"[\s_-]+", "", str(string).title())
+
+def to_camel(string):
+    res = to_upper_camel(string)
+    return res[0].lower() + res[1:]
 
 
 def traverse(node, path, collected_fields):
@@ -16,10 +20,10 @@ def traverse(node, path, collected_fields):
         for k, v in node.items():
             if str(k).startswith("-"):
                 path_collection = collected_fields.get(path, {})
-                path_collection[canonicalize(k)] = v
+                path_collection[to_camel(k)] = v
                 collected_fields[path] = path_collection
             else:
-                traverse(node[k], "{:}.{:}".format(path, canonicalize(k)), collected_fields)
+                traverse(node[k], "{:}.{:}".format(path, to_upper_camel(k)), collected_fields)
     elif type(node) is list:
         for idx, elem in enumerate(node):
             traverse(elem, "{:}[{:}]".format(path, idx), collected_fields)
@@ -44,7 +48,7 @@ if __name__ == "__main__":
         #       include sequences members
         with open(ksy_filename, "r") as f:
             ksy = yaml.safe_load(f)
-            traverse(ksy["types"], canonicalize(ksy["meta"]["id"]), fields)
+            traverse(ksy["types"], to_upper_camel(ksy["meta"]["id"]), fields)
 
         if len(fields) > 0:
             code_suffix = "private_fields = {\n"
