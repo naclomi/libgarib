@@ -48,8 +48,6 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
 
 
 def disassemble(args):
-
-    nesting = not args.flat_output
     root = ET.Element("Level")
 
     for level_filename in args.level_binary_file:
@@ -59,18 +57,21 @@ def disassemble(args):
         cursors = {
             "root": root
         }
-        previous_node = root
+        active_type = None
         for raw_cmd in raw_level.body:
             cmd_body = raw_cmd.params
-            semantic = cmd_body.getPrivate("semantic")
+            semantic = cmd_body.getPrivate("semantic", {})
 
-            if nesting:
-                if semantic is not None and "refs" in semantic:
-                    parent_node = cursors[semantic["refs"]]
+            parent_node = cursors["root"]
+            if "modifies" in semantic:
+                if type(semantic["modifies"]) is not list:
+                    semantic["modifies"] = [semantic["modifies"]]
+                for applicable_type in semantic["modifies"]:
+                    if applicable_type == active_type:
+                        parent_node = cursors[applicable_type]
+                        break
                 else:
-                    parent_node = cursors["root"]
-            else:
-                parent_node = cursors["root"]
+                    active_type = None
 
             if type(cmd_body) is GloverLevel.PuzzleCond:
                 new_node = kaitaiSubElement(parent_node, cmd_body.body)
@@ -87,15 +88,10 @@ def disassemble(args):
             else:
                 new_node = kaitaiSubElement(parent_node, cmd_body)
 
-            if semantic is not None and "sets" in semantic:
-                if type(semantic["sets"]) is str:
-                    cursor_names = [semantic["sets"]]
-                else:
-                    cursor_names = semantic["sets"]
-                for cursor_name in cursor_names:
-                    cursors[cursor_name] = new_node
+            if "declares" in semantic:
+                cursors[semantic["declares"]] = new_node
+                active_type = semantic["declares"]
 
-            previous_node = new_node
 
         tree = ET.ElementTree(root)
         ET.indent(tree, space='   ', level=0)
@@ -132,9 +128,6 @@ if __name__ == "__main__":
     disasm_parser.add_argument(
         "level_binary_file", type=str, nargs="+",
         help="Binary level file")
-    disasm_parser.add_argument(
-        "--flat-output", action="store_true",
-        help="Output raw command stream (don't nest tags, potentially reordering them)")
     disasm_parser.add_argument(
         "--output-dir", type=str, default=os.getcwd(),
         help="Directory to output XML level data")

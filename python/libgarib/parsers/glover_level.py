@@ -3957,18 +3957,18 @@ class GloverLevel(KaitaiStruct):
 #############
 # PATCHED BY ./tools/ksy-copy-private-fields.py
 private_fields = {
-    'GloverLevel.GaribGroup': {'semantic': {'sets': 'LATEST_GARIB_GROUP'}},
-    'GloverLevel.Garib': {'semantic': {'refs': 'LATEST_GARIB_GROUP'}},
-    'GloverLevel.PlatNoClip': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.PlatDestructible': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.PlatDestructibleSound': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.Plat0X9D': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.Plat0X66': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.PlatActorSurfaceType': {'semantic': {'refs': 'LATEST_ACTIVE_TYPE'}},
-    'GloverLevel.PlatSetTag': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.PlatSpike': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.PlatScale': {'semantic': {'refs': 'LATEST_PLATFORM'}},
-    'GloverLevel.Platform': {'semantic': {'sets': ['LATEST_PLATFORM', 'LATEST_ACTIVE_TYPE']}},
+    'GloverLevel.GaribGroup': {'semantic': {'declares': 'GARIB_GROUP'}},
+    'GloverLevel.Garib': {'semantic': {'modifies': 'GARIB_GROUP'}},
+    'GloverLevel.PlatNoClip': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatDestructible': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatDestructibleSound': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0X9D': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0X66': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatActorSurfaceType': {'semantic': {'modifies': ['PLATFORM', 'ACTOR']}},
+    'GloverLevel.PlatSetTag': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpike': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatScale': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}},
 }
 
 import sys

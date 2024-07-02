@@ -928,7 +928,7 @@ types:
     #   ==0: invisible, uncollectable
     #   >0: visible, collectable
     -semantic:
-      sets: LATEST_GARIB_GROUP
+      declares: GARIB_GROUP
     seq:
       - id: group_id
         type: u2
@@ -937,7 +937,7 @@ types:
 
   garib:
     -semantic:
-      refs: LATEST_GARIB_GROUP
+      modifies: GARIB_GROUP
     # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
@@ -1582,12 +1582,10 @@ types:
     seq:
       - id: num_frames
         type: u2
-    meta:
-      xref: [platform, vent]
 
   plat_no_clip: # 0x64
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq: []
 
   plat_destructible: # 0x65
@@ -1595,7 +1593,7 @@ types:
     # valid flag bits are 0, 1, and 2
     # flag bit 0 means glover can fist-pound it apart
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq:
       - id: flags
         type: u2
@@ -1610,7 +1608,7 @@ types:
 
   plat_destructible_sound: # 0xc8
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq:
       - id: sound_id
         type: u2
@@ -1621,17 +1619,17 @@ types:
 
   plat_0x9d: # 0x9d
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq: []
 
   plat_0x66: # 0x66
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq: []
 
   plat_actor_surface_type: # 0x6a
     -semantic:
-      refs: LATEST_ACTIVE_TYPE
+      modifies: [PLATFORM, ACTOR]
     # TODO: figure out what value means. 6 = insta-death on contact
     seq:
       - id: value
@@ -1640,19 +1638,19 @@ types:
 
   plat_set_tag: # 0x6f
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq:
       - id: tag
         type: u2
 
   plat_spike: # 0x82
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq: []
 
   plat_scale: # 0x79
     -semantic:
-      refs: LATEST_PLATFORM
+      modifies: PLATFORM
     seq:
       - id: x
         type: f4
@@ -1851,7 +1849,7 @@ types:
 
   platform: # 0x62
     -semantic:
-      sets: [LATEST_PLATFORM, LATEST_ACTIVE_TYPE]
+      declares: PLATFORM
     seq:
       - id: object_id
         type: u4
