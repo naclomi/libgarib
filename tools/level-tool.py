@@ -48,12 +48,15 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
 
 
 def disassemble(args):
-    root = ET.Element("Level")
 
     for level_filename in args.level_binary_file:
         with open(level_filename, "rb") as f:
             raw_level = GloverLevel.from_io(f)
 
+        root = ET.Element("Level", attrib={
+            "name": raw_level.name.rstrip('\x00')
+        })
+        
         cursors = {
             "root": root
         }

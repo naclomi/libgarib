@@ -42,6 +42,27 @@
 
 # fla2.c
 
+# level-tool
+
+## disassemble
+- Embed version info into output
+
+## assemble
+
 # level editor
 
-# level harness (ROM patch)
+# rom patches
+
+## kaizo level harness
+
+## quick test
+- Implement the following patches:
+  ```python
+  # To skip copyright screen:
+  # Force return 1:
+  # *(0x8010e878) = 0x08043ac2 # j 0x8010eb08
+  # *(0x8010e87c) = 0x24020001 # li v0, 1 # 
+  # To force presentation loader to boot playable level:
+  # *(0x8012bd0c) = 0x24040000 | (level_id & 0xFF) # li a0, (level_id & 0xff) 
+  # *(0x8012bcfc) = 0x24020000 # li v0, 0 
+  ```
