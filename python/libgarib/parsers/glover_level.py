@@ -1243,6 +1243,21 @@ class GloverLevel(KaitaiStruct):
             self._debug['h_0x14']['end'] = self._io.pos()
 
 
+    class Unknown(KaitaiStruct):
+        SEQ_FIELDS = ["body"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['body']['start'] = self._io.pos()
+            self.body = self._io.read_bytes_full()
+            self._debug['body']['end'] = self._io.pos()
+
+
     class Unknown0xa9(KaitaiStruct):
         SEQ_FIELDS = ["i_0x00"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1692,6 +1707,8 @@ class GloverLevel(KaitaiStruct):
                 self.params = GloverLevel.VentDutyCycle(self._io, self, self._root)
             elif _on == 131:
                 self.params = GloverLevel.Enemy(self._io, self, self._root)
+            elif _on == 0:
+                self.params = GloverLevel.Noop(self._io, self, self._root)
             elif _on == 167:
                 self.params = GloverLevel.PlatPos0xa7(self._io, self, self._root)
             elif _on == 146:
@@ -1897,7 +1914,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 154:
                 self.params = GloverLevel.EnemyNormalInstruction(self._io, self, self._root)
             else:
-                self.params = GloverLevel.Unrecognized(self._io, self, self._root)
+                self.params = GloverLevel.Unknown(self._io, self, self._root)
             self._debug['params']['end'] = self._io.pos()
 
 
@@ -2110,6 +2127,19 @@ class GloverLevel(KaitaiStruct):
             self._debug['body']['end'] = self._io.pos()
 
 
+    class Noop(KaitaiStruct):
+        SEQ_FIELDS = []
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            pass
+
+
     class Water(KaitaiStruct):
         SEQ_FIELDS = ["left", "top", "front", "width", "bottom", "depth", "surface_y", "current_x", "current_z", "unknown_1", "object_id", "name", "x", "y", "z"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2195,19 +2225,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x20']['start'] = self._io.pos()
             self.u32_0x20 = self._io.read_u4be()
             self._debug['u32_0x20']['end'] = self._io.pos()
-
-
-    class Unrecognized(KaitaiStruct):
-        SEQ_FIELDS = []
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            pass
 
 
     class PlatNoClip(KaitaiStruct):

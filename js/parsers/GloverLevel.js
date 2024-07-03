@@ -1456,6 +1456,25 @@ var GloverLevel = (function() {
     return CameoInst2;
   })();
 
+  var Unknown = GloverLevel.Unknown = (function() {
+    function Unknown(_io, _parent, _root) {
+      this.__type = 'Unknown';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    Unknown.prototype._read = function() {
+      this._debug.body = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.body = this._io.readBytesFull();
+      this._debug.body.end = this._io.pos;
+    }
+
+    return Unknown;
+  })();
+
   var Unknown0xa9 = GloverLevel.Unknown0xa9 = (function() {
     function Unknown0xa9(_io, _parent, _root) {
       this.__type = 'Unknown0xa9';
@@ -1997,6 +2016,9 @@ var GloverLevel = (function() {
       case 131:
         this.params = new Enemy(this._io, this, this._root);
         break;
+      case 0:
+        this.params = new Noop(this._io, this, this._root);
+        break;
       case 167:
         this.params = new PlatPos0xa7(this._io, this, this._root);
         break;
@@ -2304,7 +2326,7 @@ var GloverLevel = (function() {
         this.params = new EnemyNormalInstruction(this._io, this, this._root);
         break;
       default:
-        this.params = new Unrecognized(this._io, this, this._root);
+        this.params = new Unknown(this._io, this, this._root);
         break;
       }
       this._debug.params.end = this._io.pos;
@@ -2570,6 +2592,22 @@ var GloverLevel = (function() {
     return PuzzleAction;
   })();
 
+  var Noop = GloverLevel.Noop = (function() {
+    function Noop(_io, _parent, _root) {
+      this.__type = 'Noop';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    Noop.prototype._read = function() {
+    }
+
+    return Noop;
+  })();
+
   var Water = GloverLevel.Water = (function() {
     function Water(_io, _parent, _root) {
       this.__type = 'Water';
@@ -2663,22 +2701,6 @@ var GloverLevel = (function() {
     }
 
     return PuzzleAction0x4f;
-  })();
-
-  var Unrecognized = GloverLevel.Unrecognized = (function() {
-    function Unrecognized(_io, _parent, _root) {
-      this.__type = 'Unrecognized';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    Unrecognized.prototype._read = function() {
-    }
-
-    return Unrecognized;
   })();
 
   var PlatNoClip = GloverLevel.PlatNoClip = (function() {

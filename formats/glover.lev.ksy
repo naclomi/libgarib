@@ -152,9 +152,9 @@ types:
 
             0x7D00: end_level_data
 
-            # 0x00: noop
-            # _: unknown
-            _: unrecognized
+            0x00: noop
+            _: unknown
+            # _: unrecognized
 
 # TODO: custom metadata is indicated by, immediately following
 #       header:
@@ -2325,13 +2325,13 @@ types:
   end_level_data:
     seq: []
 
-  unrecognized:
-    seq: []
-
-  # noop:
+  # unrecognized:
   #   seq: []
 
-  # unknown:
-  #   seq:
-  #     - id: body
-  #       size-eos: true
+  noop:
+    seq: []
+
+  unknown:
+    seq:
+      - id: body
+        size-eos: true

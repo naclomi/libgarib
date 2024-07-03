@@ -19,6 +19,7 @@ def assemble(args):
 import xml.etree.cElementTree as ET
 import kaitaistruct
 import enum
+import base64
 
 HEX_CUTOFF = 10000
 def kaitaiSubElement(node, obj, skip=None, extra=None):
@@ -36,6 +37,8 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
             attr_val = "0x{:08X}".format(raw_attr_val)
         elif isinstance(raw_attr_val, enum.Enum):
             attr_val = raw_attr_val._name_
+        elif isinstance(raw_attr_val, bytes):
+            attr_val = base64.b64encode(raw_attr_val).decode("utf8")
         elif type(raw_attr_val) in (int, float):
             attr_val = str(raw_attr_val)
         else:
