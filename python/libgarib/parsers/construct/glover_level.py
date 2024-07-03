@@ -349,7 +349,7 @@ glover_level__plat_vent_advance_frames = Struct(
 
 glover_level__set_exit = Struct(
 	'type' / Int16ub,
-	'visible' / Int16ub,
+	'plat_flags' / Int16ub,
 )
 
 glover_level__plat_sound_0xc1 = Struct(

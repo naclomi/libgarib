@@ -331,6 +331,8 @@ types:
     # Used a lot in cutscenes. Searches current actor for a child with the
     # specified mesh, and then modifies it based on the value of 'mode'.
     #     0 seems to be a 'start' command and 2 seems to be an 'append'
+    -semantic:
+      modifies: [LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     seq:
       - id: mode
         type: u2
@@ -342,6 +344,8 @@ types:
     # anim idx 0. Hard-coded to start paused on the intro
     # and outro cutscenes and carnival boss, otherwise
     # starts playing immediately.
+    -semantic:
+      declares: ANIMATED_BG_ACTOR
     seq:
       - id: object_id
         type: u4
@@ -356,7 +360,9 @@ types:
       - id: z
         type: f4
 
-  background_actor:
+  background_actor: # 0x91
+    -semantic:
+      declares: BG_ACTOR
     seq:
       - id: object_id
         type: u4
@@ -371,7 +377,9 @@ types:
       - id: z
         type: f4
 
-  land_actor:
+  land_actor: # 0x92
+    -semantic:
+      declares: LAND_ACTOR
     seq:
       - id: object_id
         type: u4
@@ -386,8 +394,10 @@ types:
       - id: z
         type: f4
 
-  set_actor_rotation:
+  set_actor_rotation: # 0x93
     # x/y/z are axis rotation angles, in radians
+    -semantic:
+      modifies: [LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     seq:
       - id: x
         type: f4
@@ -396,7 +406,9 @@ types:
       - id: z
         type: f4
 
-  set_actor_scale:
+  set_actor_scale: # 0x94
+    -semantic:
+      modifies: [LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     seq:
       - id: x
         type: f4
@@ -1069,7 +1081,7 @@ types:
 
   plat_actor_enable_water_animation: # 0xb3
     -semantic:
-      modifies: [PLATFORM, ACTOR]
+      modifies: [PLATFORM, LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     seq: []
 
   set_global_0xb7: # 0xb7
@@ -1141,18 +1153,17 @@ types:
         type: u2
 
   set_object_sparkle: # 0xb4
-    # Works on active actor or platform
     -semantic:
-      modifies: [PLATFORM, ACTOR]
+      modifies: [PLATFORM, LAND_ACTOR]
     seq:
       - id: period
         type: u2
 
   plat_special_0xb9: # 0xb9
-    # TODO: ORs 0x20000000 into a flags field of active  platform or actor
+    # TODO: ORs 0x20000000 into a flags field of active platform or actor
     #       affects physics calculations in FUN_80157708
     -semantic:
-      modifies: [PLATFORM, ACTOR]
+      modifies: [PLATFORM, LAND_ACTOR]
     seq: []
 
   set_exit: # 0xa8
@@ -1761,7 +1772,7 @@ types:
 
   plat_actor_surface_type: # 0x6a
     -semantic:
-      modifies: [PLATFORM, ACTOR]
+      modifies: [PLATFORM, LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     # TODO: figure out what value means. 6 = insta-death on contact
     seq:
       - id: value

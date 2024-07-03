@@ -1274,7 +1274,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class SetExit(KaitaiStruct):
-        SEQ_FIELDS = ["type", "visible"]
+        SEQ_FIELDS = ["type", "plat_flags"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1286,9 +1286,9 @@ class GloverLevel(KaitaiStruct):
             self._debug['type']['start'] = self._io.pos()
             self.type = self._io.read_u2be()
             self._debug['type']['end'] = self._io.pos()
-            self._debug['visible']['start'] = self._io.pos()
-            self.visible = self._io.read_u2be()
-            self._debug['visible']['end'] = self._io.pos()
+            self._debug['plat_flags']['start'] = self._io.pos()
+            self.plat_flags = self._io.read_u2be()
+            self._debug['plat_flags']['end'] = self._io.pos()
 
 
     class PlatSound0xc1(KaitaiStruct):
@@ -3957,8 +3957,68 @@ class GloverLevel(KaitaiStruct):
 #############
 # PATCHED BY ./tools/ksy-copy-private-fields.py
 private_fields = {
+    'GloverLevel.Actor0Xbf': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.AnimatedBackgroundActor': {'semantic': {'declares': 'ANIMATED_BG_ACTOR'}},
+    'GloverLevel.BackgroundActor': {'semantic': {'declares': 'BG_ACTOR'}},
+    'GloverLevel.LandActor': {'semantic': {'declares': 'LAND_ACTOR'}},
+    'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
+    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO'}},
+    'GloverLevel.Puzzle': {'semantic': {'declares': 'PUZZLE'}},
+    'GloverLevel.PuzzleAnd': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleOr': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleNumtimes': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleAny': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleCond': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleAction': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.GaribGroup': {'semantic': {'declares': 'GARIB_GROUP'}},
     'GloverLevel.Garib': {'semantic': {'modifies': 'GARIB_GROUP'}},
+    'GloverLevel.PlatMvspn0X58': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatMvspn0X59': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatMvspn0X5A': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSetParent': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatMvspn0X73': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatMvspn0X74': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatCopySpinFromParent': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpecial0Xb8': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatActorEnableWaterAnimation': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.Buzzer': {'semantic': {'declares': 'BUZZER'}},
+    'GloverLevel.BuzzerDutyCycle': {'semantic': {'modifies': 'BUZZER'}},
+    'GloverLevel.SetObjectSparkle': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR']}},
+    'GloverLevel.PlatSpecial0Xb9': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR']}},
+    'GloverLevel.SetExit': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatCat0X69': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatformConveyor': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpecial0X9E': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.SetTeleport': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatFan0X8A': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatMagnet0X8B': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatCheckpoint': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatCrumb0X67': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpecial0Xc7': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpecial0X6E': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpecial0X8E': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatPush0X5B': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatConf0X72': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatOrbitSound0Xc4': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0Xc6': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatOrbitAroundPoint': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatOrbitPause': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatOrbitFlip0X77': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0Xc3': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpinSound0Xc5': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0X9F': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpinPause0X7C': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpinFlip': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0X7E': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatConstantSpin': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSpin0X80': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatTopple0X81': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.LookAtHand0X60': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.LookAtBall0X61': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatRocking': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Plat0X78': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatSound0Xc1': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatSound0Xc2': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatTurnTowardsPathPoint': {'semantic': {'modifies': 'PLATFORM'}},
@@ -3976,11 +4036,14 @@ private_fields = {
     'GloverLevel.PlatDestructibleSound': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Plat0X9D': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Plat0X66': {'semantic': {'modifies': 'PLATFORM'}},
-    'GloverLevel.PlatActorSurfaceType': {'semantic': {'modifies': ['PLATFORM', 'ACTOR']}},
+    'GloverLevel.PlatActorSurfaceType': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.PlatSetTag': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatSpike': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatScale': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.Vent': {'semantic': {'declares': 'VENT'}},
+    'GloverLevel.VentDutyCycle': {'semantic': {'modifies': 'VENT'}},
     'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}},
+    'GloverLevel.NullPlatform': {'semantic': {'declares': 'PLATFORM'}},
 }
 
 import sys

@@ -1033,11 +1033,11 @@ declare namespace GloverLevel {
     _io: any;
 
     type: number;
-    visible: number;
+    platFlags: number;
 
     _debug: {
       type: DebugPosition;
-      visible: DebugPosition;
+      platFlags: DebugPosition;
     };
   }
 }

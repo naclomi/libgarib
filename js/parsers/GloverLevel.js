@@ -1508,9 +1508,9 @@ var GloverLevel = (function() {
       this._debug.type = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.type = this._io.readU2be();
       this._debug.type.end = this._io.pos;
-      this._debug.visible = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.visible = this._io.readU2be();
-      this._debug.visible.end = this._io.pos;
+      this._debug.platFlags = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platFlags = this._io.readU2be();
+      this._debug.platFlags.end = this._io.pos;
     }
 
     return SetExit;
