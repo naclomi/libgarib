@@ -16,7 +16,7 @@ def to_camel(string):
     return res[0].lower() + res[1:]
 
 
-def traverse(node, path, collected_fields):
+def scrapePrivateFields(node, path, collected_fields):
     if type(node) is dict:
         for k, v in node.items():
             if str(k).startswith("-"):
@@ -24,10 +24,10 @@ def traverse(node, path, collected_fields):
                 path_collection[to_camel(k)] = v
                 collected_fields[path] = path_collection
             else:
-                traverse(node[k], "{:}.{:}".format(path, to_upper_camel(k)), collected_fields)
+                scrapePrivateFields(node[k], "{:}.{:}".format(path, to_upper_camel(k)), collected_fields)
     elif type(node) is list:
         for idx, elem in enumerate(node):
-            traverse(elem, "{:}[{:}]".format(path, idx), collected_fields)
+            scrapePrivateFields(elem, "{:}[{:}]".format(path, idx), collected_fields)
     else:
         pass
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         #       include sequences members
         with open(ksy_filename, "r") as f:
             ksy = yaml.safe_load(f)
-            traverse(ksy["types"], to_upper_camel(ksy["meta"]["id"]), fields)
+            scrapePrivateFields(ksy["types"], to_upper_camel(ksy["meta"]["id"]), fields)
 
         if len(fields) > 0:
             code_suffix = "private_fields = {\n"
@@ -57,8 +57,36 @@ if __name__ == "__main__":
                 code_suffix += "    '{:}': {:},\n".format(k, v)
             code_suffix += "}\n"
 
-            code_suffix += """
+            code_suffix += r"""
 import sys
+import importlib
+import re
+
+def qualified_name_to_construct_name(name):
+    name = name.replace(".", "_")
+    name = re.sub(r"([A-Z])", r"_\1", name)
+    name = name.lower()
+    name = name[1:]
+    return name
+
+_module_cache = {}
+_cls_cache = {}
+@classmethod
+def getConstructType(cls):
+    global _module_cache
+    global _cls_cache
+    if cls.__qualname__ not in _cls_cache:
+        if __name__ not in _module_cache:
+            module_tokens = __name__.split(".")
+            package_name = ".".join(module_tokens[:-1])
+            module_name = module_tokens[-1]
+            _module_cache[__name__] = importlib.import_module(".construct.{:}".format(module_name), package_name)
+        construct_mod = _module_cache[__name__]
+        type_name = qualified_name_to_construct_name(cls.__qualname__)
+        _cls_cache[cls.__qualname__] = getattr(construct_mod, type_name)
+    return _cls_cache[cls.__qualname__]
+KaitaiStruct.getConstructType = getConstructType
+
 @classmethod
 def getPrivate(cls, field_name, default=None):
     try:
