@@ -4044,6 +4044,13 @@ private_fields = {
     'GloverLevel.VentDutyCycle': {'semantic': {'modifies': 'VENT'}},
     'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}},
     'GloverLevel.NullPlatform': {'semantic': {'declares': 'PLATFORM'}},
+    'GloverLevel.Enemy': {'semantic': {'declares': 'ENEMY'}},
+    'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
+    'GloverLevel.Enemy0Xba': {'semantic': {'modifies': 'ENEMY'}},
+    'GloverLevel.EnemyFinalize': {'semantic': {'closes': 'ENEMY'}},
+    'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY'}},
+    'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY'}},
+    'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY'}},
 }
 
 import sys

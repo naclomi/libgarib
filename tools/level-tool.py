@@ -73,6 +73,19 @@ def disassemble(args):
                 else:
                     active_type = None
 
+            if "closes" in semantic:
+                skip_tag = False
+                if type(semantic["closes"]) is not list:
+                    semantic["closes"] = [semantic["closes"]]
+                for applicable_type in semantic["closes"]:
+                    if applicable_type == active_type:
+                        skip_tag = True
+                        break
+                if skip_tag is True:
+                    active_type = None
+                    continue
+
+
             if type(cmd_body) is GloverLevel.PuzzleCond:
                 new_node = kaitaiSubElement(parent_node, cmd_body.body)
             elif type(cmd_body) is GloverLevel.PuzzleAction:
@@ -95,7 +108,7 @@ def disassemble(args):
 
         tree = ET.ElementTree(root)
         ET.indent(tree, space='   ', level=0)
-        tree.write(sys.stdout, encoding='unicode')
+        tree.write(sys.stdout, encoding='unicode', xml_declaration=True)
 
 
 def validate(args):

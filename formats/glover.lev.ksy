@@ -2012,6 +2012,8 @@ types:
     seq: []
 
   enemy: # 0x83
+    -semantic:
+      declares: ENEMY
     seq:
       - id: type
         type: u2
@@ -2084,6 +2086,8 @@ types:
         58: nmefrog
 
   enemy_set_attention_bbox: # 0xa1
+    -semantic:
+      modifies: ENEMY
     seq:
       - id: left
         type: f4
@@ -2099,22 +2103,32 @@ types:
         type: f4
 
   enemy_0xba: # 0xba
+    -semantic:
+      modifies: ENEMY
     seq: []
 
   enemy_finalize: # 0x84
+    -semantic:
+      closes: ENEMY
     seq: []
 
   enemy_normal_instruction: # 0x9a
+    -semantic:
+      modifies: ENEMY
     seq:
       - id: instr
         type: enemy_instruction
 
   enemy_conditional_instruction: # 0x9b
+    -semantic:
+      modifies: ENEMY
     seq:
       - id: instr
         type: enemy_instruction
 
   enemy_attack_instruction: # 0x9c
+    -semantic:
+      modifies: ENEMY
     seq:
       - id: instr
         type: enemy_instruction
