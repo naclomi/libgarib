@@ -8,7 +8,8 @@ import yaml
 
 
 def to_upper_camel(string):
-    return re.sub(r"[\s_-]+", "", str(string).title())
+    words = re.split(r"[\s_-]+", str(string))
+    return "".join(word.capitalize() for word in words)
 
 def to_camel(string):
     res = to_upper_camel(string)

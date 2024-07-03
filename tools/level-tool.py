@@ -86,6 +86,7 @@ def disassemble(args):
                     continue
 
 
+
             if type(cmd_body) is GloverLevel.PuzzleCond:
                 new_node = kaitaiSubElement(parent_node, cmd_body.body)
             elif type(cmd_body) is GloverLevel.PuzzleAction:
