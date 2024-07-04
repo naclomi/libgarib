@@ -1,3 +1,7 @@
+# general
+- move ksy patcher into python directory instead of tools directory
+- build python packaging infrastucture to deploy libgarib modules and their C extensions
+
 # rom-asset-tool
 
 # texbank-tool
