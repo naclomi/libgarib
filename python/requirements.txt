@@ -1,0 +1,9 @@
+capstone
+construct
+jmespath
+kaitaistruct
+numpy
+pillow
+pygltflib
+unicorn
+pyyaml
