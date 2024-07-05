@@ -1,11 +1,13 @@
 # general
 - build python packaging infrastucture to deploy libgarib modules and their C extensions
+  - see: https://stackoverflow.com/questions/42656388/how-to-put-a-swig-pybind11-c-project-on-pypi
 
 # rom-asset-tool
 
 # texbank-tool
 - there used to be a creepy bug in IA tex packing whereby every other X coordinate
   was skipped. investigate what this was about (see git diff right after 07cd5e369246c5a4712edfd164c24698713df0cb)
+- embed version info into output (for both packing and unpacking)
 
 # objbank-tool
 ## common
@@ -24,6 +26,8 @@
 - vertex UVs are off on pool entry for 0xcd048e58-at1land
 - use a dict to map animation slot names?
 - control export of global animation track via cmdline arg
+- embed version info into output
+
 
 ## packing
 - Test:
@@ -35,6 +39,8 @@
 - vertex compressor
 - better validation
 - look for missing properties in parent nodes
+- embed version info into output
+
 
 ## mapping
 - The "padding" at the end of each file seems
@@ -57,6 +63,9 @@
 # rom patches
 
 ## kaizo level harness
+
+## stdout
+- how to do this easily with emulators?
 
 ## quick test
 - Implement the following patches:
