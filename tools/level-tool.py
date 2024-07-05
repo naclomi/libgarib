@@ -15,13 +15,30 @@ def assemble(args):
 
 
 def disassemble(args):
+    if args.output_dir is not None:
+        os.makedirs(args.output_dir, exist_ok=True)
     for level_filename in args.level_binary_file:
         with open(level_filename, "rb") as f:
             raw_level = GloverLevel.from_io(f)
         tree = landscapeToXML(raw_level)
-        ET.indent(tree, space='   ', level=0)
-        tree.write(sys.stdout, encoding='unicode', xml_declaration=True)
 
+        try:
+            ET.indent(tree, space='   ', level=0)
+        except AttributeError:
+            pass
+
+        if args.output_dir is not None:
+            xml_filename = os.path.basename(level_filename) + ".xml"
+            output_handle = open(os.path.join(args.output_dir, xml_filename), "w")
+        else:
+            output_handle = sys.stdout
+
+        tree.write(output_handle, encoding='unicode', xml_declaration=True)
+
+        if output_handle is sys.stdout:
+            output_handle.write("\n\n")
+        else:
+            output_handle.close()
 
 def validate(args):
     pass
@@ -54,8 +71,8 @@ if __name__ == "__main__":
         "level_binary_file", type=str, nargs="+",
         help="Binary level file")
     disasm_parser.add_argument(
-        "--output-dir", type=str, default=os.getcwd(),
-        help="Directory to output XML level data")
+        "--output-dir", type=str, required=False,
+        help="Directory to output XML level data (or print to stdout if omitted)")
 
     validate_parser = subparsers.add_parser(
         'validate', help='Validate integrity and design rules of a level')
