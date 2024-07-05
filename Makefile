@@ -14,7 +14,7 @@ parsers:
 		formats/glover.objbank.ksy \
 		formats/glover.texbank.ksy
 
-	./tools/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
+	./python/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
 
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct

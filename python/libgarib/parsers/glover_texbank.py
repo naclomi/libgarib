@@ -120,7 +120,7 @@ class GloverTexbank(KaitaiStruct):
 
 
 #############
-# PATCHED BY ./tools/ksy-patcher.py
+# PATCHED BY ./python/ksy-patcher.py
 
 original_names = {
     'GloverTexbank.Texture': 'glover_texbank.texture',

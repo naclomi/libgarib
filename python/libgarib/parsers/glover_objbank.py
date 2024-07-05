@@ -887,7 +887,7 @@ class GloverObjbank(KaitaiStruct):
 
 
 #############
-# PATCHED BY ./tools/ksy-patcher.py
+# PATCHED BY ./python/ksy-patcher.py
 
 original_names = {
     'GloverObjbank.DirectoryEntry': 'glover_objbank.directory_entry',

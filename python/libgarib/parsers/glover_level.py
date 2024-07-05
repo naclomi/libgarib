@@ -3972,7 +3972,7 @@ class GloverLevel(KaitaiStruct):
 
 
 #############
-# PATCHED BY ./tools/ksy-patcher.py
+# PATCHED BY ./python/ksy-patcher.py
 
 original_names = {
     'GloverLevel.Cmd': 'glover_level.cmd',
