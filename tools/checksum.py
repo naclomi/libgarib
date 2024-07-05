@@ -3,8 +3,6 @@ import argparse
 import struct
 import sys
 
-import zlib
-
 import _prefer_local_implementation
 import libgarib.rom as rom
 

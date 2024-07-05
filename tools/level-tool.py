@@ -26,15 +26,17 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
     tag_name = type(obj).__name__.split(".")[-1]
 
     attribs = {}
-    for attr_name in obj.SEQ_FIELDS:
+    for attr_idx, attr_name in enumerate(obj.SEQ_FIELDS):
         if skip is not None and attr_name in skip:
             continue
+        construct_type = obj.getConstructType()
         attr_val = None
         raw_attr_val = getattr(obj, attr_name)
         if type(raw_attr_val) is str:
             attr_val = raw_attr_val.rstrip('\x00')
         elif type(raw_attr_val) is int and raw_attr_val > HEX_CUTOFF:
-            attr_val = "0x{:08X}".format(raw_attr_val)
+            num_hex_digits = construct_type.subcons[attr_idx].sizeof() * 2
+            attr_val = "0x{:0{:}X}".format(raw_attr_val, num_hex_digits)
         elif isinstance(raw_attr_val, enum.Enum):
             attr_val = raw_attr_val._name_
         elif isinstance(raw_attr_val, bytes):

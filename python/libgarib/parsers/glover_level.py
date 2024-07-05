@@ -3972,7 +3972,162 @@ class GloverLevel(KaitaiStruct):
 
 
 #############
-# PATCHED BY ./tools/ksy-copy-private-fields.py
+# PATCHED BY ./tools/ksy-patcher.py
+
+original_names = {
+    'GloverLevel.Cmd': 'glover_level.cmd',
+    'GloverLevel.UnknownSound0xbd': 'glover_level.unknown_sound_0xbd',
+    'GloverLevel.EnvironmentalSound': 'glover_level.environmental_sound',
+    'GloverLevel.Unknown0xa9': 'glover_level.unknown_0xa9',
+    'GloverLevel.MrTip': 'glover_level.mr_tip',
+    'GloverLevel.DiffuseLight': 'glover_level.diffuse_light',
+    'GloverLevel.AmbientLight': 'glover_level.ambient_light',
+    'GloverLevel.GloverSpawnPoint': 'glover_level.glover_spawn_point',
+    'GloverLevel.BallSpawnPoint': 'glover_level.ball_spawn_point',
+    'GloverLevel.CameraSpawnPoint': 'glover_level.camera_spawn_point',
+    'GloverLevel.FogConfiguration': 'glover_level.fog_configuration',
+    'GloverLevel.Actor0xbf': 'glover_level.actor_0xbf',
+    'GloverLevel.AnimatedBackgroundActor': 'glover_level.animated_background_actor',
+    'GloverLevel.BackgroundActor': 'glover_level.background_actor',
+    'GloverLevel.LandActor': 'glover_level.land_actor',
+    'GloverLevel.SetActorRotation': 'glover_level.set_actor_rotation',
+    'GloverLevel.SetActorScale': 'glover_level.set_actor_scale',
+    'GloverLevel.Wind': 'glover_level.wind',
+    'GloverLevel.Water': 'glover_level.water',
+    'GloverLevel.Backdrop': 'glover_level.backdrop',
+    'GloverLevel.Cameo': 'glover_level.cameo',
+    'GloverLevel.CameoInst': 'glover_level.cameo_inst',
+    'GloverLevel.CameoInst0': 'glover_level.cameo_inst_0',
+    'GloverLevel.CameoInst1': 'glover_level.cameo_inst_1',
+    'GloverLevel.CameoInst2': 'glover_level.cameo_inst_2',
+    'GloverLevel.CameoInst3': 'glover_level.cameo_inst_3',
+    'GloverLevel.CameoInst4': 'glover_level.cameo_inst_4',
+    'GloverLevel.CameoInst5': 'glover_level.cameo_inst_5',
+    'GloverLevel.CameoInst6': 'glover_level.cameo_inst_6',
+    'GloverLevel.CameoInstDefault': 'glover_level.cameo_inst_default',
+    'GloverLevel.Puzzle': 'glover_level.puzzle',
+    'GloverLevel.PuzzleAnd': 'glover_level.puzzle_and',
+    'GloverLevel.PuzzleOr': 'glover_level.puzzle_or',
+    'GloverLevel.PuzzleNumtimes': 'glover_level.puzzle_numtimes',
+    'GloverLevel.PuzzleAny': 'glover_level.puzzle_any',
+    'GloverLevel.PuzzleCond': 'glover_level.puzzle_cond',
+    'GloverLevel.PuzzleCondA': 'glover_level.puzzle_cond_a',
+    'GloverLevel.PuzzleCondB': 'glover_level.puzzle_cond_b',
+    'GloverLevel.PuzzleCondC': 'glover_level.puzzle_cond_c',
+    'GloverLevel.PuzzleCondD': 'glover_level.puzzle_cond_d',
+    'GloverLevel.PuzzleCondE': 'glover_level.puzzle_cond_e',
+    'GloverLevel.PuzzleAction': 'glover_level.puzzle_action',
+    'GloverLevel.PuzzleAction0x4f': 'glover_level.puzzle_action_0x4f',
+    'GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40': 'glover_level.puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40',
+    'GloverLevel.PuzzleActionDefault': 'glover_level.puzzle_action_default',
+    'GloverLevel.PuzzleAction0x460x470x48': 'glover_level.puzzle_action_0x46_0x47_0x48',
+    'GloverLevel.PuzzleAction0x490x4d': 'glover_level.puzzle_action_0x49_0x4d',
+    'GloverLevel.PuzzleAction0x4a': 'glover_level.puzzle_action_0x4a',
+    'GloverLevel.PuzzleAction0x54': 'glover_level.puzzle_action_0x54',
+    'GloverLevel.PuzzleAction0x55': 'glover_level.puzzle_action_0x55',
+    'GloverLevel.PuzzleAction0x56': 'glover_level.puzzle_action_0x56',
+    'GloverLevel.PuzzleAction0x4b0x4c': 'glover_level.puzzle_action_0x4b_0x4c',
+    'GloverLevel.GaribGroup': 'glover_level.garib_group',
+    'GloverLevel.Garib': 'glover_level.garib',
+    'GloverLevel.Powerup': 'glover_level.powerup',
+    'GloverLevel.PlatMvspn0x58': 'glover_level.plat_mvspn_0x58',
+    'GloverLevel.PlatMvspn0x59': 'glover_level.plat_mvspn_0x59',
+    'GloverLevel.PlatMvspn0x5a': 'glover_level.plat_mvspn_0x5a',
+    'GloverLevel.PlatSetParent': 'glover_level.plat_set_parent',
+    'GloverLevel.PlatMvspn0x73': 'glover_level.plat_mvspn_0x73',
+    'GloverLevel.PlatMvspn0x74': 'glover_level.plat_mvspn_0x74',
+    'GloverLevel.PlatCopySpinFromParent': 'glover_level.plat_copy_spin_from_parent',
+    'GloverLevel.PlatSpecial0xb8': 'glover_level.plat_special_0xb8',
+    'GloverLevel.PlatActorEnableWaterAnimation': 'glover_level.plat_actor_enable_water_animation',
+    'GloverLevel.SetGlobal0xb7': 'glover_level.set_global_0xb7',
+    'GloverLevel.Buzzer': 'glover_level.buzzer',
+    'GloverLevel.BuzzerDutyCycle': 'glover_level.buzzer_duty_cycle',
+    'GloverLevel.SetObjectSparkle': 'glover_level.set_object_sparkle',
+    'GloverLevel.PlatSpecial0xb9': 'glover_level.plat_special_0xb9',
+    'GloverLevel.SetExit': 'glover_level.set_exit',
+    'GloverLevel.PlatCat0x69': 'glover_level.plat_cat_0x69',
+    'GloverLevel.PlatformConveyor': 'glover_level.platform_conveyor',
+    'GloverLevel.PlatSpecial0x9e': 'glover_level.plat_special_0x9e',
+    'GloverLevel.SetTeleport': 'glover_level.set_teleport',
+    'GloverLevel.PlatFan0x8a': 'glover_level.plat_fan_0x8a',
+    'GloverLevel.PlatMagnet0x8b': 'glover_level.plat_magnet_0x8b',
+    'GloverLevel.PlatCheckpoint': 'glover_level.plat_checkpoint',
+    'GloverLevel.PlatCrumb0x67': 'glover_level.plat_crumb_0x67',
+    'GloverLevel.PlatSpecial0xc7': 'glover_level.plat_special_0xc7',
+    'GloverLevel.PlatSpecial0x6e': 'glover_level.plat_special_0x6e',
+    'GloverLevel.PlatSpecial0x8e': 'glover_level.plat_special_0x8e',
+    'GloverLevel.PlatPush0x5b': 'glover_level.plat_push_0x5b',
+    'GloverLevel.PlatConf0x72': 'glover_level.plat_conf_0x72',
+    'GloverLevel.PlatOrbitSound0xc4': 'glover_level.plat_orbit_sound_0xc4',
+    'GloverLevel.Plat0xc6': 'glover_level.plat_0xc6',
+    'GloverLevel.PlatOrbitAroundPoint': 'glover_level.plat_orbit_around_point',
+    'GloverLevel.PlatOrbitPause': 'glover_level.plat_orbit_pause',
+    'GloverLevel.PlatOrbitFlip0x77': 'glover_level.plat_orbit_flip_0x77',
+    'GloverLevel.Plat0xc3': 'glover_level.plat_0xc3',
+    'GloverLevel.PlatSpinSound0xc5': 'glover_level.plat_spin_sound_0xc5',
+    'GloverLevel.Plat0x9f': 'glover_level.plat_0x9f',
+    'GloverLevel.PlatSpinPause0x7c': 'glover_level.plat_spin_pause_0x7c',
+    'GloverLevel.PlatSpinFlip': 'glover_level.plat_spin_flip',
+    'GloverLevel.Plat0x7e': 'glover_level.plat_0x7e',
+    'GloverLevel.PlatConstantSpin': 'glover_level.plat_constant_spin',
+    'GloverLevel.PlatSpin0x80': 'glover_level.plat_spin_0x80',
+    'GloverLevel.PlatTopple0x81': 'glover_level.plat_topple_0x81',
+    'GloverLevel.LookAtHand0x60': 'glover_level.look_at_hand_0x60',
+    'GloverLevel.LookAtBall0x61': 'glover_level.look_at_ball_0x61',
+    'GloverLevel.PlatRocking': 'glover_level.plat_rocking',
+    'GloverLevel.Plat0x78': 'glover_level.plat_0x78',
+    'GloverLevel.PlatSound0xc1': 'glover_level.plat_sound_0xc1',
+    'GloverLevel.PlatSound0xc2': 'glover_level.plat_sound_0xc2',
+    'GloverLevel.PlatTurnTowardsPathPoint': 'glover_level.plat_turn_towards_path_point',
+    'GloverLevel.PlatGoForwards0x5f': 'glover_level.plat_go_forwards_0x5f',
+    'GloverLevel.PlatPathPoint': 'glover_level.plat_path_point',
+    'GloverLevel.PlatMaxVelocity': 'glover_level.plat_max_velocity',
+    'GloverLevel.PlatPathAcceleration': 'glover_level.plat_path_acceleration',
+    'GloverLevel.PlatPos0xa7': 'glover_level.plat_pos_0xa7',
+    'GloverLevel.PlatSetInitialPos': 'glover_level.plat_set_initial_pos',
+    'GloverLevel.PlatPlayObjectAnimation': 'glover_level.plat_play_object_animation',
+    'GloverLevel.Plat0xa4': 'glover_level.plat_0xa4',
+    'GloverLevel.PlatVentAdvanceFrames': 'glover_level.plat_vent_advance_frames',
+    'GloverLevel.PlatNoClip': 'glover_level.plat_no_clip',
+    'GloverLevel.PlatDestructible': 'glover_level.plat_destructible',
+    'GloverLevel.PlatDestructibleSound': 'glover_level.plat_destructible_sound',
+    'GloverLevel.Plat0x9d': 'glover_level.plat_0x9d',
+    'GloverLevel.Plat0x66': 'glover_level.plat_0x66',
+    'GloverLevel.PlatActorSurfaceType': 'glover_level.plat_actor_surface_type',
+    'GloverLevel.PlatSetTag': 'glover_level.plat_set_tag',
+    'GloverLevel.PlatSpike': 'glover_level.plat_spike',
+    'GloverLevel.PlatScale': 'glover_level.plat_scale',
+    'GloverLevel.PlatStr0x7a': 'glover_level.plat_str_0x7a',
+    'GloverLevel.Rope': 'glover_level.rope',
+    'GloverLevel.PlatSine': 'glover_level.plat_sine',
+    'GloverLevel.PlatOrbit': 'glover_level.plat_orbit',
+    'GloverLevel.Vent': 'glover_level.vent',
+    'GloverLevel.VentDutyCycle': 'glover_level.vent_duty_cycle',
+    'GloverLevel.Platform': 'glover_level.platform',
+    'GloverLevel.NullPlatform': 'glover_level.null_platform',
+    'GloverLevel.Enemy': 'glover_level.enemy',
+    'GloverLevel.EnemySetAttentionBbox': 'glover_level.enemy_set_attention_bbox',
+    'GloverLevel.Enemy0xba': 'glover_level.enemy_0xba',
+    'GloverLevel.EnemyFinalize': 'glover_level.enemy_finalize',
+    'GloverLevel.EnemyNormalInstruction': 'glover_level.enemy_normal_instruction',
+    'GloverLevel.EnemyConditionalInstruction': 'glover_level.enemy_conditional_instruction',
+    'GloverLevel.EnemyAttackInstruction': 'glover_level.enemy_attack_instruction',
+    'GloverLevel.EnemyInstruction': 'glover_level.enemy_instruction',
+    'GloverLevel.EnemyInstructionA': 'glover_level.enemy_instruction_a',
+    'GloverLevel.EnemyInstructionDash': 'glover_level.enemy_instruction_dash',
+    'GloverLevel.EnemyInstructionMove': 'glover_level.enemy_instruction_move',
+    'GloverLevel.EnemyInstructionTurn': 'glover_level.enemy_instruction_turn',
+    'GloverLevel.EnemyInstructionGoto': 'glover_level.enemy_instruction_goto',
+    'GloverLevel.EnemyInstructionRandomWalk': 'glover_level.enemy_instruction_random_walk',
+    'GloverLevel.EnemyInstructionPlayAnimation': 'glover_level.enemy_instruction_play_animation',
+    'GloverLevel.EnemyInstructionRest': 'glover_level.enemy_instruction_rest',
+    'GloverLevel.EnemyInstructionAttack': 'glover_level.enemy_instruction_attack',
+    'GloverLevel.EnemyInstructionC': 'glover_level.enemy_instruction_c',
+    'GloverLevel.EnemyInstructionError': 'glover_level.enemy_instruction_error',
+    'GloverLevel.EndLevelData': 'glover_level.end_level_data',
+    'GloverLevel.Noop': 'glover_level.noop',
+    'GloverLevel.Unknown': 'glover_level.unknown',
+}
 private_fields = {
     'GloverLevel.Actor0xbf': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.AnimatedBackgroundActor': {'semantic': {'declares': 'ANIMATED_BG_ACTOR'}},
@@ -4071,6 +4226,32 @@ private_fields = {
 }
 
 import sys
+import importlib
+
+_module_cache = {}
+_cls_cache = {}
+@classmethod
+def getConstructType(cls):
+    global _module_cache
+    global _cls_cache
+    if cls.__qualname__ not in _cls_cache:
+        if __name__ not in _module_cache:
+            module_tokens = __name__.split(".")
+            package_name = ".".join(module_tokens[:-1])
+            module_name = module_tokens[-1]
+            _module_cache[__name__] = importlib.import_module(".construct.{:}".format(module_name), package_name)
+        construct_mod = _module_cache[__name__]
+        type_name = cls.getOriginalName().replace(".", "__")
+        _cls_cache[cls.__qualname__] = getattr(construct_mod, type_name)
+    return _cls_cache[cls.__qualname__]
+KaitaiStruct.getConstructType = getConstructType
+
+@classmethod
+def getOriginalName(cls):
+    original_names = sys.modules[cls.__module__].original_names
+    return original_names[cls.__qualname__]
+KaitaiStruct.getOriginalName = getOriginalName
+
 @classmethod
 def getPrivate(cls, field_name, default=None):
     try:

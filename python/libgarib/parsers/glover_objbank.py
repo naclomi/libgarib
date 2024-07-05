@@ -885,3 +885,61 @@ class GloverObjbank(KaitaiStruct):
 
 
 
+
+#############
+# PATCHED BY ./tools/ksy-patcher.py
+
+original_names = {
+    'GloverObjbank.DirectoryEntry': 'glover_objbank.directory_entry',
+    'GloverObjbank.ObjectRoot': 'glover_objbank.object_root',
+    'GloverObjbank.Mesh': 'glover_objbank.mesh',
+    'GloverObjbank.Geometry': 'glover_objbank.geometry',
+    'GloverObjbank.Vertex': 'glover_objbank.vertex',
+    'GloverObjbank.Face': 'glover_objbank.face',
+    'GloverObjbank.Uv': 'glover_objbank.uv',
+    'GloverObjbank.S105': 'glover_objbank.s10_5',
+    'GloverObjbank.Sprite': 'glover_objbank.sprite',
+    'GloverObjbank.AffineFrame': 'glover_objbank.affine_frame',
+    'GloverObjbank.DisplayListCmd': 'glover_objbank.display_list_cmd',
+    'GloverObjbank.Animation': 'glover_objbank.animation',
+    'GloverObjbank.AnimationDefinition': 'glover_objbank.animation_definition',
+}
+private_fields = {
+}
+
+import sys
+import importlib
+
+_module_cache = {}
+_cls_cache = {}
+@classmethod
+def getConstructType(cls):
+    global _module_cache
+    global _cls_cache
+    if cls.__qualname__ not in _cls_cache:
+        if __name__ not in _module_cache:
+            module_tokens = __name__.split(".")
+            package_name = ".".join(module_tokens[:-1])
+            module_name = module_tokens[-1]
+            _module_cache[__name__] = importlib.import_module(".construct.{:}".format(module_name), package_name)
+        construct_mod = _module_cache[__name__]
+        type_name = cls.getOriginalName().replace(".", "__")
+        _cls_cache[cls.__qualname__] = getattr(construct_mod, type_name)
+    return _cls_cache[cls.__qualname__]
+KaitaiStruct.getConstructType = getConstructType
+
+@classmethod
+def getOriginalName(cls):
+    original_names = sys.modules[cls.__module__].original_names
+    return original_names[cls.__qualname__]
+KaitaiStruct.getOriginalName = getOriginalName
+
+@classmethod
+def getPrivate(cls, field_name, default=None):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        return default
+    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+KaitaiStruct.getPrivate = getPrivate
+#############

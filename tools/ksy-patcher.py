@@ -8,28 +8,56 @@ import yaml
 
 
 def to_upper_camel(string):
-    words = re.split(r"[\s_-]+", str(string))
-    return "".join(word.capitalize() for word in words)
+    path_components = str(string).split(".")
+    final_path = []
+    for component in path_components:
+        words = re.split(r"[\s_\-]+", component)
+        final_path.append("".join(word.capitalize() for word in words))
+    return ".".join(final_path)
 
-def to_camel(string):
-    res = to_upper_camel(string)
-    return res[0].lower() + res[1:]
 
-
-def scrapePrivateFields(node, path, collected_fields):
+def crawlYaml(node, path, dict_callback=None, list_callback=None, scalar_callback=None):
     if type(node) is dict:
         for k, v in node.items():
-            if str(k).startswith("-"):
-                path_collection = collected_fields.get(path, {})
-                path_collection[to_camel(k)] = v
-                collected_fields[path] = path_collection
-            else:
-                scrapePrivateFields(node[k], "{:}.{:}".format(path, to_upper_camel(k)), collected_fields)
+            if dict_callback is not None:
+                if dict_callback[0](node, path, k, v, *dict_callback[1:]) is False:
+                    continue
+            crawlYaml(node[k], "{:}.{:}".format(path, k), dict_callback, list_callback, scalar_callback)
     elif type(node) is list:
         for idx, elem in enumerate(node):
-            scrapePrivateFields(elem, "{:}[{:}]".format(path, idx), collected_fields)
+            if list_callback is not None:
+                if list_callback[0](node, path, idx, elem, *list_callback[1:]) is False:
+                    continue
+            crawlYaml(elem, "{:}[{:}]".format(path, idx), dict_callback, list_callback, scalar_callback)
     else:
-        pass
+        if scalar_callback is not None:
+            scalar_callback[0](node, path, idx, elem, *scalar_callback[1:])
+
+
+def _scrapePrivateFieldsCallback(node, path, k, v, fields):
+    if str(k).startswith("-"):
+        path_collection = fields.get(path, {})
+        path_collection[k[1:]] = v
+        fields[path] = path_collection
+        return False
+    return True
+def scrapePrivateFields(node, path):
+    fields = {}
+    crawlYaml(node, path, dict_callback=(_scrapePrivateFieldsCallback, fields))
+    return fields
+
+
+def _scrapeNamesCallback(node, path, k, v, names):
+    if len(path.split(".")) <= 1:
+        k_path = "{:}.{:}".format(path, k)
+        names[to_upper_camel(k_path)] = k_path
+        return True
+    else:
+        return False
+def scrapeNames(node, path):
+    names = {}
+    crawlYaml(node, path, dict_callback=(_scrapeNamesCallback, names))
+    return names
 
 
 if __name__ == "__main__":
@@ -44,30 +72,28 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     for ksy_filename in args.ksy_file:
-        fields = {}
         # TODO: scrape private fields outside of the 'types' region, and
         #       include sequences members
         with open(ksy_filename, "r") as f:
             ksy = yaml.safe_load(f)
-            scrapePrivateFields(ksy["types"], to_upper_camel(ksy["meta"]["id"]), fields)
+            fields = scrapePrivateFields(ksy["types"], ksy["meta"]["id"])
+            names = scrapeNames(ksy["types"], ksy["meta"]["id"])
 
-        if len(fields) > 0:
-            code_suffix = "private_fields = {\n"
-            for k, v in fields.items():
-                code_suffix += "    '{:}': {:},\n".format(k, v)
-            code_suffix += "}\n"
+        code_suffix = "\n"
 
-            code_suffix += r"""
+        code_suffix += "original_names = {\n"
+        for k, v in names.items():
+            code_suffix += "    '{:}': '{:}',\n".format(k, v)
+        code_suffix += "}\n"
+
+        code_suffix += "private_fields = {\n"
+        for k, v in fields.items():
+            code_suffix += "    '{:}': {:},\n".format(to_upper_camel(k), v)
+        code_suffix += "}\n"
+
+        code_suffix += r"""
 import sys
 import importlib
-import re
-
-def qualified_name_to_construct_name(name):
-    name = name.replace(".", "_")
-    name = re.sub(r"([A-Z])", r"_\1", name)
-    name = name.lower()
-    name = name[1:]
-    return name
 
 _module_cache = {}
 _cls_cache = {}
@@ -82,10 +108,16 @@ def getConstructType(cls):
             module_name = module_tokens[-1]
             _module_cache[__name__] = importlib.import_module(".construct.{:}".format(module_name), package_name)
         construct_mod = _module_cache[__name__]
-        type_name = qualified_name_to_construct_name(cls.__qualname__)
+        type_name = cls.getOriginalName().replace(".", "__")
         _cls_cache[cls.__qualname__] = getattr(construct_mod, type_name)
     return _cls_cache[cls.__qualname__]
 KaitaiStruct.getConstructType = getConstructType
+
+@classmethod
+def getOriginalName(cls):
+    original_names = sys.modules[cls.__module__].original_names
+    return original_names[cls.__qualname__]
+KaitaiStruct.getOriginalName = getOriginalName
 
 @classmethod
 def getPrivate(cls, field_name, default=None):
@@ -97,15 +129,15 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 """
 
-            compiled_filename = os.path.join(
-                args.compiled_directory,
-                "{:}.py".format(ksy["meta"]["id"])
-            )
-            with open(compiled_filename, "a") as f:
-                if f.tell() == 0:
-                    sys.stderr.write("WARNING: Couldn't find compiled source '{:}'\n".format(compiled_filename))
-                    continue
-                f.write("\n#############\n")
-                f.write("# PATCHED BY {:}\n".format(sys.argv[0]))
-                f.write(code_suffix)
-                f.write("#############\n")
+        compiled_filename = os.path.join(
+            args.compiled_directory,
+            "{:}.py".format(ksy["meta"]["id"])
+        )
+        with open(compiled_filename, "a") as f:
+            if f.tell() == 0:
+                sys.stderr.write("WARNING: Couldn't find compiled source '{:}'\n".format(compiled_filename))
+                continue
+            f.write("\n#############\n")
+            f.write("# PATCHED BY {:}\n".format(sys.argv[0]))
+            f.write(code_suffix)
+            f.write("#############\n")

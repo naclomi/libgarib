@@ -118,3 +118,49 @@ class GloverTexbank(KaitaiStruct):
 
 
 
+
+#############
+# PATCHED BY ./tools/ksy-patcher.py
+
+original_names = {
+    'GloverTexbank.Texture': 'glover_texbank.texture',
+}
+private_fields = {
+}
+
+import sys
+import importlib
+
+_module_cache = {}
+_cls_cache = {}
+@classmethod
+def getConstructType(cls):
+    global _module_cache
+    global _cls_cache
+    if cls.__qualname__ not in _cls_cache:
+        if __name__ not in _module_cache:
+            module_tokens = __name__.split(".")
+            package_name = ".".join(module_tokens[:-1])
+            module_name = module_tokens[-1]
+            _module_cache[__name__] = importlib.import_module(".construct.{:}".format(module_name), package_name)
+        construct_mod = _module_cache[__name__]
+        type_name = cls.getOriginalName().replace(".", "__")
+        _cls_cache[cls.__qualname__] = getattr(construct_mod, type_name)
+    return _cls_cache[cls.__qualname__]
+KaitaiStruct.getConstructType = getConstructType
+
+@classmethod
+def getOriginalName(cls):
+    original_names = sys.modules[cls.__module__].original_names
+    return original_names[cls.__qualname__]
+KaitaiStruct.getOriginalName = getOriginalName
+
+@classmethod
+def getPrivate(cls, field_name, default=None):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        return default
+    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+KaitaiStruct.getPrivate = getPrivate
+#############
