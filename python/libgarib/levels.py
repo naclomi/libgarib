@@ -5,6 +5,10 @@ import xml.etree.cElementTree as ET
 import kaitaistruct
 
 from .parsers.glover_level import GloverLevel
+from ._version import __version__
+
+def xmlToLandscape(root):
+    print(root)
 
 HEX_CUTOFF = 10000
 def kaitaiSubElement(node, obj, skip=None, extra=None):
@@ -39,7 +43,8 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
 
 def landscapeToXML(landscape):
     root = ET.Element("Level", attrib={
-        "name": landscape.name.rstrip('\x00')
+        "name": landscape.name.rstrip('\x00'),
+        "libgarib-version": __version__
     })
     
     cursors = {

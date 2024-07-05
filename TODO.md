@@ -54,7 +54,6 @@
 # level-tool
 
 ## disassemble
-- Embed version info into output
 
 ## assemble
 
