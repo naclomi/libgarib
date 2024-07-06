@@ -9,7 +9,7 @@ import yaml
 import _prefer_local_implementation
 import libgarib
 from libgarib.parsers.glover_level import GloverLevel
-from libgarib.levels import landscapeToXML
+from libgarib.levels import landscapeToXML, level_dtd_path
 from libgarib.ksy import levelKsyToDtd
 
 def assemble(args):
@@ -38,8 +38,7 @@ def disassemble(args):
         else:
             output_handle = sys.stdout
 
-
-        doctype = "<!DOCTYPE level SYSTEM \"level.dtd\">"
+        doctype = "<!DOCTYPE level SYSTEM \"glover.lev.dtd\">"
 
         tree.write(output_handle, encoding='utf-8', xml_declaration=True, doctype=doctype)
 
@@ -49,8 +48,11 @@ def disassemble(args):
             output_handle.close()
 
 def validate(args):
-    pass
-
+    dtd = ET.DTD(file=level_dtd_path)
+    tree = ET.parse(args.xml_file)
+    if not dtd.validate(tree.getroot()):
+        print(dtd.error_log.filter_from_errors())
+        sys.exit(1)
 
 def schema(args):
     with open(args.ksy_file, "r") as f:
@@ -83,8 +85,8 @@ if __name__ == "__main__":
     validate_parser = subparsers.add_parser(
         'validate', help='Validate integrity and design rules of XML level data')
     validate_parser.add_argument(
-        "level_or_xml_file", type=str,
-        help="Glover level, either in binary format or XML")
+        "xml_file", type=str,
+        help="Glover level in XML format")
 
     schema_parser = subparsers.add_parser(
         'xml-dtd', help='Extract XML DTD for level data from Kaitai level format')
@@ -101,3 +103,4 @@ if __name__ == "__main__":
         schema(args)
     elif args.command == "validate":
         validate(args)
+    sys.exit(0)

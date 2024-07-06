@@ -1,14 +1,19 @@
 import base64
 import enum
-from lxml import etree as ET
+import os
 
+from lxml import etree as ET
 import kaitaistruct
 
+from . import parsers as parsers 
 from .parsers.glover_level import GloverLevel
 from ._version import __version__
 
+level_dtd_path = os.path.join(os.path.dirname(parsers.__file__), "glover.lev.dtd")
+
 def xmlToLandscape(root):
-    print(root)
+    # TODO
+    ...
 
 HEX_CUTOFF = 10000
 def kaitaiToAttribs(obj, skip=None):

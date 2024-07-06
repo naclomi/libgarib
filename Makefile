@@ -15,12 +15,14 @@ parsers:
 		formats/glover.texbank.ksy
 
 	./python/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
-	./tools/level-tool.py xml-dtd formats/glover.lev.ksy > formats/glover.lev.dtd
 
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct
 	mv build_artifacts/javascript/* js/parsers
 	mv build_artifacts/typescript/* js/parsers
+
+	./tools/level-tool.py xml-dtd formats/glover.lev.ksy > formats/glover.lev.dtd
+	cp formats/glover.lev.dtd python/libgarib/parsers
 
 	rm -rf build_artifacts
 
