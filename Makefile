@@ -15,6 +15,7 @@ parsers:
 		formats/glover.texbank.ksy
 
 	./python/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
+	./tools/level-tool.py xml-dtd formats/glover.lev.ksy > formats/glover.lev.dtd
 
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct
@@ -32,5 +33,6 @@ fla2:
 clean:
 	rm -rf python/libgarib/parsers/*
 	rm -rf js/parsers/*
+	rm formats/glover.lev.dtd
 	rm c/fla2-compress
 	rm python/libgarib/cppcore/fla2$(shell python3-config --extension-suffix)

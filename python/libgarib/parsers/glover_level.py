@@ -4129,6 +4129,7 @@ original_names = {
     'GloverLevel.Unknown': 'glover_level.unknown',
 }
 private_fields = {
+    'GloverLevel.Cmd': {'semantic': {'polymorphic-wrapper-of': 'params'}},
     'GloverLevel.Actor0xbf': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.AnimatedBackgroundActor': {'semantic': {'declares': 'ANIMATED_BG_ACTOR'}},
     'GloverLevel.BackgroundActor': {'semantic': {'declares': 'BG_ACTOR'}},
@@ -4136,14 +4137,14 @@ private_fields = {
     'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
-    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO'}},
+    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO', 'polymorphic-wrapper-of': 'body'}},
     'GloverLevel.Puzzle': {'semantic': {'declares': 'PUZZLE'}},
     'GloverLevel.PuzzleAnd': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.PuzzleOr': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.PuzzleNumtimes': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.PuzzleAny': {'semantic': {'modifies': 'PUZZLE'}},
-    'GloverLevel.PuzzleCond': {'semantic': {'modifies': 'PUZZLE'}},
-    'GloverLevel.PuzzleAction': {'semantic': {'modifies': 'PUZZLE'}},
+    'GloverLevel.PuzzleCond': {'semantic': {'modifies': 'PUZZLE', 'polymorphic-wrapper-of': 'body'}},
+    'GloverLevel.PuzzleAction': {'semantic': {'modifies': 'PUZZLE', 'polymorphic-wrapper-of': 'body'}},
     'GloverLevel.GaribGroup': {'semantic': {'declares': 'GARIB_GROUP'}},
     'GloverLevel.Garib': {'semantic': {'modifies': 'GARIB_GROUP'}},
     'GloverLevel.PlatMvspn0x58': {'semantic': {'modifies': 'PLATFORM'}},
@@ -4223,6 +4224,7 @@ private_fields = {
     'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY'}},
+    'GloverLevel.EnemyInstruction': {'semantic': {'polymorphic-wrapper-of': 'params'}},
 }
 
 import sys

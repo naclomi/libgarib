@@ -1,6 +1,6 @@
 import base64
 import enum
-import xml.etree.cElementTree as ET
+from lxml import etree as ET
 
 import kaitaistruct
 
@@ -11,9 +11,7 @@ def xmlToLandscape(root):
     print(root)
 
 HEX_CUTOFF = 10000
-def kaitaiSubElement(node, obj, skip=None, extra=None):
-    tag_name = type(obj).__name__.split(".")[-1]
-
+def kaitaiToAttribs(obj, skip=None):
     attribs = {}
     for attr_idx, attr_name in enumerate(obj.SEQ_FIELDS):
         if skip is not None and attr_name in skip:
@@ -35,9 +33,14 @@ def kaitaiSubElement(node, obj, skip=None, extra=None):
         else:
             raise Exception("Can't disassemble attribute {:}.{:} (type {:})".format(tag_name, attr_name, type(raw_attr_val)))
         attribs[attr_name] = attr_val
+    return attribs
+
+
+def kaitaiSubElement(node, obj, skip=None, extra=None):
+    tag_name = type(obj).__name__.split(".")[-1]
+    attribs = kaitaiToAttribs(obj, skip)
     if extra is not None:
         attribs.update(extra)
-
     return ET.SubElement(node, tag_name, attrib=attribs)
 
 
@@ -78,12 +81,8 @@ def landscapeToXML(landscape):
                 active_type = None
                 continue
 
-        if type(cmd_body) is GloverLevel.PuzzleCond:
-            new_node = kaitaiSubElement(parent_node, cmd_body.body)
-        elif type(cmd_body) is GloverLevel.PuzzleAction:
-            new_node = kaitaiSubElement(parent_node, cmd_body.body)
-        elif type(cmd_body) is GloverLevel.CameoInst:
-            kaitaiSubElement(parent_node, cmd_body.body)
+        if "polymorphic-wrapper-of" in semantic:
+            new_node = kaitaiSubElement(parent_node, getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
         elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
                                 GloverLevel.EnemyConditionalInstruction: "conditional",
                                 GloverLevel.EnemyAttackInstruction: "attack"}.get(

@@ -2,6 +2,7 @@ capstone
 construct
 jmespath
 kaitaistruct
+lxml
 numpy
 pillow
 pygltflib

@@ -6,15 +6,7 @@ import sys
 
 import yaml
 
-
-def to_upper_camel(string):
-    path_components = str(string).split(".")
-    final_path = []
-    for component in path_components:
-        words = re.split(r"[\s_\-]+", component)
-        final_path.append("".join(word.capitalize() for word in words))
-    return ".".join(final_path)
-
+from libgarib.ksy import to_upper_camel
 
 def crawlYaml(node, path, dict_callback=None, list_callback=None, scalar_callback=None):
     if type(node) is dict:

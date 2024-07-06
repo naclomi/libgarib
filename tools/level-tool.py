@@ -2,16 +2,21 @@
 import argparse
 import os
 import sys
-import xml.etree.cElementTree as ET
+from lxml import etree as ET
 
 import yaml
 
 import _prefer_local_implementation
+import libgarib
 from libgarib.parsers.glover_level import GloverLevel
 from libgarib.levels import landscapeToXML
+from libgarib.ksy import levelKsyToDtd
 
 def assemble(args):
-    pass
+    for xml_filename in args.level_xml_file:
+        tree = ET.parse(xml_filename)
+        root = tree.getroot()
+        breakpoint()
 
 
 def disassemble(args):
@@ -29,11 +34,14 @@ def disassemble(args):
 
         if args.output_dir is not None:
             xml_filename = os.path.basename(level_filename) + ".xml"
-            output_handle = open(os.path.join(args.output_dir, xml_filename), "w")
+            output_handle = open(os.path.join(args.output_dir, xml_filename), "wb")
         else:
             output_handle = sys.stdout
 
-        tree.write(output_handle, encoding='unicode', xml_declaration=True)
+
+        doctype = "<!DOCTYPE level SYSTEM \"level.dtd\">"
+
+        tree.write(output_handle, encoding='utf-8', xml_declaration=True, doctype=doctype)
 
         if output_handle is sys.stdout:
             output_handle.write("\n\n")
@@ -47,9 +55,7 @@ def validate(args):
 def schema(args):
     with open(args.ksy_file, "r") as f:
         ksy = yaml.safe_load(f)
-        for type_name, type_def in ksy["types"].items():
-            print(type_name)
-
+    print(levelKsyToDtd(ksy, args.ksy_file))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -75,13 +81,13 @@ if __name__ == "__main__":
         help="Directory to output XML level data (or print to stdout if omitted)")
 
     validate_parser = subparsers.add_parser(
-        'validate', help='Validate integrity and design rules of a level')
+        'validate', help='Validate integrity and design rules of XML level data')
     validate_parser.add_argument(
         "level_or_xml_file", type=str,
         help="Glover level, either in binary format or XML")
 
     schema_parser = subparsers.add_parser(
-        'xml-schema', help='Extract XML schema for level data from Kaitai level format')
+        'xml-dtd', help='Extract XML DTD for level data from Kaitai level format')
     schema_parser.add_argument(
         "ksy_file", type=str,
         help="Kaitai structure definition of Glover level format")
@@ -91,7 +97,7 @@ if __name__ == "__main__":
         assemble(args)
     elif args.command == "disassemble":
         disassemble(args)
-    elif args.command == "xml-schema":
+    elif args.command == "xml-dtd":
         schema(args)
     elif args.command == "validate":
         validate(args)
