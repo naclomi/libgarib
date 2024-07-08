@@ -1,4 +1,5 @@
 import re
+import warnings
 
 from ._version import __version__
 
@@ -16,6 +17,29 @@ def seq_by_id(seq, key):
             return elem
     else:
         raise KeyError(key)
+
+def ksy_scrape_type_codes(ksy):
+    codes = {}
+    for type_name, type_def in ksy["types"].items():
+        polymorphic = type_def.get("-semantic", {}).get("polymorphic-wrapper-of", None)
+        if polymorphic is None:
+            continue
+        switch_node = seq_by_id(type_def["seq"], polymorphic)
+        switch_on = switch_node["type"]["switch-on"]
+        cases = switch_node["type"]["cases"]
+        inverse = {}
+        for k, v in cases.items():
+            if v in inverse:
+                # TODO: make this fatal once the level KSY has
+                #       stabilized:
+                warnings.warn("Ambiguous type {:}".format(type_name))
+                if not isinstance(inverse[v], list):
+                    inverse[v] = [inverse[v]]
+                inverse[v].append(k)
+            else:
+                inverse[v] = k
+        codes[type_name] = (switch_on, cases, inverse)
+    return codes
 
 def levelKsyToDtd(ksy, ksy_filename):
     indent = "   "

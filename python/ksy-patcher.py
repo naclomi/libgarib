@@ -6,7 +6,7 @@ import sys
 
 import yaml
 
-from libgarib.ksy import to_upper_camel
+from libgarib.ksy import to_upper_camel, ksy_scrape_type_codes
 
 def crawlYaml(node, path, dict_callback=None, list_callback=None, scalar_callback=None):
     if type(node) is dict:
@@ -68,10 +68,39 @@ if __name__ == "__main__":
         #       include sequences members
         with open(ksy_filename, "r") as f:
             ksy = yaml.safe_load(f)
-            fields = scrapePrivateFields(ksy["types"], ksy["meta"]["id"])
-            names = scrapeNames(ksy["types"], ksy["meta"]["id"])
+
+        fields = scrapePrivateFields(ksy["types"], ksy["meta"]["id"])
+        names = scrapeNames(ksy["types"], ksy["meta"]["id"])
+        type_codes = ksy_scrape_type_codes(ksy)
 
         code_suffix = "\n"
+
+
+        code_suffix += "type_fields = {\n"
+        for k, v in type_codes.items():
+            code_suffix += "    '{:}': '{:}',\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), v[0])
+        code_suffix += "}\n"
+
+        code_suffix += "type_codes = {\n"
+        for k, v in type_codes.items():
+            code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), )
+            for case, val in v[1].items():
+                if case == "_":
+                    case = None
+                code_suffix += "        {:}: {:},\n".format(case, to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val))
+            code_suffix += "    },\n"
+        code_suffix += "}\n"
+
+        code_suffix += "inverse_type_codes = {\n"
+        for k, v in type_codes.items():
+            code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), )
+            for val, case in v[2].items():
+                if case == "_":
+                    case = None
+                code_suffix += "        {:}: {:},\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val), case)
+            code_suffix += "    },\n"
+        code_suffix += "}\n"
+
 
         code_suffix += "original_names = {\n"
         for k, v in names.items():
@@ -119,6 +148,30 @@ def getPrivate(cls, field_name, default=None):
         return default
     return private_fields.get(cls.__qualname__, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getTypeField(cls):
+    type_fields = sys.modules[cls.__module__].type_fields
+    return type_fields[cls.__qualname__]
+KaitaiStruct.getTypeField = getTypeField
+
+@classmethod
+def typeCodeToValue(cls, code):
+    all_type_codes = sys.modules[cls.__module__].type_codes
+    type_codes = all_type_codes[cls.__qualname__]
+    val = type_codes.get(code, None)
+    if val is None:
+        val = type_codes[None]
+    return val
+KaitaiStruct.typeCodeToValue = typeCodeToValue
+
+@classmethod
+def typeValueToCode(cls, val):
+    all_type_values = sys.modules[cls.__module__].inverse_type_codes
+    type_values = all_type_values[cls.__qualname__]
+    return type_values[val]
+KaitaiStruct.typeValueToCode = typeValueToCode
+
 """
 
         compiled_filename = os.path.join(

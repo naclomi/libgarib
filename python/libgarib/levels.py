@@ -5,6 +5,7 @@ import os
 from lxml import etree as ET
 import kaitaistruct
 
+from . import ksy
 from . import parsers as parsers 
 from .parsers.glover_level import GloverLevel
 from ._version import __version__
@@ -88,6 +89,8 @@ def landscapeToXML(landscape):
 
         if "polymorphic-wrapper-of" in semantic:
             new_node = kaitaiSubElement(parent_node, getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
+            new_node.attrib['_type'] = str(getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
+
         elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
                                 GloverLevel.EnemyConditionalInstruction: "conditional",
                                 GloverLevel.EnemyAttackInstruction: "attack"}.get(

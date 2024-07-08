@@ -154,7 +154,7 @@
    Unknown
 )*)>
    <!ATTLIST Level name CDATA #REQUIRED>
-   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+gb59e895">
+   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+g51edbb7">
 
 <!ELEMENT UnknownSound0xbd EMPTY>
    <!ATTLIST UnknownSound0xbd h_0x00 CDATA #REQUIRED>
@@ -324,14 +324,14 @@
    <!ATTLIST Backdrop decal_parent_idx CDATA #REQUIRED>
 
 <!ELEMENT Cameo (
-   CameoInst5 | 
+   CameoInst2 | 
+   CameoInst1 | 
+   CameoInst0 | 
+   CameoInstDefault | 
+   CameoInst6 | 
    CameoInst3 | 
    CameoInst4 | 
-   CameoInst6 | 
-   CameoInst2 | 
-   CameoInstDefault | 
-   CameoInst0 | 
-   CameoInst1
+   CameoInst5
 )*>
 
 <!ELEMENT CameoInst0 EMPTY>
@@ -392,21 +392,21 @@
    PuzzleOr | 
    PuzzleNumtimes | 
    PuzzleAny | 
-   PuzzleCondE | 
-   PuzzleCondC | 
-   PuzzleCondA | 
-   PuzzleCondB | 
    PuzzleCondD | 
-   PuzzleAction0x54 | 
-   PuzzleAction0x56 | 
-   PuzzleAction0x490x4d | 
-   PuzzleAction0x4a | 
-   PuzzleAction0x4b0x4c | 
+   PuzzleCondA | 
+   PuzzleCondC | 
+   PuzzleCondE | 
+   PuzzleCondB | 
    PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40 | 
-   PuzzleAction0x55 | 
-   PuzzleAction0x4f | 
    PuzzleActionDefault | 
-   PuzzleAction0x460x470x48
+   PuzzleAction0x4f | 
+   PuzzleAction0x4a | 
+   PuzzleAction0x55 | 
+   PuzzleAction0x56 | 
+   PuzzleAction0x460x470x48 | 
+   PuzzleAction0x490x4d | 
+   PuzzleAction0x4b0x4c | 
+   PuzzleAction0x54
 )*>
 
 <!ELEMENT PuzzleAnd EMPTY>

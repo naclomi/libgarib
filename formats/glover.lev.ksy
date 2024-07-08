@@ -686,6 +686,9 @@ types:
         type: u2
 
   puzzle_cond: # 0x95
+    # TODO: identify what each of the condition types are
+    #       (at least to a rough approximation)
+    #       see function in RAM at 0x8018ff50
     -semantic:
       modifies: PUZZLE
       polymorphic-wrapper-of: body
@@ -780,6 +783,9 @@ types:
         type: u4
 
   puzzle_action: # 0x96
+    # TODO: identify what each of the action types are
+    #       (at least to a rough approximation)
+    #       see function in RAM at 0x8018e7f4
     -semantic:
       modifies: PUZZLE
       polymorphic-wrapper-of: body

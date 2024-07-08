@@ -122,6 +122,12 @@ class GloverTexbank(KaitaiStruct):
 #############
 # PATCHED BY ./python/ksy-patcher.py
 
+type_fields = {
+}
+type_codes = {
+}
+inverse_type_codes = {
+}
 original_names = {
     'GloverTexbank.Texture': 'glover_texbank.texture',
 }
@@ -163,4 +169,28 @@ def getPrivate(cls, field_name, default=None):
         return default
     return private_fields.get(cls.__qualname__, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getTypeField(cls):
+    type_fields = sys.modules[cls.__module__].type_fields
+    return type_fields[cls.__qualname__]
+KaitaiStruct.getTypeField = getTypeField
+
+@classmethod
+def typeCodeToValue(cls, code):
+    all_type_codes = sys.modules[cls.__module__].type_codes
+    type_codes = all_type_codes[cls.__qualname__]
+    val = type_codes.get(code, None)
+    if val is None:
+        val = type_codes[None]
+    return val
+KaitaiStruct.typeCodeToValue = typeCodeToValue
+
+@classmethod
+def typeValueToCode(cls, val):
+    all_type_values = sys.modules[cls.__module__].inverse_type_codes
+    type_values = all_type_values[cls.__qualname__]
+    return type_values[val]
+KaitaiStruct.typeValueToCode = typeValueToCode
+
 #############

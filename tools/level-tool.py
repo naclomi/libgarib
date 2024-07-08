@@ -12,12 +12,36 @@ from libgarib.parsers.glover_level import GloverLevel
 from libgarib.levels import landscapeToXML, level_dtd_path
 from libgarib.ksy import levelKsyToDtd
 
+
+from libgarib.parsers.construct import glover_level as level_writer
 def assemble(args):
+    dtd = ET.DTD(file=level_dtd_path)
+    errors_occurred = False
     for xml_filename in args.level_xml_file:
         tree = ET.parse(xml_filename)
-        root = tree.getroot()
-        breakpoint()
+        if not dtd.validate(tree.getroot()):
+            errors_occurred = True
+            print(dtd.error_log.filter_from_errors())
+            continue
 
+        root = tree.getroot()
+        level_name = root.attrib["name"]
+        for cmd in root:
+            ksy_type = getattr(GloverLevel, cmd.tag)
+            construct_type = ksy_type.getConstructType()
+            raw_attrib = {}
+            # for attrib in cmd.attrib:
+            #     # TODO                
+            raw_params = construct_type.build(raw_attrib)
+            raw_cmd = level_writer.glover_level__cmd.build({
+                "params": raw_params
+            })
+            print(cmd, raw_cmd)
+        # breakpoint()
+
+
+    if errors_occurred:
+        sys.exit(1)
 
 def disassemble(args):
     if args.output_dir is not None:
