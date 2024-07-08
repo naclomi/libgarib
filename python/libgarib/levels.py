@@ -89,7 +89,9 @@ def landscapeToXML(landscape):
 
         if "polymorphic-wrapper-of" in semantic:
             new_node = kaitaiSubElement(parent_node, getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
-            new_node.attrib['_type'] = str(getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
+
+            # TODO: fix this hacky code!! --
+            new_node.attrib['_type'] = str(getattr(cmd_body, cmd_body.getTypeField()))
 
         elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
                                 GloverLevel.EnemyConditionalInstruction: "conditional",
