@@ -193,4 +193,5 @@ def typeValueToCode(cls, val):
     return type_values[val]
 KaitaiStruct.typeValueToCode = typeValueToCode
 
+ksy_hash = '2776e1c28dc8064e0cdce4b74e72e4280b82eea4'
 #############

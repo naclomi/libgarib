@@ -534,6 +534,7 @@ types:
     # Up to 20 per cameo
     -semantic:
       modifies: CAMEO
+      wraps: body
     seq:
       - id: inst_type
         type: u2

@@ -3,6 +3,7 @@ import argparse
 import os
 import re
 import sys
+import hashlib
 
 import yaml
 
@@ -68,6 +69,8 @@ if __name__ == "__main__":
         #       include sequences members
         with open(ksy_filename, "r") as f:
             ksy = yaml.safe_load(f)
+            f.seek(0)
+            ksy_sha1 = hashlib.sha1(f.read().encode("utf-8"))
 
         fields = scrapePrivateFields(ksy["types"], ksy["meta"]["id"])
         names = scrapeNames(ksy["types"], ksy["meta"]["id"])
@@ -173,6 +176,8 @@ def typeValueToCode(cls, val):
 KaitaiStruct.typeValueToCode = typeValueToCode
 
 """
+
+        code_suffix += "ksy_hash = '{:}'\n".format(ksy_sha1.hexdigest())
 
         compiled_filename = os.path.join(
             args.compiled_directory,

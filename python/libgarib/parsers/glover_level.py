@@ -4142,7 +4142,7 @@ private_fields = {
     'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
-    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO'}},
+    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO', 'wraps': 'body'}},
     'GloverLevel.Puzzle': {'semantic': {'declares': 'PUZZLE'}},
     'GloverLevel.PuzzleAnd': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.PuzzleOr': {'semantic': {'modifies': 'PUZZLE'}},
@@ -4290,4 +4290,5 @@ def typeValueToCode(cls, val):
     return type_values[val]
 KaitaiStruct.typeValueToCode = typeValueToCode
 
+ksy_hash = '64aae4f49fd92b23528bfc7a290211b742061b56'
 #############

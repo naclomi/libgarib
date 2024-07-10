@@ -159,7 +159,7 @@
    Unknown
 )*)>
    <!ATTLIST Level name CDATA #REQUIRED>
-   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+ga2ae9fe">
+   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+gddff54e">
 
 <!ELEMENT Cmd EMPTY>
    <!ATTLIST Cmd type_code CDATA #REQUIRED>

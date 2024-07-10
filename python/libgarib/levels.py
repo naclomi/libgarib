@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import enum
 import os
 
@@ -7,7 +8,7 @@ import kaitaistruct
 
 from . import ksy
 from . import parsers as parsers 
-from .parsers.glover_level import GloverLevel
+from .parsers.glover_level import GloverLevel, ksy_hash as glover_level_ksy_hash
 from ._version import __version__
 
 level_dtd_path = os.path.join(os.path.dirname(parsers.__file__), "glover.lev.dtd")
@@ -71,7 +72,8 @@ def kaitaiSubElement(node, obj):
 def landscapeToXML(landscape):
     root = ET.Element("Level", attrib={
         "name": landscape.name.rstrip('\x00'),
-        "libgarib-version": __version__
+        "libgarib-version": __version__,
+        "data-format-version": glover_level_ksy_hash[:7]
     })
     
     cursors = {
