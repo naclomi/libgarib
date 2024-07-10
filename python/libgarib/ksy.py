@@ -91,7 +91,16 @@ def levelKsyToDtd(ksy, ksy_filename):
         for arg_def in type_def["seq"]:
             if isinstance(arg_def.get("type", None), str) and arg_def["type"] not in ksy["types"].keys():
                 ET.SubElement(ET.SubElement(cmd, "attribute", name=arg_def["id"]), "text")
-        # TODO: complex and polymorphic types
+        for arg_def in type_def["seq"]:
+            if isinstance(arg_def.get("type", None), str) and arg_def["type"] in ksy["types"].keys():
+                ET.SubElement(cmd, "ref", name=to_upper_camel(arg_def["type"]))
+            elif isinstance(arg_def.get("type", None), dict) and "switch-on" in arg_def["type"]:
+                cmd_child_choice = ET.SubElement(cmd, "choice")
+                arg_switch = type_codes[type_name][arg_def["id"]]
+                for case in arg_switch[1].items():
+                    case_group = ET.SubElement(cmd_child_choice, "group")
+                    ET.SubElement(ET.SubElement(case_group, "attribute", name=arg_switch[0]), "value").text = str(case[0])
+                    ET.SubElement(case_group, "ref", name=to_upper_camel(case[1]))
         if type_name in valid_children:
             cmd_children_list = ET.SubElement(cmd, "zeroOrMore")
             for child in valid_children[type_name]:
