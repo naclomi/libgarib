@@ -79,31 +79,35 @@ if __name__ == "__main__":
         code_suffix = "\n"
 
 
-        code_suffix += "type_fields = {\n"
-        for k, v in type_codes.items():
-            code_suffix += "    '{:}': '{:}',\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), v[0])
-        code_suffix += "}\n"
-
-        code_suffix += "type_codes = {\n"
-        for k, v in type_codes.items():
-            code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), )
-            for case, val in v[1].items():
-                if case == "_":
-                    case = None
-                code_suffix += "        {:}: {:},\n".format(case, to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val))
+        code_suffix += "types = {\n"
+        for type_name, type_def in type_codes.items():
+            code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(type_name))
+            for attr_name, attr_def in type_def.items():
+                code_suffix += "        '{:}': {{\n".format(attr_name, "foo")
+                code_suffix += "            'field': '{:}',\n".format(attr_def[0])
+                code_suffix += "            'code-to-type': {\n"
+                for code, val in attr_def[1].items():
+                    if code == "_":
+                        case_literal = None
+                    elif isinstance(code, int):
+                        case_literal = hex(code)
+                    else:
+                        case_literal = code
+                    code_suffix += "                {:}: {:},\n".format(case_literal, to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val))
+                code_suffix += "            },\n"
+                code_suffix += "            'type-to-code': {\n"
+                for val, code in attr_def[2].items():
+                    if code == "_":
+                        case_literal = None
+                    elif isinstance(code, int):
+                        case_literal = hex(code)
+                    else:
+                        case_literal = code
+                    code_suffix += "                {:}: {:},\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val), case_literal)
+                code_suffix += "            }\n"
+                code_suffix += "        },\n"
             code_suffix += "    },\n"
         code_suffix += "}\n"
-
-        code_suffix += "inverse_type_codes = {\n"
-        for k, v in type_codes.items():
-            code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(k), )
-            for val, case in v[2].items():
-                if case == "_":
-                    case = None
-                code_suffix += "        {:}: {:},\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(val), case)
-            code_suffix += "    },\n"
-        code_suffix += "}\n"
-
 
         code_suffix += "original_names = {\n"
         for k, v in names.items():
@@ -151,29 +155,6 @@ def getPrivate(cls, field_name, default=None):
         return default
     return private_fields.get(cls.__qualname__, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
-
-@classmethod
-def getTypeField(cls):
-    type_fields = sys.modules[cls.__module__].type_fields
-    return type_fields[cls.__qualname__]
-KaitaiStruct.getTypeField = getTypeField
-
-@classmethod
-def typeCodeToValue(cls, code):
-    all_type_codes = sys.modules[cls.__module__].type_codes
-    type_codes = all_type_codes[cls.__qualname__]
-    val = type_codes.get(code, None)
-    if val is None:
-        val = type_codes[None]
-    return val
-KaitaiStruct.typeCodeToValue = typeCodeToValue
-
-@classmethod
-def typeValueToCode(cls, val):
-    all_type_values = sys.modules[cls.__module__].inverse_type_codes
-    type_values = all_type_values[cls.__qualname__]
-    return type_values[val]
-KaitaiStruct.typeValueToCode = typeValueToCode
 
 """
 

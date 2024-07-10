@@ -122,11 +122,7 @@ class GloverTexbank(KaitaiStruct):
 #############
 # PATCHED BY ./python/ksy-patcher.py
 
-type_fields = {
-}
-type_codes = {
-}
-inverse_type_codes = {
+types = {
 }
 original_names = {
     'GloverTexbank.Texture': 'glover_texbank.texture',

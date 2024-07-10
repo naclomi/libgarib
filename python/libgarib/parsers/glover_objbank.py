@@ -889,11 +889,7 @@ class GloverObjbank(KaitaiStruct):
 #############
 # PATCHED BY ./python/ksy-patcher.py
 
-type_fields = {
-}
-type_codes = {
-}
-inverse_type_codes = {
+types = {
 }
 original_names = {
     'GloverObjbank.DirectoryEntry': 'glover_objbank.directory_entry',
