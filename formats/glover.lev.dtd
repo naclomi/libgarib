@@ -5,6 +5,7 @@
 -->
 
 <!ELEMENT Level ((
+   Cmd |
    UnknownSound0xbd |
    EnvironmentalSound |
    Unknown0xa9 |
@@ -25,6 +26,7 @@
    Water |
    Backdrop |
    Cameo |
+   CameoInst |
    CameoInst0 |
    CameoInst1 |
    CameoInst2 |
@@ -38,11 +40,13 @@
    PuzzleOr |
    PuzzleNumtimes |
    PuzzleAny |
+   PuzzleCond |
    PuzzleCondA |
    PuzzleCondB |
    PuzzleCondC |
    PuzzleCondD |
    PuzzleCondE |
+   PuzzleAction |
    PuzzleAction0x4f |
    PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40 |
    PuzzleActionDefault |
@@ -138,6 +142,7 @@
    EnemyNormalInstruction |
    EnemyConditionalInstruction |
    EnemyAttackInstruction |
+   EnemyInstruction |
    EnemyInstructionA |
    EnemyInstructionDash |
    EnemyInstructionMove |
@@ -154,7 +159,11 @@
    Unknown
 )*)>
    <!ATTLIST Level name CDATA #REQUIRED>
-   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+g51edbb7">
+   <!ATTLIST Level libgarib-version CDATA #FIXED "unknown+ga2ae9fe">
+
+<!ELEMENT Cmd EMPTY>
+   <!ATTLIST Cmd type_code CDATA #REQUIRED>
+   <!ATTLIST Cmd params CDATA #REQUIRED>
 
 <!ELEMENT UnknownSound0xbd EMPTY>
    <!ATTLIST UnknownSound0xbd h_0x00 CDATA #REQUIRED>
@@ -324,15 +333,12 @@
    <!ATTLIST Backdrop decal_parent_idx CDATA #REQUIRED>
 
 <!ELEMENT Cameo (
-   CameoInst2 | 
-   CameoInst1 | 
-   CameoInst0 | 
-   CameoInstDefault | 
-   CameoInst6 | 
-   CameoInst3 | 
-   CameoInst4 | 
-   CameoInst5
+   CameoInst
 )*>
+
+<!ELEMENT CameoInst EMPTY>
+   <!ATTLIST CameoInst inst_type CDATA #REQUIRED>
+   <!ATTLIST CameoInst body CDATA #REQUIRED>
 
 <!ELEMENT CameoInst0 EMPTY>
    <!ATTLIST CameoInst0 h_0x00 CDATA #REQUIRED>
@@ -392,21 +398,8 @@
    PuzzleOr | 
    PuzzleNumtimes | 
    PuzzleAny | 
-   PuzzleCondD | 
-   PuzzleCondA | 
-   PuzzleCondC | 
-   PuzzleCondE | 
-   PuzzleCondB | 
-   PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40 | 
-   PuzzleActionDefault | 
-   PuzzleAction0x4f | 
-   PuzzleAction0x4a | 
-   PuzzleAction0x55 | 
-   PuzzleAction0x56 | 
-   PuzzleAction0x460x470x48 | 
-   PuzzleAction0x490x4d | 
-   PuzzleAction0x4b0x4c | 
-   PuzzleAction0x54
+   PuzzleCond | 
+   PuzzleAction
 )*>
 
 <!ELEMENT PuzzleAnd EMPTY>
@@ -418,6 +411,10 @@
 
 <!ELEMENT PuzzleAny EMPTY>
    <!ATTLIST PuzzleAny op CDATA #REQUIRED>
+
+<!ELEMENT PuzzleCond EMPTY>
+   <!ATTLIST PuzzleCond cond_type CDATA #REQUIRED>
+   <!ATTLIST PuzzleCond body CDATA #REQUIRED>
 
 <!ELEMENT PuzzleCondA EMPTY>
    <!ATTLIST PuzzleCondA u32_0x24 CDATA #REQUIRED>
@@ -452,6 +449,10 @@
    <!ATTLIST PuzzleCondE i_0x08 CDATA #REQUIRED>
    <!ATTLIST PuzzleCondE i_0x0c CDATA #REQUIRED>
    <!ATTLIST PuzzleCondE i_0x10 CDATA #REQUIRED>
+
+<!ELEMENT PuzzleAction EMPTY>
+   <!ATTLIST PuzzleAction action_type CDATA #REQUIRED>
+   <!ATTLIST PuzzleAction body CDATA #REQUIRED>
 
 <!ELEMENT PuzzleAction0x4f EMPTY>
    <!ATTLIST PuzzleAction0x4f u32_0x14 CDATA #REQUIRED>
@@ -1112,6 +1113,15 @@
 
 <!ELEMENT EnemyAttackInstruction EMPTY>
    <!ATTLIST EnemyAttackInstruction instr CDATA #REQUIRED>
+
+<!ELEMENT EnemyInstruction EMPTY>
+   <!ATTLIST EnemyInstruction instr_type CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction lifetime CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction params CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction execution_condition_param_a CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction execution_condition_param_b CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction flags CDATA #REQUIRED>
+   <!ATTLIST EnemyInstruction execution_condition CDATA #REQUIRED>
 
 <!ELEMENT EnemyInstructionA EMPTY>
    <!ATTLIST EnemyInstructionA u32_0x02 CDATA #REQUIRED>

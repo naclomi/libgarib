@@ -17,11 +17,9 @@ def xmlToLandscape(root):
     ...
 
 HEX_CUTOFF = 10000
-def kaitaiToAttribs(obj, skip=None):
+def kaitaiToAttribs(obj):
     attribs = {}
     for attr_idx, attr_name in enumerate(obj.SEQ_FIELDS):
-        if skip is not None and attr_name in skip:
-            continue
         construct_type = obj.getConstructType()
         attr_val = None
         raw_attr_val = getattr(obj, attr_name)
@@ -37,17 +35,37 @@ def kaitaiToAttribs(obj, skip=None):
         elif type(raw_attr_val) in (int, float):
             attr_val = str(raw_attr_val)
         else:
-            raise Exception("Can't disassemble attribute {:}.{:} (type {:})".format(tag_name, attr_name, type(raw_attr_val)))
+            raise Exception("Can't disassemble attribute {:} (type {:})".format(attr_name, type(raw_attr_val)))
         attribs[attr_name] = attr_val
     return attribs
 
 
-def kaitaiSubElement(node, obj, skip=None, extra=None):
+def kaitaiSubElement(node, obj):
     tag_name = type(obj).__name__.split(".")[-1]
-    attribs = kaitaiToAttribs(obj, skip)
-    if extra is not None:
-        attribs.update(extra)
-    return ET.SubElement(node, tag_name, attrib=attribs)
+    attribs = {}
+    children = {}
+    for attr_idx, attr_name in enumerate(obj.SEQ_FIELDS):
+        construct_type = obj.getConstructType()
+        raw_attr_val = getattr(obj, attr_name)
+        if isinstance(raw_attr_val, str):
+            attribs[attr_name] = raw_attr_val.rstrip('\x00')
+        elif isinstance(raw_attr_val, int) and raw_attr_val > HEX_CUTOFF:
+            num_hex_digits = construct_type.subcons[attr_idx].sizeof() * 2
+            attribs[attr_name] = "0x{:0{:}X}".format(raw_attr_val, num_hex_digits)
+        elif isinstance(raw_attr_val, enum.Enum):
+            attribs[attr_name] = raw_attr_val._name_
+        elif isinstance(raw_attr_val, bytes):
+            attribs[attr_name] = base64.b64encode(raw_attr_val).decode("utf8")
+        elif type(raw_attr_val) in (int, float):
+            attribs[attr_name] = str(raw_attr_val)
+        elif isinstance(raw_attr_val, kaitaistruct.KaitaiStruct):
+            children[attr_name] = raw_attr_val
+        else:
+            raise Exception("Can't disassemble attribute {:} (type {:})".format(attr_name, type(raw_attr_val)))
+    new_node = ET.SubElement(node, tag_name, attrib=attribs)
+    for child_name, child_val in children.items():
+        child_node = kaitaiSubElement(new_node, child_val)
+    return new_node
 
 
 def landscapeToXML(landscape):
@@ -60,6 +78,7 @@ def landscapeToXML(landscape):
         "root": root
     }
     active_type = None
+    active_group = None
     for raw_cmd in landscape.body:
         cmd_body = raw_cmd.params
         semantic = cmd_body.getPrivate("semantic", {})
@@ -87,20 +106,17 @@ def landscapeToXML(landscape):
                 active_type = None
                 continue
 
-        if "polymorphic-wrapper-of" in semantic:
-            new_node = kaitaiSubElement(parent_node, getattr(cmd_body, semantic["polymorphic-wrapper-of"]))
+        if "groups-into" in semantic:
+            group = semantic["groups-into"]
+            if len(parent_node) == 0 or parent_node[-1].tag != group:
+                ET.SubElement(parent_node, group)
+            parent_node = parent_node[-1]
 
-            # TODO: fix this hacky code!! --
-            new_node.attrib['_type'] = str(getattr(cmd_body, cmd_body.getTypeField()))
+        if "wraps" in semantic:
+            cmd_body = getattr(cmd_body, semantic["wraps"])
 
-        elif (instr_context := {GloverLevel.EnemyNormalInstruction: "normal",
-                                GloverLevel.EnemyConditionalInstruction: "conditional",
-                                GloverLevel.EnemyAttackInstruction: "attack"}.get(
-                                    type(cmd_body), None)):
-            new_node = kaitaiSubElement(parent_node, cmd_body.instr, skip=["params"], extra={"context": instr_context})
-            kaitaiSubElement(new_node, cmd_body.instr.params)
-        else:
-            new_node = kaitaiSubElement(parent_node, cmd_body)
+        new_node = kaitaiSubElement(parent_node, cmd_body)
+
 
         if "declares" in semantic:
             cursors[semantic["declares"]] = new_node

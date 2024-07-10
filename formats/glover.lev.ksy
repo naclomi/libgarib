@@ -14,8 +14,6 @@ seq:
     type: cmd
 types:
   cmd:
-    -semantic:
-      polymorphic-wrapper-of: params
     seq:
       - id: type_code
         type: u2
@@ -536,7 +534,6 @@ types:
     # Up to 20 per cameo
     -semantic:
       modifies: CAMEO
-      polymorphic-wrapper-of: body
     seq:
       - id: inst_type
         type: u2
@@ -691,7 +688,6 @@ types:
     #       see function in RAM at 0x8018ff50
     -semantic:
       modifies: PUZZLE
-      polymorphic-wrapper-of: body
     seq:
       - id: cond_type
         type: u2
@@ -788,7 +784,6 @@ types:
     #       see function in RAM at 0x8018e7f4
     -semantic:
       modifies: PUZZLE
-      polymorphic-wrapper-of: body
     seq:
       - id: action_type
         type: u2
@@ -2126,6 +2121,8 @@ types:
   enemy_normal_instruction: # 0x9a
     -semantic:
       modifies: ENEMY
+      groups-into: NormalInstructions
+      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction
@@ -2133,6 +2130,8 @@ types:
   enemy_conditional_instruction: # 0x9b
     -semantic:
       modifies: ENEMY
+      groups-into: ConditionalInstructions
+      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction
@@ -2140,14 +2139,14 @@ types:
   enemy_attack_instruction: # 0x9c
     -semantic:
       modifies: ENEMY
+      groups-into: AttackInstructions
+      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction
 
 
   enemy_instruction:
-    -semantic:
-      polymorphic-wrapper-of: params
     seq:
       - id: instr_type
         type: u2
