@@ -11,7 +11,7 @@ from . import parsers as parsers
 from .parsers.glover_level import GloverLevel, ksy_hash as glover_level_ksy_hash
 from ._version import __version__
 
-level_dtd_path = os.path.join(os.path.dirname(parsers.__file__), "glover.lev.dtd")
+level_schema_path = os.path.join(os.path.dirname(parsers.__file__), "glover.lev.rng")
 
 def xmlToLandscape(root):
     # TODO
@@ -65,7 +65,7 @@ def kaitaiSubElement(node, obj):
             raise Exception("Can't disassemble attribute {:} (type {:})".format(attr_name, type(raw_attr_val)))
     new_node = ET.SubElement(node, tag_name, attrib=attribs)
     for child_name, child_val in children.items():
-        child_node = kaitaiSubElement(new_node, child_val)
+        kaitaiSubElement(new_node, child_val)
     return new_node
 
 
@@ -80,7 +80,6 @@ def landscapeToXML(landscape):
         "root": root
     }
     active_type = None
-    active_group = None
     for raw_cmd in landscape.body:
         cmd_body = raw_cmd.params
         semantic = cmd_body.getPrivate("semantic", {})
@@ -118,7 +117,6 @@ def landscapeToXML(landscape):
             cmd_body = getattr(cmd_body, semantic["wraps"])
 
         new_node = kaitaiSubElement(parent_node, cmd_body)
-
 
         if "declares" in semantic:
             cursors[semantic["declares"]] = new_node

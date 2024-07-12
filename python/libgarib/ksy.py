@@ -81,7 +81,7 @@ def ksy_scrape_groupables(ksy):
     return groupables
 
 
-def levelKsyToDtd(ksy, ksy_filename):
+def levelKsyToSchema(ksy, ksy_filename):
     type_codes = ksy_scrape_type_codes(ksy)
     valid_children = ksy_scrape_valid_children(ksy)
     top_level_commands = set(type_codes["cmd"]["params"][1].values())

@@ -9,13 +9,13 @@ import yaml
 import _prefer_local_implementation
 import libgarib
 from libgarib.parsers.glover_level import GloverLevel
-from libgarib.levels import landscapeToXML, level_dtd_path
-from libgarib.ksy import levelKsyToDtd
+from libgarib.levels import landscapeToXML, level_schema_path
+from libgarib.ksy import levelKsyToSchema
 
 
 from libgarib.parsers.construct import glover_level as level_writer
 def assemble(args):
-    dtd = ET.DTD(file=level_dtd_path)
+    dtd = ET.DTD(file=level_schema_path)
     errors_occurred = False
     for xml_filename in args.level_xml_file:
         tree = ET.parse(xml_filename)
@@ -62,8 +62,6 @@ def disassemble(args):
         else:
             output_handle = sys.stdout
 
-        doctype = "<!DOCTYPE level SYSTEM \"glover.lev.dtd\">"
-
         tree.write(output_handle, encoding='utf-8', xml_declaration=True, doctype=doctype)
 
         if output_handle is sys.stdout:
@@ -72,7 +70,7 @@ def disassemble(args):
             output_handle.close()
 
 def validate(args):
-    dtd = ET.DTD(file=level_dtd_path)
+    dtd = ET.DTD(file=level_schema_path)
     tree = ET.parse(args.xml_file)
     if not dtd.validate(tree.getroot()):
         print(dtd.error_log.filter_from_errors())
@@ -81,7 +79,7 @@ def validate(args):
 def schema(args):
     with open(args.ksy_file, "r") as f:
         ksy = yaml.safe_load(f)
-    print(levelKsyToDtd(ksy, args.ksy_file))
+    print(levelKsyToSchema(ksy, args.ksy_file))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -113,7 +111,7 @@ if __name__ == "__main__":
         help="Glover level in XML format")
 
     schema_parser = subparsers.add_parser(
-        'xml-dtd', help='Extract XML DTD for level data from Kaitai level format')
+        'xml-schema', help='Extract XML schema for level data from Kaitai level format')
     schema_parser.add_argument(
         "ksy_file", type=str,
         help="Kaitai structure definition of Glover level format")
@@ -123,7 +121,7 @@ if __name__ == "__main__":
         assemble(args)
     elif args.command == "disassemble":
         disassemble(args)
-    elif args.command == "xml-dtd":
+    elif args.command == "xml-schema":
         schema(args)
     elif args.command == "validate":
         validate(args)

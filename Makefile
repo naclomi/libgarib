@@ -21,8 +21,8 @@ parsers:
 	mv build_artifacts/javascript/* js/parsers
 	mv build_artifacts/typescript/* js/parsers
 
-	./tools/level-tool.py xml-dtd formats/glover.lev.ksy > formats/glover.lev.dtd
-	cp formats/glover.lev.dtd python/libgarib/parsers
+	./tools/level-tool.py xml-schema formats/glover.lev.ksy > formats/glover.lev.rng
+	cp formats/glover.lev.rng python/libgarib/parsers
 
 	rm -rf build_artifacts
 
@@ -35,6 +35,6 @@ fla2:
 clean:
 	rm -rf python/libgarib/parsers/*
 	rm -rf js/parsers/*
-	rm formats/glover.lev.dtd
+	rm formats/glover.lev.rng
 	rm c/fla2-compress
 	rm python/libgarib/cppcore/fla2$(shell python3-config --extension-suffix)
