@@ -79,7 +79,7 @@ if __name__ == "__main__":
         code_suffix = "\n"
 
 
-        code_suffix += "types = {\n"
+        code_suffix += "switch_fields = {\n"
         for type_name, type_def in type_codes.items():
             code_suffix += "    '{:}': {{\n".format(to_upper_camel(ksy["meta"]["id"]) + "." + to_upper_camel(type_name))
             for attr_name, attr_def in type_def.items():
@@ -155,6 +155,15 @@ def getPrivate(cls, field_name, default=None):
         return default
     return private_fields.get(cls.__qualname__, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getSwitchCases(cls, field_name):
+    try:
+        switch_fields = sys.modules[cls.__module__].switch_fields
+    except AttributeError:
+        return None
+    return switch_fields.get(cls.__qualname__, {}).get(field_name, None)
+KaitaiStruct.getSwitchCases = getSwitchCases
 
 """
 

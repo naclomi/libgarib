@@ -889,7 +889,7 @@ class GloverObjbank(KaitaiStruct):
 #############
 # PATCHED BY ./python/ksy-patcher.py
 
-types = {
+switch_fields = {
 }
 original_names = {
     'GloverObjbank.DirectoryEntry': 'glover_objbank.directory_entry',
@@ -946,27 +946,13 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
-def getTypeField(cls):
-    type_fields = sys.modules[cls.__module__].type_fields
-    return type_fields[cls.__qualname__]
-KaitaiStruct.getTypeField = getTypeField
-
-@classmethod
-def typeCodeToValue(cls, code):
-    all_type_codes = sys.modules[cls.__module__].type_codes
-    type_codes = all_type_codes[cls.__qualname__]
-    val = type_codes.get(code, None)
-    if val is None:
-        val = type_codes[None]
-    return val
-KaitaiStruct.typeCodeToValue = typeCodeToValue
-
-@classmethod
-def typeValueToCode(cls, val):
-    all_type_values = sys.modules[cls.__module__].inverse_type_codes
-    type_values = all_type_values[cls.__qualname__]
-    return type_values[val]
-KaitaiStruct.typeValueToCode = typeValueToCode
+def getSwitchCases(cls, field_name):
+    try:
+        switch_fields = sys.modules[cls.__module__].switch_fields
+    except AttributeError:
+        return None
+    return switch_fields.get(cls.__qualname__, {}).get(field_name, None)
+KaitaiStruct.getSwitchCases = getSwitchCases
 
 ksy_hash = '4ce3799b76b7f54afa750e74404c0b56bc766012'
 #############
