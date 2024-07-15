@@ -112,9 +112,7 @@ def landscapeToXML(landscape):
             if len(parent_node) == 0 or parent_node[-1].tag != group:
                 ET.SubElement(parent_node, group)
             parent_node = parent_node[-1]
-
-        if "wraps" in semantic:
-            cmd_body = getattr(cmd_body, semantic["wraps"])
+            cmd_body = getattr(cmd_body, cmd_body.SEQ_FIELDS[0])
 
         new_node = kaitaiSubElement(parent_node, cmd_body)
 

@@ -534,7 +534,6 @@ types:
     # Up to 20 per cameo
     -semantic:
       modifies: CAMEO
-      wraps: body
     seq:
       - id: inst_type
         type: u2
@@ -2123,7 +2122,6 @@ types:
     -semantic:
       modifies: ENEMY
       groups-into: normal_instructions
-      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction
@@ -2132,7 +2130,6 @@ types:
     -semantic:
       modifies: ENEMY
       groups-into: conditional_instructions
-      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction
@@ -2141,7 +2138,6 @@ types:
     -semantic:
       modifies: ENEMY
       groups-into: attack_instructions
-      wraps: instr
     seq:
       - id: instr
         type: enemy_instruction

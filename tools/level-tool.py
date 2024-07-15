@@ -53,7 +53,7 @@ def prepareConstructDict(xml_node, xml_iter):
 
     for subcon in construct_type.subcons:
         if (subcon.name not in xml_node.attrib and
-            subcon.name not in switch_fields):
+                subcon.name not in switch_fields):
             # Order of XML node's child tags is implicitly the order
             # they appear in the binary command's format
             next_tag = next(xml_iter)

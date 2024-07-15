@@ -80,7 +80,6 @@ def ksy_scrape_groupables(ksy):
             groupables[type_name] = semantic["groups-into"]
     return groupables
 
-
 def levelKsyToSchema(ksy, ksy_filename):
     type_codes = ksy_scrape_type_codes(ksy)
     valid_children = ksy_scrape_valid_children(ksy)
@@ -98,16 +97,22 @@ def levelKsyToSchema(ksy, ksy_filename):
     ET.SubElement(ET.SubElement(level, "attribute", name="data-format-version"), "text")
     cmd_list = ET.SubElement(level, "interleave")
 
-    for type_name, type_def in ksy["types"].items():
+    def append_reference(xml_parent, ref_type):
+        ET.SubElement(ET.SubElement(xml_parent, "zeroOrMore"), "ref", name=to_upper_camel(ref_type))
+
+    def process_type(type_name, type_def):
+        semantic = type_def.get("-semantic", {})
         if type_name in group_commands:
             group_pattern = ET.SubElement(root, "define", name=to_upper_camel(group_commands[type_name]))
             group_cmd = ET.SubElement(group_pattern, "element", name=to_upper_camel(group_commands[type_name]))
             group_cmd_children_list = ET.SubElement(group_cmd, "interleave")
-            wrap_type = seq_by_id(type_def["seq"], type_def["-semantic"]["wraps"])["type"]
-            ET.SubElement(ET.SubElement(group_cmd_children_list, "zeroOrMore"), "ref", name=to_upper_camel(wrap_type))
-            ET.SubElement(ET.SubElement(cmd_list, "zeroOrMore"), "ref", name=to_upper_camel(group_commands[type_name]))
+            if len(type_def["seq"]) > 1:
+                raise Exception("Non-trivial groupable tag {:}".format(type_name))
+            wrap_type = type_def["seq"][0]
+            append_reference(group_cmd_children_list, wrap_type)
+            append_reference(cmd_list, group_commands[type_name])
         elif type_name == "cmd":
-            continue
+            pass
         else:
             py_type_name = to_upper_camel(type_name)
             pattern = ET.SubElement(root, "define", name=py_type_name)
@@ -123,7 +128,7 @@ def levelKsyToSchema(ksy, ksy_filename):
                 ET.SubElement(ET.SubElement(cmd, "attribute", name=arg_def["id"]), "text")
             for arg_def in type_def["seq"]:
                 if isinstance(arg_def.get("type", None), str) and arg_def["type"] in ksy["types"].keys():
-                    ET.SubElement(cmd, "ref", name=to_upper_camel(arg_def["type"]))
+                    append_reference(cmd, arg_def["type"])
                 elif isinstance(arg_def.get("type", None), dict) and "switch-on" in arg_def["type"]:
                     cmd_child_choice = ET.SubElement(cmd, "choice")
                     arg_switch = type_codes[type_name][arg_def["id"]]
@@ -153,11 +158,15 @@ def levelKsyToSchema(ksy, ksy_filename):
                 for child in valid_children[type_name]:
                     if child in group_commands:
                         child = group_commands[child]
-                    ET.SubElement(ET.SubElement(cmd_children_list, "zeroOrMore"), "ref", name=to_upper_camel(child))
+                    append_reference(cmd_children_list, child)
             if len(cmd) == 0:
                 ET.SubElement(cmd, "empty")
             if type_name in top_level_commands:
-                ET.SubElement(ET.SubElement(cmd_list, "zeroOrMore"), "ref", name=py_type_name)
+                append_reference(cmd_list, type_name)
+
+
+    for ksy_type in ksy["types"].items():
+        process_type(*ksy_type)
 
     tree = ET.ElementTree(root)
     return ET.tostring(tree, pretty_print=True).decode()
