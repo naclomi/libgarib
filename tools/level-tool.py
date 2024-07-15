@@ -16,22 +16,30 @@ from libgarib.ksy import levelKsyToSchema
 from libgarib.parsers.construct import glover_level as level_writer
 def coerce_to_subcon_type(str_value, subcon):
     subcon_cursor = subcon
-    field_size = subcon.sizeof()
     try:
-        while not hasattr(subcon_cursor, "fmtstr"):
+        while not (hasattr(subcon_cursor, "fmtstr") or
+                   hasattr(subcon_cursor, "encmapping")):
             subcon_cursor = subcon_cursor.subcon
         fmtstr = subcon_cursor.fmtstr
     except AttributeError:
-        fmtstr = ">{:}s".format(field_size)
-    datatype = fmtstr[1]
-    if datatype.lower() in "xcbhilqn":
-        cast_value = int(str_value, 0)
-        # TODO: bounds checking based on signedness and size
-    elif datatype in "efd":
-        cast_value = float(str_value)
+        pass
+
+    if hasattr(subcon_cursor, "fmtstr"):
+        datatype = fmtstr[1]
+        if datatype.lower() in "xcbhilqn":
+            cast_value = int(str_value, 0)
+            # TODO: bounds checking based on signedness and size
+        elif datatype in "efd":
+            cast_value = float(str_value)
+        else:
+            raise Exception()
+    elif hasattr(subcon_cursor, "encmapping"):
+        cast_value = subcon_cursor.encmapping[str_value]
     else:
         # TODO: pad/truncate if fixed size string
+        # use field_size = subcon_curson.sizeof()
         cast_value = str_value
+
     return cast_value
 
 def prepareConstructDict(xml_node, xml_iter):
