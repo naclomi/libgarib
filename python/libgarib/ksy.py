@@ -96,15 +96,16 @@ def levelKsyToSchema(ksy, ksy_filename):
     ET.SubElement(ET.SubElement(level, "attribute", name="name"), "text")
     ET.SubElement(ET.SubElement(level, "attribute", name="libgarib-version"), "text")
     ET.SubElement(ET.SubElement(level, "attribute", name="data-format-version"), "text")
-    cmd_list = ET.SubElement(level, "zeroOrMore")
+    cmd_list = ET.SubElement(level, "interleave")
 
     for type_name, type_def in ksy["types"].items():
         if type_name in group_commands:
-            group_pattern = ET.SubElement(root, "define", name=group_commands[type_name])
-            group_cmd = ET.SubElement(group_pattern, "element", name=group_commands[type_name])
-            group_cmd_children_list = ET.SubElement(group_cmd, "zeroOrMore")
-            ET.SubElement(group_cmd_children_list, "ref", name=to_upper_camel(type_def["-semantic"]["wraps"]))
-            ET.SubElement(cmd_list, "ref", name=group_commands[type_name])
+            group_pattern = ET.SubElement(root, "define", name=to_upper_camel(group_commands[type_name]))
+            group_cmd = ET.SubElement(group_pattern, "element", name=to_upper_camel(group_commands[type_name]))
+            group_cmd_children_list = ET.SubElement(group_cmd, "interleave")
+            wrap_type = seq_by_id(type_def["seq"], type_def["-semantic"]["wraps"])["type"]
+            ET.SubElement(ET.SubElement(group_cmd_children_list, "zeroOrMore"), "ref", name=to_upper_camel(wrap_type))
+            ET.SubElement(ET.SubElement(cmd_list, "zeroOrMore"), "ref", name=to_upper_camel(group_commands[type_name]))
         elif type_name == "cmd":
             continue
         else:
@@ -112,8 +113,14 @@ def levelKsyToSchema(ksy, ksy_filename):
             pattern = ET.SubElement(root, "define", name=py_type_name)
             cmd = ET.SubElement(pattern, "element", name=py_type_name)
             for arg_def in type_def["seq"]:
-                if isinstance(arg_def.get("type", None), str) and arg_def["type"] not in ksy["types"].keys():
-                    ET.SubElement(ET.SubElement(cmd, "attribute", name=arg_def["id"]), "text")
+                if not isinstance(arg_def.get("type", None), str):
+                    continue
+                if arg_def["type"] in ksy["types"].keys():
+                    continue
+                if type_name in type_codes:
+                    if any(arg_def["id"] == field[0] for field in type_codes[type_name].values()):
+                        continue
+                ET.SubElement(ET.SubElement(cmd, "attribute", name=arg_def["id"]), "text")
             for arg_def in type_def["seq"]:
                 if isinstance(arg_def.get("type", None), str) and arg_def["type"] in ksy["types"].keys():
                     ET.SubElement(cmd, "ref", name=to_upper_camel(arg_def["type"]))
@@ -136,65 +143,21 @@ def levelKsyToSchema(ksy, ksy_filename):
                             case_pattern= str(case[0]) + "|" + regex_hex
                             case_group.append(ET.Comment("Case 0x{:X}".format(case[0])))
                             ET.SubElement(ET.SubElement(ET.SubElement(case_group, "attribute", name=arg_switch[0]), "data", type="string"), "param", name="pattern").text = case_pattern
-                        ET.SubElement(case_group, "ref", name=to_upper_camel(case[1]))
+                        if case[1] in group_commands:
+                            case_value = group_commands[case[1]]
+                        else:
+                            case_value = case[1]
+                        ET.SubElement(case_group, "ref", name=to_upper_camel(case_value))
             if type_name in valid_children:
-                cmd_children_list = ET.SubElement(cmd, "zeroOrMore")
+                cmd_children_list = ET.SubElement(cmd, "interleave")
                 for child in valid_children[type_name]:
-                    ET.SubElement(cmd_children_list, "ref", name=to_upper_camel(child))
+                    if child in group_commands:
+                        child = group_commands[child]
+                    ET.SubElement(ET.SubElement(cmd_children_list, "zeroOrMore"), "ref", name=to_upper_camel(child))
             if len(cmd) == 0:
                 ET.SubElement(cmd, "empty")
             if type_name in top_level_commands:
-                ET.SubElement(cmd_list, "ref", name=py_type_name)
+                ET.SubElement(ET.SubElement(cmd_list, "zeroOrMore"), "ref", name=py_type_name)
 
     tree = ET.ElementTree(root)
     return ET.tostring(tree, pretty_print=True).decode()
-
-
-######
-# relax ng example that allows attribute-parametric type trees:
-#
-#
-# 
-# <element name="some_element">
-#   <choice>
-#     <attribute name="has_name">
-#       <value>false</value>
-#     </attribute>
-#     <group>
-#       <attribute name="has_name">
-#         <value>true</value>
-#       </attribute>
-#       <element name="name"><text /></element>
-#     </group>
-#   </choice>
-# </element>
-#
-#  
-# also:
-#
-# <element name="addressBook" xmlns="http://relaxng.org/ns/structure/1.0">
-#   <zeroOrMore>
-#     <element name="card">
-#       <choice>
-#         <group>
-#             <attribute name="type"><value>n</value></attribute>
-#             <element name="name"><text/></element>
-#         </group>
-#         <group>
-#             <attribute name="type"><value>e</value></attribute>
-#             <element name="email"><text/></element>
-#         </group>
-#       </choice>
-#     </element>
-#   </zeroOrMore>
-# </element>
-
-# Example:
-# <addressBook>
-#   <card type="e">
-#     <email>js@example.com</email>
-#   </card>
-#   <card type="n">
-#     <name>Fred Bloggs</name>
-#   </card>
-# </addressBook>

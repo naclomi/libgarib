@@ -15,124 +15,356 @@
       <attribute name="data-format-version">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="UnknownSound0xbd"/>
-        <ref name="EnvironmentalSound"/>
-        <ref name="Unknown0xa9"/>
-        <ref name="MrTip"/>
-        <ref name="DiffuseLight"/>
-        <ref name="AmbientLight"/>
-        <ref name="GloverSpawnPoint"/>
-        <ref name="BallSpawnPoint"/>
-        <ref name="CameraSpawnPoint"/>
-        <ref name="FogConfiguration"/>
-        <ref name="Actor0xbf"/>
-        <ref name="AnimatedBackgroundActor"/>
-        <ref name="BackgroundActor"/>
-        <ref name="LandActor"/>
-        <ref name="SetActorRotation"/>
-        <ref name="SetActorScale"/>
-        <ref name="Wind"/>
-        <ref name="Water"/>
-        <ref name="Backdrop"/>
-        <ref name="Cameo"/>
-        <ref name="CameoInst"/>
-        <ref name="Puzzle"/>
-        <ref name="PuzzleAnd"/>
-        <ref name="PuzzleOr"/>
-        <ref name="PuzzleNumtimes"/>
-        <ref name="PuzzleAny"/>
-        <ref name="PuzzleCond"/>
-        <ref name="PuzzleAction"/>
-        <ref name="GaribGroup"/>
-        <ref name="Garib"/>
-        <ref name="Powerup"/>
-        <ref name="PlatMvspn0x58"/>
-        <ref name="PlatMvspn0x59"/>
-        <ref name="PlatMvspn0x5a"/>
-        <ref name="PlatSetParent"/>
-        <ref name="PlatMvspn0x73"/>
-        <ref name="PlatMvspn0x74"/>
-        <ref name="PlatCopySpinFromParent"/>
-        <ref name="PlatSpecial0xb8"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="SetGlobal0xb7"/>
-        <ref name="Buzzer"/>
-        <ref name="BuzzerDutyCycle"/>
-        <ref name="SetObjectSparkle"/>
-        <ref name="PlatSpecial0xb9"/>
-        <ref name="SetExit"/>
-        <ref name="PlatCat0x69"/>
-        <ref name="PlatformConveyor"/>
-        <ref name="PlatSpecial0x9e"/>
-        <ref name="SetTeleport"/>
-        <ref name="PlatFan0x8a"/>
-        <ref name="PlatMagnet0x8b"/>
-        <ref name="PlatCheckpoint"/>
-        <ref name="PlatCrumb0x67"/>
-        <ref name="PlatSpecial0xc7"/>
-        <ref name="PlatSpecial0x6e"/>
-        <ref name="PlatSpecial0x8e"/>
-        <ref name="PlatPush0x5b"/>
-        <ref name="PlatConf0x72"/>
-        <ref name="PlatOrbitSound0xc4"/>
-        <ref name="Plat0xc6"/>
-        <ref name="PlatOrbitAroundPoint"/>
-        <ref name="PlatOrbitPause"/>
-        <ref name="PlatOrbitFlip0x77"/>
-        <ref name="Plat0xc3"/>
-        <ref name="PlatSpinSound0xc5"/>
-        <ref name="Plat0x9f"/>
-        <ref name="PlatSpinPause0x7c"/>
-        <ref name="PlatSpinFlip"/>
-        <ref name="Plat0x7e"/>
-        <ref name="PlatConstantSpin"/>
-        <ref name="PlatSpin0x80"/>
-        <ref name="PlatTopple0x81"/>
-        <ref name="LookAtHand0x60"/>
-        <ref name="LookAtBall0x61"/>
-        <ref name="PlatRocking"/>
-        <ref name="Plat0x78"/>
-        <ref name="PlatSound0xc1"/>
-        <ref name="PlatSound0xc2"/>
-        <ref name="PlatTurnTowardsPathPoint"/>
-        <ref name="PlatGoForwards0x5f"/>
-        <ref name="PlatPathPoint"/>
-        <ref name="PlatMaxVelocity"/>
-        <ref name="PlatPathAcceleration"/>
-        <ref name="PlatPos0xa7"/>
-        <ref name="PlatSetInitialPos"/>
-        <ref name="PlatPlayObjectAnimation"/>
-        <ref name="Plat0xa4"/>
-        <ref name="PlatVentAdvanceFrames"/>
-        <ref name="PlatNoClip"/>
-        <ref name="PlatDestructible"/>
-        <ref name="PlatDestructibleSound"/>
-        <ref name="Plat0x9d"/>
-        <ref name="Plat0x66"/>
-        <ref name="PlatActorSurfaceType"/>
-        <ref name="PlatSetTag"/>
-        <ref name="PlatSpike"/>
-        <ref name="PlatScale"/>
-        <ref name="PlatStr0x7a"/>
-        <ref name="Rope"/>
-        <ref name="PlatSine"/>
-        <ref name="PlatOrbit"/>
-        <ref name="Vent"/>
-        <ref name="VentDutyCycle"/>
-        <ref name="Platform"/>
-        <ref name="NullPlatform"/>
-        <ref name="Enemy"/>
-        <ref name="EnemySetAttentionBbox"/>
-        <ref name="Enemy0xba"/>
-        <ref name="EnemyFinalize"/>
-        <ref name="NormalInstructions"/>
-        <ref name="ConditionalInstructions"/>
-        <ref name="AttackInstructions"/>
-        <ref name="EndLevelData"/>
-        <ref name="Noop"/>
-        <ref name="Unknown"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="UnknownSound0xbd"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="EnvironmentalSound"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Unknown0xa9"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="MrTip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="DiffuseLight"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="AmbientLight"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GloverSpawnPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="BallSpawnPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="CameraSpawnPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="FogConfiguration"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Actor0xbf"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="AnimatedBackgroundActor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="BackgroundActor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LandActor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorRotation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorScale"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Wind"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Water"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Backdrop"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Cameo"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="CameoInst"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Puzzle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleAnd"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleOr"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleNumtimes"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleAny"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleCond"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleAction"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="GaribGroup"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Garib"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Powerup"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x58"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x59"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x5a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x73"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x74"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCopySpinFromParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb8"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetGlobal0xb7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Buzzer"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="BuzzerDutyCycle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetObjectSparkle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb9"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetExit"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCat0x69"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatformConveyor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x9e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetTeleport"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatFan0x8a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMagnet0x8b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCheckpoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCrumb0x67"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xc7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x6e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x8e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPush0x5b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConf0x72"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitSound0xc4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc6"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitAroundPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitPause"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitFlip0x77"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc3"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinSound0xc5"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinPause0x7c"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinFlip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x7e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConstantSpin"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpin0x80"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTopple0x81"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtHand0x60"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtBall0x61"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatRocking"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x78"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc1"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc2"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTurnTowardsPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatGoForwards0x5f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMaxVelocity"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathAcceleration"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPos0xa7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetInitialPos"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPlayObjectAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xa4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatVentAdvanceFrames"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatNoClip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructible"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructibleSound"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9d"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x66"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetTag"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpike"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatScale"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatStr0x7a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Rope"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSine"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbit"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Vent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="VentDutyCycle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Platform"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="NullPlatform"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Enemy"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="EnemySetAttentionBbox"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Enemy0xba"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="EnemyFinalize"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="NormalInstructions"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="ConditionalInstructions"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="AttackInstructions"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="EndLevelData"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Noop"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Unknown"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </start>
   <define name="UnknownSound0xbd">
@@ -340,13 +572,23 @@
       <attribute name="z">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="Actor0xbf"/>
-        <ref name="SetActorRotation"/>
-        <ref name="SetActorScale"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="PlatActorSurfaceType"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="Actor0xbf"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorRotation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorScale"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="BackgroundActor">
@@ -366,13 +608,23 @@
       <attribute name="z">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="Actor0xbf"/>
-        <ref name="SetActorRotation"/>
-        <ref name="SetActorScale"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="PlatActorSurfaceType"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="Actor0xbf"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorRotation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorScale"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="LandActor">
@@ -392,15 +644,29 @@
       <attribute name="z">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="Actor0xbf"/>
-        <ref name="SetActorRotation"/>
-        <ref name="SetActorScale"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="SetObjectSparkle"/>
-        <ref name="PlatSpecial0xb9"/>
-        <ref name="PlatActorSurfaceType"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="Actor0xbf"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorRotation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetActorScale"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetObjectSparkle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb9"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="SetActorRotation">
@@ -563,16 +829,15 @@
   </define>
   <define name="Cameo">
     <element name="Cameo">
-      <zeroOrMore>
-        <ref name="CameoInst"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="CameoInst"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="CameoInst">
     <element name="CameoInst">
-      <attribute name="inst_type">
-        <text/>
-      </attribute>
       <choice>
         <group>
           <!--Case 0x0-->
@@ -792,14 +1057,26 @@
   </define>
   <define name="Puzzle">
     <element name="Puzzle">
-      <zeroOrMore>
-        <ref name="PuzzleAnd"/>
-        <ref name="PuzzleOr"/>
-        <ref name="PuzzleNumtimes"/>
-        <ref name="PuzzleAny"/>
-        <ref name="PuzzleCond"/>
-        <ref name="PuzzleAction"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="PuzzleAnd"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleOr"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleNumtimes"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleAny"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleCond"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PuzzleAction"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="PuzzleAnd">
@@ -828,9 +1105,6 @@
   </define>
   <define name="PuzzleCond">
     <element name="PuzzleCond">
-      <attribute name="cond_type">
-        <text/>
-      </attribute>
       <choice>
         <group>
           <!--Case 0x22-->
@@ -1008,9 +1282,6 @@
   </define>
   <define name="PuzzleAction">
     <element name="PuzzleAction">
-      <attribute name="action_type">
-        <text/>
-      </attribute>
       <choice>
         <group>
           <!--Case 0x35-->
@@ -1376,9 +1647,11 @@
       <attribute name="initial_state">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="Garib"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="Garib"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="Garib">
@@ -1569,9 +1842,11 @@
       <attribute name="draw_thickness">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="BuzzerDutyCycle"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="BuzzerDutyCycle"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="BuzzerDutyCycle">
@@ -2471,10 +2746,14 @@
       <attribute name="particle_velocity_z">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="PlatVentAdvanceFrames"/>
-        <ref name="VentDutyCycle"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="PlatVentAdvanceFrames"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="VentDutyCycle"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="VentDutyCycle">
@@ -2495,142 +2774,398 @@
       <attribute name="name">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="PlatMvspn0x58"/>
-        <ref name="PlatMvspn0x59"/>
-        <ref name="PlatMvspn0x5a"/>
-        <ref name="PlatSetParent"/>
-        <ref name="PlatMvspn0x73"/>
-        <ref name="PlatMvspn0x74"/>
-        <ref name="PlatCopySpinFromParent"/>
-        <ref name="PlatSpecial0xb8"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="SetObjectSparkle"/>
-        <ref name="PlatSpecial0xb9"/>
-        <ref name="SetExit"/>
-        <ref name="PlatCat0x69"/>
-        <ref name="PlatformConveyor"/>
-        <ref name="PlatSpecial0x9e"/>
-        <ref name="SetTeleport"/>
-        <ref name="PlatFan0x8a"/>
-        <ref name="PlatMagnet0x8b"/>
-        <ref name="PlatCheckpoint"/>
-        <ref name="PlatCrumb0x67"/>
-        <ref name="PlatSpecial0xc7"/>
-        <ref name="PlatSpecial0x6e"/>
-        <ref name="PlatSpecial0x8e"/>
-        <ref name="PlatPush0x5b"/>
-        <ref name="PlatConf0x72"/>
-        <ref name="PlatOrbitSound0xc4"/>
-        <ref name="Plat0xc6"/>
-        <ref name="PlatOrbitAroundPoint"/>
-        <ref name="PlatOrbitPause"/>
-        <ref name="PlatOrbitFlip0x77"/>
-        <ref name="Plat0xc3"/>
-        <ref name="PlatSpinSound0xc5"/>
-        <ref name="Plat0x9f"/>
-        <ref name="PlatSpinPause0x7c"/>
-        <ref name="PlatSpinFlip"/>
-        <ref name="Plat0x7e"/>
-        <ref name="PlatConstantSpin"/>
-        <ref name="PlatSpin0x80"/>
-        <ref name="PlatTopple0x81"/>
-        <ref name="LookAtHand0x60"/>
-        <ref name="LookAtBall0x61"/>
-        <ref name="PlatRocking"/>
-        <ref name="Plat0x78"/>
-        <ref name="PlatSound0xc1"/>
-        <ref name="PlatSound0xc2"/>
-        <ref name="PlatTurnTowardsPathPoint"/>
-        <ref name="PlatGoForwards0x5f"/>
-        <ref name="PlatPathPoint"/>
-        <ref name="PlatMaxVelocity"/>
-        <ref name="PlatPathAcceleration"/>
-        <ref name="PlatPos0xa7"/>
-        <ref name="PlatSetInitialPos"/>
-        <ref name="PlatPlayObjectAnimation"/>
-        <ref name="Plat0xa4"/>
-        <ref name="PlatVentAdvanceFrames"/>
-        <ref name="PlatNoClip"/>
-        <ref name="PlatDestructible"/>
-        <ref name="PlatDestructibleSound"/>
-        <ref name="Plat0x9d"/>
-        <ref name="Plat0x66"/>
-        <ref name="PlatActorSurfaceType"/>
-        <ref name="PlatSetTag"/>
-        <ref name="PlatSpike"/>
-        <ref name="PlatScale"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x58"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x59"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x5a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x73"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x74"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCopySpinFromParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb8"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetObjectSparkle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb9"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetExit"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCat0x69"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatformConveyor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x9e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetTeleport"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatFan0x8a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMagnet0x8b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCheckpoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCrumb0x67"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xc7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x6e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x8e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPush0x5b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConf0x72"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitSound0xc4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc6"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitAroundPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitPause"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitFlip0x77"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc3"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinSound0xc5"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinPause0x7c"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinFlip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x7e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConstantSpin"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpin0x80"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTopple0x81"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtHand0x60"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtBall0x61"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatRocking"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x78"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc1"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc2"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTurnTowardsPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatGoForwards0x5f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMaxVelocity"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathAcceleration"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPos0xa7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetInitialPos"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPlayObjectAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xa4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatVentAdvanceFrames"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatNoClip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructible"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructibleSound"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9d"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x66"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetTag"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpike"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatScale"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="NullPlatform">
     <element name="NullPlatform">
-      <zeroOrMore>
-        <ref name="PlatMvspn0x58"/>
-        <ref name="PlatMvspn0x59"/>
-        <ref name="PlatMvspn0x5a"/>
-        <ref name="PlatSetParent"/>
-        <ref name="PlatMvspn0x73"/>
-        <ref name="PlatMvspn0x74"/>
-        <ref name="PlatCopySpinFromParent"/>
-        <ref name="PlatSpecial0xb8"/>
-        <ref name="PlatActorEnableWaterAnimation"/>
-        <ref name="SetObjectSparkle"/>
-        <ref name="PlatSpecial0xb9"/>
-        <ref name="SetExit"/>
-        <ref name="PlatCat0x69"/>
-        <ref name="PlatformConveyor"/>
-        <ref name="PlatSpecial0x9e"/>
-        <ref name="SetTeleport"/>
-        <ref name="PlatFan0x8a"/>
-        <ref name="PlatMagnet0x8b"/>
-        <ref name="PlatCheckpoint"/>
-        <ref name="PlatCrumb0x67"/>
-        <ref name="PlatSpecial0xc7"/>
-        <ref name="PlatSpecial0x6e"/>
-        <ref name="PlatSpecial0x8e"/>
-        <ref name="PlatPush0x5b"/>
-        <ref name="PlatConf0x72"/>
-        <ref name="PlatOrbitSound0xc4"/>
-        <ref name="Plat0xc6"/>
-        <ref name="PlatOrbitAroundPoint"/>
-        <ref name="PlatOrbitPause"/>
-        <ref name="PlatOrbitFlip0x77"/>
-        <ref name="Plat0xc3"/>
-        <ref name="PlatSpinSound0xc5"/>
-        <ref name="Plat0x9f"/>
-        <ref name="PlatSpinPause0x7c"/>
-        <ref name="PlatSpinFlip"/>
-        <ref name="Plat0x7e"/>
-        <ref name="PlatConstantSpin"/>
-        <ref name="PlatSpin0x80"/>
-        <ref name="PlatTopple0x81"/>
-        <ref name="LookAtHand0x60"/>
-        <ref name="LookAtBall0x61"/>
-        <ref name="PlatRocking"/>
-        <ref name="Plat0x78"/>
-        <ref name="PlatSound0xc1"/>
-        <ref name="PlatSound0xc2"/>
-        <ref name="PlatTurnTowardsPathPoint"/>
-        <ref name="PlatGoForwards0x5f"/>
-        <ref name="PlatPathPoint"/>
-        <ref name="PlatMaxVelocity"/>
-        <ref name="PlatPathAcceleration"/>
-        <ref name="PlatPos0xa7"/>
-        <ref name="PlatSetInitialPos"/>
-        <ref name="PlatPlayObjectAnimation"/>
-        <ref name="Plat0xa4"/>
-        <ref name="PlatVentAdvanceFrames"/>
-        <ref name="PlatNoClip"/>
-        <ref name="PlatDestructible"/>
-        <ref name="PlatDestructibleSound"/>
-        <ref name="Plat0x9d"/>
-        <ref name="Plat0x66"/>
-        <ref name="PlatActorSurfaceType"/>
-        <ref name="PlatSetTag"/>
-        <ref name="PlatSpike"/>
-        <ref name="PlatScale"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x58"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x59"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x5a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x73"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMvspn0x74"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCopySpinFromParent"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb8"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetObjectSparkle"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xb9"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetExit"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCat0x69"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatformConveyor"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x9e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="SetTeleport"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatFan0x8a"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMagnet0x8b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCheckpoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatCrumb0x67"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0xc7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x6e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpecial0x8e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPush0x5b"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConf0x72"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitSound0xc4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc6"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitAroundPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitPause"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatOrbitFlip0x77"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xc3"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinSound0xc5"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinPause0x7c"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpinFlip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x7e"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatConstantSpin"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpin0x80"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTopple0x81"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtHand0x60"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="LookAtBall0x61"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatRocking"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x78"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc1"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSound0xc2"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatTurnTowardsPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatGoForwards0x5f"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathPoint"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatMaxVelocity"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPathAcceleration"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPos0xa7"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetInitialPos"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatPlayObjectAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0xa4"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatVentAdvanceFrames"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatNoClip"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructible"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatDestructibleSound"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x9d"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Plat0x66"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatActorSurfaceType"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetTag"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSpike"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatScale"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="Enemy">
@@ -2653,13 +3188,23 @@
       <attribute name="y_rotation">
         <text/>
       </attribute>
-      <zeroOrMore>
-        <ref name="EnemySetAttentionBbox"/>
-        <ref name="Enemy0xba"/>
-        <ref name="EnemyNormalInstruction"/>
-        <ref name="EnemyConditionalInstruction"/>
-        <ref name="EnemyAttackInstruction"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="EnemySetAttentionBbox"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Enemy0xba"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="NormalInstructions"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="ConditionalInstructions"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="AttackInstructions"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="EnemySetAttentionBbox">
@@ -2696,30 +3241,33 @@
   </define>
   <define name="NormalInstructions">
     <element name="NormalInstructions">
-      <zeroOrMore>
-        <ref name="Instr"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="EnemyInstruction"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="ConditionalInstructions">
     <element name="ConditionalInstructions">
-      <zeroOrMore>
-        <ref name="Instr"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="EnemyInstruction"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="AttackInstructions">
     <element name="AttackInstructions">
-      <zeroOrMore>
-        <ref name="Instr"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="EnemyInstruction"/>
+        </zeroOrMore>
+      </interleave>
     </element>
   </define>
   <define name="EnemyInstruction">
     <element name="EnemyInstruction">
-      <attribute name="instr_type">
-        <text/>
-      </attribute>
       <attribute name="lifetime">
         <text/>
       </attribute>

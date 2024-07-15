@@ -946,13 +946,13 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
-def getSwitchCases(cls, field_name):
+def getSwitches(cls):
     try:
         switch_fields = sys.modules[cls.__module__].switch_fields
     except AttributeError:
         return None
-    return switch_fields.get(cls.__qualname__, {}).get(field_name, None)
-KaitaiStruct.getSwitchCases = getSwitchCases
+    return switch_fields.get(cls.__qualname__, {})
+KaitaiStruct.getSwitches = getSwitches
 
 ksy_hash = '4ce3799b76b7f54afa750e74404c0b56bc766012'
 #############

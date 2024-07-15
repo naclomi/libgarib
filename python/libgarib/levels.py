@@ -108,7 +108,7 @@ def landscapeToXML(landscape):
                 continue
 
         if "groups-into" in semantic:
-            group = semantic["groups-into"]
+            group = ksy.to_upper_camel(semantic["groups-into"])
             if len(parent_node) == 0 or parent_node[-1].tag != group:
                 ET.SubElement(parent_node, group)
             parent_node = parent_node[-1]

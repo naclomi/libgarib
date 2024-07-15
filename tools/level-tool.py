@@ -14,31 +14,89 @@ from libgarib.ksy import levelKsyToSchema
 
 
 from libgarib.parsers.construct import glover_level as level_writer
+def coerce_to_subcon_type(str_value, subcon):
+    subcon_cursor = subcon
+    field_size = subcon.sizeof()
+    try:
+        while not hasattr(subcon_cursor, "fmtstr"):
+            subcon_cursor = subcon_cursor.subcon
+        fmtstr = subcon_cursor.fmtstr
+    except AttributeError:
+        fmtstr = ">{:}s".format(field_size)
+    datatype = fmtstr[1]
+    if datatype.lower() in "xcbhilqn":
+        cast_value = int(str_value, 0)
+        # TODO: bounds checking based on signedness and size
+    elif datatype in "efd":
+        cast_value = float(str_value)
+    else:
+        # TODO: pad/truncate if fixed size string
+        cast_value = str_value
+    return cast_value
+
+def prepareConstructDict(xml_node, xml_iter):
+    ksy_type = getattr(GloverLevel, xml_node.tag)
+    construct_type = ksy_type.getConstructType()
+    switches = ksy_type.getSwitches()
+    switch_fields = {v["field"]:k for k,v in switches.items()}
+
+    complex_param_types = {}
+    cmd_params = {}
+
+    for subcon in construct_type.subcons:
+        if (subcon.name not in xml_node.attrib and
+            subcon.name not in switch_fields):
+            # Order of XML node's child tags is implicitly the order
+            # they appear in the binary command's format
+            next_tag = next(xml_iter)
+            cmd_params[subcon.name] = prepareConstructDict(next_tag, xml_iter)
+            complex_param_types[subcon.name] = getattr(GloverLevel, next_tag.tag)
+
+    for subcon in construct_type.subcons:
+        if subcon.name in cmd_params:
+            continue
+        elif subcon.name in xml_node.attrib:
+            cmd_params[subcon.name] = coerce_to_subcon_type(xml_node.attrib[subcon.name], subcon)
+
+    for subcon in construct_type.subcons:
+        if subcon.name not in cmd_params and subcon.name in switch_fields:
+            switch = switches[switch_fields[subcon.name]]
+            cmd_params[subcon.name] = switch["type-to-code"][complex_param_types[switch_fields[subcon.name]]]
+
+    print(xml_node.tag, cmd_params)
+    return cmd_params
+
 def assemble(args):
-    dtd = ET.DTD(file=level_schema_path)
+    schema = ET.RelaxNG(file=level_schema_path)
     errors_occurred = False
     for xml_filename in args.level_xml_file:
         tree = ET.parse(xml_filename)
-        if not dtd.validate(tree.getroot()):
+        if not schema.validate(tree.getroot()):
             errors_occurred = True
-            print(dtd.error_log.filter_from_errors())
+            print(schema.error_log.filter_from_errors())
             continue
 
+        level_bytes = []
+
+        type_codes = GloverLevel.Cmd.getSwitches()["params"]["type-to-code"]
         root = tree.getroot()
         level_name = root.attrib["name"]
-        for cmd in root:
+        cmd_iter = root.iter(tag=ET.Element)
+        while (cmd := next(cmd_iter)) is not None:
+            if cmd.tag == "Level":
+                continue
+            print("---------")
+            print(cmd.tag)
             ksy_type = getattr(GloverLevel, cmd.tag)
-            construct_type = ksy_type.getConstructType()
-            raw_attrib = {}
-            # for attrib in cmd.attrib:
-            #     # TODO                
-            raw_params = construct_type.build(raw_attrib)
             raw_cmd = level_writer.glover_level__cmd.build({
-                "params": raw_params
+                "type_code": type_codes[ksy_type],
+                "params": prepareConstructDict(cmd, cmd_iter)
             })
+            level_bytes.append(raw_cmd)
             print(cmd, raw_cmd)
-        # breakpoint()
 
+        level_bytes = b"".join(level_bytes)
+        print(level_bytes)
 
     if errors_occurred:
         sys.exit(1)
@@ -62,7 +120,7 @@ def disassemble(args):
         else:
             output_handle = sys.stdout
 
-        tree.write(output_handle, encoding='utf-8', xml_declaration=True, doctype=doctype)
+        tree.write(output_handle, encoding='utf-8', xml_declaration=True)
 
         if output_handle is sys.stdout:
             output_handle.write("\n\n")
@@ -70,10 +128,10 @@ def disassemble(args):
             output_handle.close()
 
 def validate(args):
-    dtd = ET.DTD(file=level_schema_path)
+    schema = ET.RelaxNG(file=level_schema_path)
     tree = ET.parse(args.xml_file)
-    if not dtd.validate(tree.getroot()):
-        print(dtd.error_log.filter_from_errors())
+    if not schema.validate(tree.getroot()):
+        print(schema.error_log.filter_from_errors())
         sys.exit(1)
 
 def schema(args):

@@ -2122,7 +2122,7 @@ types:
   enemy_normal_instruction: # 0x9a
     -semantic:
       modifies: ENEMY
-      groups-into: NormalInstructions
+      groups-into: normal_instructions
       wraps: instr
     seq:
       - id: instr
@@ -2131,7 +2131,7 @@ types:
   enemy_conditional_instruction: # 0x9b
     -semantic:
       modifies: ENEMY
-      groups-into: ConditionalInstructions
+      groups-into: conditional_instructions
       wraps: instr
     seq:
       - id: instr
@@ -2140,7 +2140,7 @@ types:
   enemy_attack_instruction: # 0x9c
     -semantic:
       modifies: ENEMY
-      groups-into: AttackInstructions
+      groups-into: attack_instructions
       wraps: instr
     seq:
       - id: instr

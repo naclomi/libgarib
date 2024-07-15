@@ -4596,9 +4596,9 @@ private_fields = {
     'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.Enemy0xba': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.EnemyFinalize': {'semantic': {'closes': 'ENEMY'}},
-    'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'NormalInstructions', 'wraps': 'instr'}},
-    'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'ConditionalInstructions', 'wraps': 'instr'}},
-    'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'AttackInstructions', 'wraps': 'instr'}},
+    'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions', 'wraps': 'instr'}},
+    'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions', 'wraps': 'instr'}},
+    'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions', 'wraps': 'instr'}},
 }
 
 import sys
@@ -4638,13 +4638,13 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
-def getSwitchCases(cls, field_name):
+def getSwitches(cls):
     try:
         switch_fields = sys.modules[cls.__module__].switch_fields
     except AttributeError:
         return None
-    return switch_fields.get(cls.__qualname__, {}).get(field_name, None)
-KaitaiStruct.getSwitchCases = getSwitchCases
+    return switch_fields.get(cls.__qualname__, {})
+KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '64aae4f49fd92b23528bfc7a290211b742061b56'
+ksy_hash = '1b05af7950c64159795f023e0026fc8dc09fab55'
 #############
