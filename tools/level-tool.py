@@ -10,7 +10,7 @@ import _prefer_local_implementation
 import libgarib
 from libgarib.parsers.glover_level import GloverLevel
 from libgarib.levels import landscapeToXML, level_schema_path
-from libgarib.ksy import levelKsyToSchema
+from libgarib.ksy import levelKsyToSchema, to_upper_camel
 
 
 from libgarib.parsers.construct import glover_level as level_writer
@@ -34,13 +34,17 @@ def coerce_to_subcon_type(str_value, subcon):
         else:
             raise Exception()
     elif hasattr(subcon_cursor, "encmapping"):
-        cast_value = subcon_cursor.encmapping[str_value]
+        try:
+            cast_value = subcon_cursor.encmapping[str_value]
+        except KeyError:
+            cast_value = int(str_value, 0)
     else:
         # TODO: pad/truncate if fixed size string
         # use field_size = subcon_curson.sizeof()
         cast_value = str_value
 
     return cast_value
+
 
 def prepareConstructDict(xml_node, xml_iter):
     ksy_type = getattr(GloverLevel, xml_node.tag)
@@ -74,9 +78,18 @@ def prepareConstructDict(xml_node, xml_iter):
     print(xml_node.tag, cmd_params)
     return cmd_params
 
+import kaitaistruct
 def assemble(args):
     schema = ET.RelaxNG(file=level_schema_path)
     errors_occurred = False
+
+    group_tags = {}
+    for cls in kaitaistruct.KaitaiStruct.__subclasses__():
+        semantic = cls.getPrivate("semantic", {})
+        if "groups-into" in semantic:
+            tag_name = to_upper_camel(semantic["groups-into"])
+            group_tags[tag_name] = cls
+
     for xml_filename in args.level_xml_file:
         tree = ET.parse(xml_filename)
         if not schema.validate(tree.getroot()):
@@ -95,19 +108,34 @@ def assemble(args):
                 continue
             print("---------")
             print(cmd.tag)
-            ksy_type = getattr(GloverLevel, cmd.tag)
-            raw_cmd = level_writer.glover_level__cmd.build({
-                "type_code": type_codes[ksy_type],
-                "params": prepareConstructDict(cmd, cmd_iter)
-            })
-            level_bytes.append(raw_cmd)
-            print(cmd, raw_cmd)
+
+            if cmd.tag in group_tags:
+                wrapper_cmd = group_tags[cmd.tag]
+                last_grouped_cmd = cmd[-1]
+                while True:
+                    grouped_cmd = next(cmd_iter)
+                    raw_cmd = wrapper_cmd.getConstructType().build({
+                        wrapper_cmd.SEQ_FIELDS[0]: prepareConstructDict(grouped_cmd, cmd_iter)
+                    })
+                    level_bytes.append(raw_cmd)
+                    if grouped_cmd is last_grouped_cmd:
+                        break
+
+            else:
+                ksy_type = getattr(GloverLevel, cmd.tag)
+                raw_cmd = level_writer.glover_level__cmd.build({
+                    "type_code": type_codes[ksy_type],
+                    "params": prepareConstructDict(cmd, cmd_iter)
+                })
+                level_bytes.append(raw_cmd)
+                print(cmd, raw_cmd)
 
         level_bytes = b"".join(level_bytes)
         print(level_bytes)
 
     if errors_occurred:
         sys.exit(1)
+
 
 def disassemble(args):
     if args.output_dir is not None:
@@ -135,6 +163,7 @@ def disassemble(args):
         else:
             output_handle.close()
 
+
 def validate(args):
     schema = ET.RelaxNG(file=level_schema_path)
     tree = ET.parse(args.xml_file)
@@ -142,10 +171,12 @@ def validate(args):
         print(schema.error_log.filter_from_errors())
         sys.exit(1)
 
+
 def schema(args):
     with open(args.ksy_file, "r") as f:
         ksy = yaml.safe_load(f)
     print(levelKsyToSchema(ksy, args.ksy_file))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
