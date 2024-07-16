@@ -4512,7 +4512,7 @@ private_fields = {
     'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
-    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO', 'wraps': 'body'}},
+    'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO'}},
     'GloverLevel.Puzzle': {'semantic': {'declares': 'PUZZLE'}},
     'GloverLevel.PuzzleAnd': {'semantic': {'modifies': 'PUZZLE'}},
     'GloverLevel.PuzzleOr': {'semantic': {'modifies': 'PUZZLE'}},
@@ -4596,9 +4596,9 @@ private_fields = {
     'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.Enemy0xba': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.EnemyFinalize': {'semantic': {'closes': 'ENEMY'}},
-    'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions', 'wraps': 'instr'}},
-    'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions', 'wraps': 'instr'}},
-    'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions', 'wraps': 'instr'}},
+    'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions'}},
+    'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
+    'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
 }
 
 import sys
@@ -4646,5 +4646,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '1b05af7950c64159795f023e0026fc8dc09fab55'
+ksy_hash = '18d47866353b03ff0c39611a2078f1df518572f5'
 #############

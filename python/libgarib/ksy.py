@@ -108,7 +108,7 @@ def levelKsyToSchema(ksy, ksy_filename):
             group_cmd_children_list = ET.SubElement(group_cmd, "interleave")
             if len(type_def["seq"]) > 1:
                 raise Exception("Non-trivial groupable tag {:}".format(type_name))
-            wrap_type = type_def["seq"][0]
+            wrap_type = type_def["seq"][0]["type"]
             append_reference(group_cmd_children_list, wrap_type)
             append_reference(cmd_list, group_commands[type_name])
         elif type_name == "cmd":
