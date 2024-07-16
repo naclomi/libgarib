@@ -40,7 +40,7 @@ def disassemble(args):
     for level_filename in args.level_binary_file:
         with open(level_filename, "rb") as f:
             raw_level = GloverLevel.from_io(f)
-        tree = landscapeToXML(raw_level)
+        tree = landscapeToXML(raw_level, trim=True)
 
         try:
             ET.indent(tree, space='   ', level=0)
@@ -49,16 +49,11 @@ def disassemble(args):
 
         if args.output_dir is not None:
             xml_filename = os.path.basename(level_filename) + ".xml"
-            output_handle = open(os.path.join(args.output_dir, xml_filename), "wb")
+            with open(os.path.join(args.output_dir, xml_filename), "wb") as f:
+                tree.write(f, encoding='utf-8', xml_declaration=True)
         else:
-            output_handle = sys.stdout
-
-        tree.write(output_handle, encoding='utf-8', xml_declaration=True)
-
-        if output_handle is sys.stdout:
-            output_handle.write("\n\n")
-        else:
-            output_handle.close()
+            print(ET.tostring(tree, xml_declaration=True).decode())
+            print("\n\n")
 
 
 def validate(args):

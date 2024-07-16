@@ -189,13 +189,13 @@ def kaitaiSubElement(node, obj):
     return new_node
 
 
-def landscapeToXML(landscape):
+def landscapeToXML(landscape, trim=True):
     root = ET.Element("Level", attrib={
         "name": landscape.name.rstrip('\x00'),
         "libgarib-version": __version__,
         "data-format-version": glover_level_ksy_hash[:7]
     })
-    
+
     cursors = {
         "root": root
     }
@@ -239,5 +239,9 @@ def landscapeToXML(landscape):
         if "declares" in semantic:
             cursors[semantic["declares"]] = new_node
             active_type = semantic["declares"]
+
+    if trim:
+        while root[-1].tag == "Noop":
+            root.remove(root[-1])
 
     return ET.ElementTree(root)
