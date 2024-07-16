@@ -5,15 +5,14 @@ import typing
 class LinkException(Exception):
     pass
 
-def padLen(size, boundary=8):
-    return size + (-size % boundary)
+def padSize(size, boundary=8):
+    return -size % boundary
 
 def padBytes(data, boundary=8):
-    pad_len = -len(data) % boundary
-    if pad_len == 0:
+    if padSize(len(data)) == 0:
         return data
     else:
-        pad = b"\0" * pad_len
+        pad = b"\0" * padSize(len(data))
         return data + pad
 
 class Linkable(object):
@@ -63,7 +62,8 @@ class LinkableBytes(Linkable):
         self.pointers = pointers or list()
 
     def __len__(self):
-        return padLen(len(self.data))
+        data_len = len(self.data)
+        return data_len + padSize(data_len)
 
     def finalize(self):
         for pointer in self.pointers:
@@ -82,7 +82,8 @@ class LinkableStruct(Linkable):
         self.data = data or []
 
     def __len__(self):
-        return padLen(sum(len(d) for d in self.data))
+        data_len = sum(len(d) for d in self.data)
+        return data_len + padSize(data_len)
 
     def append(self, child: Linkable):
         self.data.append(child)

@@ -13,7 +13,6 @@ from libgarib.levels import landscapeToXML, level_schema_path
 from libgarib.ksy import levelKsyToSchema, to_upper_camel
 
 
-from libgarib.parsers.construct import glover_level as level_writer
 def coerce_to_subcon_type(str_value, subcon):
     subcon_cursor = subcon
     try:
@@ -78,6 +77,7 @@ def prepareConstructDict(xml_node, xml_iter):
     return cmd_params
 
 import kaitaistruct
+from libgarib.linkable import padSize
 def assemble(args):
     schema = ET.RelaxNG(file=level_schema_path)
     errors_occurred = False
@@ -96,12 +96,16 @@ def assemble(args):
             print(schema.error_log.filter_from_errors())
             continue
 
-        level_bytes = []
 
         type_codes = GloverLevel.Cmd.getSwitches()["params"]["type-to-code"]
         root = tree.getroot()
         level_name = root.attrib["name"]
         cmd_iter = root.iter(tag=ET.Element)
+
+        level_bytes = [
+            b"\x00" * 4,  # Placeholder for file length
+            level_name.encode("ASCII") + b"\x00"  # Null-terminated level name
+        ]
 
         while True:
             try:
@@ -125,21 +129,20 @@ def assemble(args):
 
             else:
                 ksy_type = getattr(GloverLevel, cmd.tag)
-                raw_cmd = level_writer.glover_level__cmd.build({
+                raw_cmd = GloverLevel.Cmd.getConstructType().build({
                     "type_code": type_codes[ksy_type],
                     "params": prepareConstructDict(cmd, cmd_iter)
                 })
                 level_bytes.append(raw_cmd)
 
-        # TODO: figure out padding:
-        level_header = GloverLevel.getConstructType().build({
-            "name": level_name,
-            "length": sum(len(chunk) for chunk in level_bytes) + 4 + len(level_name) + 1,
-            "body": {}
-        })
+        level_len = sum(len(chunk) for chunk in level_bytes)
+        if padSize(level_len) > 0:
+            pad = "\x00" * padSize(level_len)
+            level_bytes.append(pad)
+            level_len += len(pad)
 
-        level_bytes.insert(0, level_header)
-
+        # Write level length into the placeholder spot
+        level_bytes[0] = GloverLevel.getConstructType().subcons[0].build(level_len)
         level_bytes = b"".join(level_bytes)
 
         print(level_bytes)
