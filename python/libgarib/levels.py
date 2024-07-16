@@ -126,7 +126,7 @@ def xmlToLandscape(xml_tree):
 
     level_len = sum(len(chunk) for chunk in level_bytes)
     if padSize(level_len) > 0:
-        pad = "\x00" * padSize(level_len)
+        pad = b"\x00" * padSize(level_len)
         level_bytes.append(pad)
         level_len += len(pad)
 
