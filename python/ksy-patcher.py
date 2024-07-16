@@ -48,7 +48,9 @@ def _scrapeNamesCallback(node, path, k, v, names):
     else:
         return False
 def scrapeNames(node, path):
-    names = {}
+    names = {
+        to_upper_camel(path): path
+    }
     crawlYaml(node, path, dict_callback=(_scrapeNamesCallback, names))
     return names
 

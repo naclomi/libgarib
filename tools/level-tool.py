@@ -75,7 +75,6 @@ def prepareConstructDict(xml_node, xml_iter):
             switch = switches[switch_fields[subcon.name]]
             cmd_params[subcon.name] = switch["type-to-code"][complex_param_types[switch_fields[subcon.name]]]
 
-    print(xml_node.tag, cmd_params)
     return cmd_params
 
 import kaitaistruct
@@ -103,11 +102,14 @@ def assemble(args):
         root = tree.getroot()
         level_name = root.attrib["name"]
         cmd_iter = root.iter(tag=ET.Element)
-        while (cmd := next(cmd_iter)) is not None:
+
+        while True:
+            try:
+                cmd = next(cmd_iter)
+            except StopIteration:
+                break
             if cmd.tag == "Level":
                 continue
-            print("---------")
-            print(cmd.tag)
 
             if cmd.tag in group_tags:
                 wrapper_cmd = group_tags[cmd.tag]
@@ -128,9 +130,18 @@ def assemble(args):
                     "params": prepareConstructDict(cmd, cmd_iter)
                 })
                 level_bytes.append(raw_cmd)
-                print(cmd, raw_cmd)
+
+        # TODO: figure out padding:
+        level_header = GloverLevel.getConstructType().build({
+            "name": level_name,
+            "length": sum(len(chunk) for chunk in level_bytes) + 4 + len(level_name) + 1,
+            "body": {}
+        })
+
+        level_bytes.insert(0, level_header)
 
         level_bytes = b"".join(level_bytes)
+
         print(level_bytes)
 
     if errors_occurred:

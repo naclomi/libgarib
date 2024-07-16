@@ -4351,6 +4351,7 @@ switch_fields = {
     },
 }
 original_names = {
+    'GloverLevel': 'glover_level',
     'GloverLevel.Cmd': 'glover_level.cmd',
     'GloverLevel.UnknownSound0xbd': 'glover_level.unknown_sound_0xbd',
     'GloverLevel.EnvironmentalSound': 'glover_level.environmental_sound',

@@ -125,6 +125,7 @@ class GloverTexbank(KaitaiStruct):
 switch_fields = {
 }
 original_names = {
+    'GloverTexbank': 'glover_texbank',
     'GloverTexbank.Texture': 'glover_texbank.texture',
 }
 private_fields = {

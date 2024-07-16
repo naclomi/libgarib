@@ -892,6 +892,7 @@ class GloverObjbank(KaitaiStruct):
 switch_fields = {
 }
 original_names = {
+    'GloverObjbank': 'glover_objbank',
     'GloverObjbank.DirectoryEntry': 'glover_objbank.directory_entry',
     'GloverObjbank.ObjectRoot': 'glover_objbank.object_root',
     'GloverObjbank.Mesh': 'glover_objbank.mesh',
