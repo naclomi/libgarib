@@ -5,11 +5,11 @@ import typing
 class LinkException(Exception):
     pass
 
-def padLen(size):
-    return size + (8 - size & 7)
+def padLen(size, boundary=8):
+    return size + (-size % boundary)
 
-def padBytes(data):
-    pad_len = 8 - len(data) & 7
+def padBytes(data, boundary=8):
+    pad_len = -len(data) % boundary
     if pad_len == 0:
         return data
     else:

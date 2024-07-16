@@ -226,8 +226,8 @@ class Region(object):
     def __repr__(self):
         return str(self.key())
 
-    def pad(self, boundary=4):
-        gap = len(self.data) % boundary
+    def pad(self, boundary=8):
+        gap = -len(self.data) % boundary
         if gap != 0:
             self.data += b"\0" * gap
 
@@ -324,8 +324,8 @@ class BoundedArrayRegion(Region):
             self.data.append(rom_data[cursor:cursor+elem_len])
             cursor += elem_len
 
-    def pad(self, boundary=4):
-        gap = self.size() % boundary
+    def pad(self, boundary=8):
+        gap = -self.size() % boundary
         if gap != 0:
             self.pad_data += b"\0" * gap
 
