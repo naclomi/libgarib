@@ -2114,8 +2114,6 @@ types:
     seq: []
 
   enemy_finalize: # 0x84
-    -semantic:
-      closes: ENEMY
     seq: []
 
   enemy_normal_instruction: # 0x9a

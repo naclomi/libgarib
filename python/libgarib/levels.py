@@ -215,18 +215,6 @@ def landscapeToXML(landscape, trim=True):
             else:
                 active_type = None
 
-        if "closes" in semantic:
-            skip_tag = False
-            if type(semantic["closes"]) is not list:
-                semantic["closes"] = [semantic["closes"]]
-            for applicable_type in semantic["closes"]:
-                if applicable_type == active_type:
-                    skip_tag = True
-                    break
-            if skip_tag is True:
-                active_type = None
-                continue
-
         if "groups-into" in semantic:
             group = to_upper_camel(semantic["groups-into"])
             if len(parent_node) == 0 or parent_node[-1].tag != group:

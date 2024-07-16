@@ -54,6 +54,7 @@
 # level-tool
 
 ## disassemble
+- add "raw" mode that doesn't trim padding or nest tags
 
 ## assemble
 
