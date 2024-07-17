@@ -3196,6 +3196,9 @@
           <ref name="Enemy0xba"/>
         </zeroOrMore>
         <zeroOrMore>
+          <ref name="EnemyFinalize"/>
+        </zeroOrMore>
+        <zeroOrMore>
           <ref name="NormalInstructions"/>
         </zeroOrMore>
         <zeroOrMore>

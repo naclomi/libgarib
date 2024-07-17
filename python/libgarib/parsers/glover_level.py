@@ -4596,7 +4596,7 @@ private_fields = {
     'GloverLevel.Enemy': {'semantic': {'declares': 'ENEMY'}},
     'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.Enemy0xba': {'semantic': {'modifies': 'ENEMY'}},
-    'GloverLevel.EnemyFinalize': {'semantic': {'closes': 'ENEMY'}},
+    'GloverLevel.EnemyFinalize': {'semantic': {'modifies': 'ENEMY'}},
     'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions'}},
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
@@ -4647,5 +4647,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '18d47866353b03ff0c39611a2078f1df518572f5'
+ksy_hash = 'c63a364204ebedf2e33cf671b0c73ac9f2dbb237'
 #############
