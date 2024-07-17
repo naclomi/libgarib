@@ -109,8 +109,11 @@ def xmlToLandscape(xml_tree):
             last_grouped_cmd = cmd[-1]
             while True:
                 grouped_cmd = next(cmd_iter)
-                raw_cmd = wrapper_cmd.getConstructType().build({
-                    wrapper_cmd.SEQ_FIELDS[0]: prepareConstructDict(grouped_cmd, cmd_iter)
+                raw_cmd = GloverLevel.Cmd.getConstructType().build({
+                    "type_code": type_codes[wrapper_cmd],
+                    "params": {
+                        wrapper_cmd.SEQ_FIELDS[0]: prepareConstructDict(grouped_cmd, cmd_iter)
+                    }
                 })
                 level_bytes.append(raw_cmd)
                 if grouped_cmd is last_grouped_cmd:
