@@ -3972,7 +3972,7 @@ class GloverLevel(KaitaiStruct):
 
 
 #############
-# PATCHED BY ./python/ksy-patcher.py
+# PATCHED BY ./python/scripts/ksy-patcher.py
 
 switch_fields = {
     'GloverLevel.Cmd': {

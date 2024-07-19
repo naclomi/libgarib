@@ -35,6 +35,8 @@ fla2:
 clean:
 	rm -rf python/libgarib/parsers/*
 	rm -rf js/parsers/*
-	rm formats/glover.lev.rng
-	rm c/fla2-compress
-	rm python/libgarib/cppcore/fla2$(shell python3-config --extension-suffix)
+	rm -rf dist/
+	rm -rf libgarib.egg-info/
+	rm -f formats/glover.lev.rng
+	rm -f c/fla2-compress
+	rm -f python/libgarib/cppcore/fla2.*.so

@@ -7,6 +7,11 @@ import hashlib
 
 import yaml
 
+src_dir = os.path.dirname(os.path.abspath(__file__))
+local_path = os.path.join(src_dir, "..")
+if os.path.exists(local_path):
+    sys.path.insert(0,local_path)
+
 from libgarib.ksy import to_upper_camel, ksy_scrape_type_codes
 
 def crawlYaml(node, path, dict_callback=None, list_callback=None, scalar_callback=None):
