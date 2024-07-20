@@ -2,6 +2,7 @@ capstone
 construct
 jmespath
 kaitaistruct
+keystone-engine
 lxml
 numpy
 pillow

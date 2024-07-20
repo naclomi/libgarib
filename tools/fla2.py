@@ -3,7 +3,7 @@ import sys
 import argparse
 
 import _prefer_local_implementation
-from libgarib.fla2 import compress, decompress
+from libgarib.fla2 import compress, decompress, cpp_compress
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="compress/decompress FLA2 archives")
@@ -13,6 +13,8 @@ if __name__ == "__main__":
                         help="Compress the input files")
     parser.add_argument("--pure-python", action="store_true",
                         help="Force use of pure python implementations, rather than compiled C extensions")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="Be verbose")
     parser.add_argument("--quiet", action="store_true",
                         help="Don't display progress updates")
 
@@ -20,11 +22,14 @@ if __name__ == "__main__":
 
     if args.compress:
         in_name = ""
-        if not args.quiet:
+        if args.verbose or not args.quiet:
             def compression_progress_callback(percent):
                 sys.stdout.write("\rCompressing {:} ({:}%)".format(in_name, percent));
         else:
             compression_progress_callback = None
+
+        if args.verbose and not args.pure_python and cpp_compress is None:
+            sys.stderr.write("WARNING: Couldn't load C extension for compression routine, falling back to pure-python implementation\n")
 
         for in_name in args.file:
             out_name = in_name + ".fla2"

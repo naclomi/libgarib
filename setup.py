@@ -38,6 +38,7 @@ setup(
         "kaitaistruct",
         "lxml",
         "numpy",
+        "keystone-engine",
         "pillow",
         "pygltflib",
         "unicorn",
