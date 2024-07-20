@@ -32,6 +32,9 @@ fla2:
 	touch python/libgarib/cppcore/__init__.py
 	c++ -O3 -Wall -shared -std=c++11 -fPIC $(shell python3.9 -m pybind11 --includes) c/fla2.c c/fla2-python.cpp -o python/libgarib/cppcore/fla2$(shell python3.9-config --extension-suffix)
 
+python-package: clean parsers
+	python3 -m build
+
 clean:
 	rm -rf python/libgarib/parsers/*
 	rm -rf js/parsers/*

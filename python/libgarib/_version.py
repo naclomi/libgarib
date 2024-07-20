@@ -66,7 +66,7 @@ def get_version_from_git():
     for opts in [["--first-parent"], []]:
         try:
             p = subprocess.Popen(
-                ["git", "describe", "--long", "--always"] + opts,
+                ["git", "describe", "--long", "--always", "--tags"] + opts,
                 cwd=package_root,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -175,7 +175,7 @@ def get_cmdclass(pkg_source_path):
         def run(self):
             super().run()
 
-            src_marker = "".join(["src", os.path.sep])
+            src_marker = "".join(["python", os.path.sep])
 
             if pkg_source_path.startswith(src_marker):
                 path = pkg_source_path[len(src_marker) :]
