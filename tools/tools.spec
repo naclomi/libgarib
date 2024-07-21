@@ -19,31 +19,32 @@ tool_scripts = [
     "hash.py",
     "level-tool.py",
     "objbank-tool.py",
-    "quick-patcher.py",
     "rom-asset-tool.py",
     "texbank-tool.py",
     "tip-tool.py",
 ]
 
 all_exes = []
-
-a = Analysis(
-    tool_scripts,
-    pathex=[],
-    binaries=binaries,
-    datas=datas,
-    hiddenimports=hiddenimports,
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=[],
-    noarchive=False,
-    optimize=0,
-)
-
-pyz = PYZ(a.pure)
+all_binaries = []
+all_datas = []
 
 for tool_script in tool_scripts:
+    a = Analysis(
+        [tool_script],
+        pathex=[],
+        binaries=binaries,
+        datas=datas,
+        hiddenimports=hiddenimports,
+        hookspath=[],
+        hooksconfig={},
+        runtime_hooks=[],
+        excludes=[],
+        noarchive=False,
+        optimize=0,
+    )
+    all_binaries += a.binaries
+    all_datas += a.datas
+    pyz = PYZ(a.pure)
     exe_name = os.path.splitext(os.path.basename(tool_script))[0]
     exe = EXE(
         pyz,
@@ -66,8 +67,8 @@ for tool_script in tool_scripts:
 
 coll = COLLECT(
     *all_exes,
-    a.binaries,
-    a.datas,
+    all_binaries,
+    all_datas,
     strip=False,
     upx=True,
     upx_exclude=[],
