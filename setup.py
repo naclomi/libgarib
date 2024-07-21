@@ -1,3 +1,4 @@
+import os.path
 from setuptools import Extension, setup, find_namespace_packages
 from pybind11.setup_helpers import Pybind11Extension
 
@@ -15,10 +16,10 @@ def get_version_and_cmdclass(pkg_path):
     return module.__version__, module.get_cmdclass(pkg_path)
 
 
-version, cmdclass = get_version_and_cmdclass(r"python/libgarib")
+version, cmdclass = get_version_and_cmdclass(os.path.join("python", "libgarib"))
 
 packages = find_namespace_packages(
-        where='./python/',
+        where=os.path.join(".", "python"),
         include=['libgarib*'],
 )
 
@@ -46,18 +47,21 @@ setup(
     ],
     packages=packages + ["libgarib.cppcore"],
     package_dir={
-        "libgarib":"python/libgarib",
-        "libgarib.cppcore":"c/"
+        "libgarib": os.path.join("python", "libgarib"),
+        "libgarib.cppcore": os.path.join("c", "")
     },
     package_data={
-        "libgarib": ["parsers/*.rng"],
+        "libgarib": [os.path.join("parsers", "*.rng")],
         "libgarib.cppcore": ["*"]
     },
     ext_modules=[
         Pybind11Extension(
             name="libgarib.cppcore.fla2",
-            sources=["./c/fla2.c", "./c/fla2-python.cpp"],
-            include_dirs=["./c"]
+            sources=[
+                os.path.join(".", "c", "fla2.c"),
+                os.path.join(".", "c", "fla2-python.cpp")
+            ],
+            include_dirs=[os.path.join(".","c")]
         ),
     ]
 
