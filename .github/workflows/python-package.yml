@@ -20,8 +20,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Get tags
+      run: git fetch --tags origin
     - name: Set up Python ${{ env.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.python-version }}
     - name: Install dependencies
