@@ -6,16 +6,13 @@ from PyInstaller.utils.hooks import collect_all
 datas = []
 binaries = []
 hiddenimports = []
-tmp_ret = collect_all('libgarib')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('capstone')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('unicorn')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('keystone')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-tool_dir = "./"
+for lib in ('libgarib', 'capstone', 'unicorn', 'keystone'):
+    tmp_ret = collect_all(lib)
+    datas += tmp_ret[0]
+    binaries += tmp_ret[1]
+    hiddenimports += tmp_ret[2]
+
 tool_scripts = [
     "checksum.py",
     "fla2.py",
@@ -28,28 +25,25 @@ tool_scripts = [
     "tip-tool.py",
 ]
 
-all_binaries = []
-all_datas = []
 all_exes = []
 
+a = Analysis(
+    tool_scripts,
+    pathex=[],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+
+pyz = PYZ(a.pure)
+
 for tool_script in tool_scripts:
-    tool_script = os.path.join(tool_dir, tool_script)
-    a = Analysis(
-        [tool_script],
-        pathex=[],
-        binaries=binaries,
-        datas=datas,
-        hiddenimports=hiddenimports,
-        hookspath=[],
-        hooksconfig={},
-        runtime_hooks=[],
-        excludes=[],
-        noarchive=False,
-        optimize=0,
-    )
-    all_binaries += a.binaries
-    all_datas += a.datas
-    pyz = PYZ(a.pure)
     exe_name = os.path.splitext(os.path.basename(tool_script))[0]
     exe = EXE(
         pyz,
@@ -72,8 +66,8 @@ for tool_script in tool_scripts:
 
 coll = COLLECT(
     *all_exes,
-    all_binaries,
-    all_datas,
+    a.binaries,
+    a.datas,
     strip=False,
     upx=True,
     upx_exclude=[],
