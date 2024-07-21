@@ -1,4 +1,4 @@
-pyinstaller-flags = --clean --noconfirm --collect-all libgarib --collect-all capstone --collect-all unicorn --collect-all keystone
+pyinstaller-flags = --clean --noconfirm
 
 parsers:
 	mkdir -p python/libgarib/parsers
@@ -37,10 +37,8 @@ fla2:
 python-package: clean parsers
 	python3 -m build
 
-standalone-tools: tools/*.py
-	for file in $^ ; do \
-		pyinstaller $(pyinstaller-flags) $${file} ; \
-	done
+standalone-tools:
+	pyinstaller $(pyinstaller-flags) tools/tools.spec
 
 clean:
 	rm -rf python/libgarib/parsers/*
