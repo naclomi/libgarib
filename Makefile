@@ -29,10 +29,10 @@ parsers:
 	rm -rf build_artifacts
 
 fla2:
-	gcc -o c/fla2-compress c/fla2.c c/fla2-compress-cli.c
+	c++ -o c/fla2-compress c/fla2.cpp c/fla2-compress-cli.cpp
 	mkdir -p python/libgarib/cppcore
 	touch python/libgarib/cppcore/__init__.py
-	c++ -O3 -Wall -shared -std=c++11 -fPIC $(shell python3 -m pybind11 --includes) c/fla2.c c/fla2-python.cpp -o python/libgarib/cppcore/fla2$(shell python3-config --extension-suffix)
+	c++ -O3 -Wall -shared -std=c++11 -fPIC $(shell python3 -m pybind11 --includes) c/fla2.cpp c/fla2-python.cpp -o python/libgarib/cppcore/fla2$(shell python3-config --extension-suffix)
 
 python-package: clean parsers
 	python3 -m build

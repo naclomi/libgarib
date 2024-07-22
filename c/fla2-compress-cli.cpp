@@ -8,7 +8,7 @@ int main(int argc, const char **argv) {
     fseek(src, 0, SEEK_END);
     size_t src_len = ftell(src);
     fseek(src, 0, SEEK_SET);
-    uint8_t *src_buf = malloc(src_len);
+    uint8_t *src_buf = (uint8_t *) malloc(src_len);
     fread(src_buf, 1, src_len, src);
     fclose(src);
     uint8_t *dst_buf = NULL;
@@ -17,7 +17,7 @@ int main(int argc, const char **argv) {
     free(src_buf);
 
     size_t dst_name_len = strlen(argv[1]) + 5;
-    char *dst_name = malloc(dst_name_len);
+    char *dst_name = (char *) malloc(dst_name_len);
     strcpy(dst_name, argv[1]);
     strcat(dst_name, ".fla");
     FILE *dst = fopen(dst_name, "wb");

@@ -58,7 +58,7 @@ setup(
         Pybind11Extension(
             name="libgarib.cppcore.fla2",
             sources=[
-                os.path.join(".", "c", "fla2.c"),
+                os.path.join(".", "c", "fla2.cpp"),
                 os.path.join(".", "c", "fla2-python.cpp")
             ],
             include_dirs=[os.path.join(".", "c")],
