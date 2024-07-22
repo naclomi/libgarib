@@ -37,7 +37,7 @@ jobs:
     - name: Build package
       run: |
         python -m build
-        echo "WHEEL_NAME=$(find ./dist/*.whl -maxdepth 1 -type f -printf '%f\n' | tail -n 1)" >> "$GITHUB_ENV"
+        echo "WHEEL_NAME=$(cd dist && ls -1 *.whl | tail -n 1)" >> "$GITHUB_ENV"
         echo "LIBGARIB_VERSION=$(cd python && python -c 'import libgarib as l; print(l.__version__)')" >> "$GITHUB_ENV"
     - name: Freeze tools
       run: |
