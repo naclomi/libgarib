@@ -18,6 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -33,20 +34,21 @@ jobs:
         pip install -r requirements.txt
     - name: Build package
       run: |
-        git fetch --tags origin
-        git describe --long --always --tags --first-parent
-        git describe --long --always --tags
         python -m build
-        echo "WHEEL_NAME=$(find ./dist/*.whl -maxdepth 1 -type f -printf '%f\n' | tail -n 1)" >> "$GITHUB_ENV"        
-    - name: Archive production artifacts
+        echo "WHEEL_NAME=$(find ./dist/*.whl -maxdepth 1 -type f -printf '%f\n' | tail -n 1)" >> "$GITHUB_ENV"
+        echo "LIBGARIB_VERSION=$(cd python && python -c 'import libgarib as l; print(l.__version__)')" >> "$GITHUB_ENV"
+    - name: Freeze tools
+      run: |
+        python -m pip install dist/${{ env.WHEEL_NAME }} pyinstaller
+        pyinstaller -y --clean tools/tools.spec
+    - name: Archive python package
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.WHEEL_NAME }}
+        path: dist/${{ env.WHEEL_NAME }}
+    - name: Archive tools
+      uses: actions/upload-artifact@v4
+      with:
+        name: libgarib-tools-${{ env.LIBGARIB_VERSION }}-${{ matrix.os }}
         path: |
-          dist/${{ env.WHEEL_NAME }}
-  # frozen-tools:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-latest, windows-latest]
-  #   runs-on: ${{ matrix.os }}
+          dist/tools
