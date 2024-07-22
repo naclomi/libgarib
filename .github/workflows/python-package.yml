@@ -1,5 +1,7 @@
+# Merging:
+# https://stackoverflow.com/questions/73498168/github-actions-merge-artifacts-after-matrix-steps
 
-name: Python package
+name: Release
 
 on:
   workflow_dispatch
@@ -11,7 +13,7 @@ env:
   python-version: "3.9"
 
 jobs:
-  build:
+  python-package:
     strategy:
       fail-fast: false
       matrix:
@@ -35,9 +37,16 @@ jobs:
         git describe --long --always --tags --first-parent
         git describe --long --always --tags
         python -m build
+        echo "WHEEL_NAME=$(find ./dist/*.whl -maxdepth 1 -type f -printf '%f\n' | tail -n 1)" >> "$GITHUB_ENV"        
     - name: Archive production artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: ${{ env.WHEEL_NAME }}
         path: |
-          dist
+          dist/${{ env.WHEEL_NAME }}
+  # frozen-tools:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest]
+  #   runs-on: ${{ matrix.os }}
