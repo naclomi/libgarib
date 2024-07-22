@@ -1,5 +1,5 @@
 import os.path
-from setuptools import Extension, setup, find_namespace_packages
+from setuptools import setup, find_namespace_packages
 from pybind11.setup_helpers import Pybind11Extension
 
 def get_version_and_cmdclass(pkg_path):
@@ -32,7 +32,7 @@ setup(
     name="libgarib",
     version=version,
     cmdclass=cmdclass,
-    install_requires = [
+    install_requires=[
         "capstone",
         "construct",
         "jmespath",
@@ -61,7 +61,8 @@ setup(
                 os.path.join(".", "c", "fla2.c"),
                 os.path.join(".", "c", "fla2-python.cpp")
             ],
-            include_dirs=[os.path.join(".","c")]
+            include_dirs=[os.path.join(".", "c")],
+            cxx_std=11
         ),
     ]
 
