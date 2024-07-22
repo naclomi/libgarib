@@ -10,7 +10,7 @@ on:
   # pull_request:
   #   branches: [ "main" ]
 env:
-  python-version: "3.9"
+  python-version: "3.11"
 
 jobs:
   python-package:
