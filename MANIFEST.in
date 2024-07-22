@@ -1,4 +1,4 @@
-graft c/
+graft c
 graft python/libgarib
 
 global-exclude *~ *.py[cod] *.so

@@ -48,7 +48,7 @@ setup(
     packages=packages + ["libgarib.cppcore"],
     package_dir={
         "libgarib": os.path.join("python", "libgarib"),
-        "libgarib.cppcore": os.path.join("c", "")
+        "libgarib.cppcore": "c"
     },
     package_data={
         "libgarib": [os.path.join("parsers", "*.rng")],
