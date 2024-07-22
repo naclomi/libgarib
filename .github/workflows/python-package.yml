@@ -19,7 +19,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-
+    defaults:
+      run:
+        shell: bash
     steps:
     - uses: actions/checkout@v4
       with:
@@ -37,7 +39,6 @@ jobs:
       run: |
         python -m build
     - name: Recover build metadata
-      shell: bash
       run: |
         WHEEL_NAME=$(cd dist && ls *.whl | tail -n 1)
         echo "WHEEL_NAME=$WHEEL_NAME" >> "$GITHUB_ENV"
