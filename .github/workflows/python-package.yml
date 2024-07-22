@@ -38,6 +38,7 @@ jobs:
         pip install -r requirements.txt
     - name: Build package
       run: |
+        MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)
         python -m build
     - name: Recover build metadata
       run: |
