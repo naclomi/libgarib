@@ -36,11 +36,15 @@ jobs:
     - name: Build package
       run: |
         python -m build
-        echo "WHEEL_NAME=$(cd dist && ls *.whl | tail -n 1)" >> "$GITHUB_ENV"
+    - name: Recover build metadata
+      shell: bash
+      run: |
+        WHEEL_NAME=$(cd dist && ls *.whl | tail -n 1)
+        echo "WHEEL_NAME=$WHEEL_NAME" >> "$GITHUB_ENV"
+        echo "LIBGARIB_VERSION=$(IFS='-'; arr=($WHEEL_NAME); unset IFS; echo ${arr[1]})" >> "$GITHUB_ENV"
     - name: Freeze tools
       run: |
         python -m pip install dist/${{ env.WHEEL_NAME }} pyinstaller
-        echo "LIBGARIB_VERSION=$(python -c 'import libgarib as l; print(l.__version__)')" >> "$GITHUB_ENV"
         pyinstaller -y --clean tools/tools.spec
     - name: Archive python package
       uses: actions/upload-artifact@v4
