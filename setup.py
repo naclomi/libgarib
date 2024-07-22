@@ -62,7 +62,8 @@ setup(
                 os.path.join(".", "c", "fla2-python.cpp")
             ],
             include_dirs=[os.path.join(".", "c")],
-            cxx_std=11
+            cxx_std=11,
+            extra_compile_args=["-x", "c++"]
         ),
     ]
 
