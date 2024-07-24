@@ -30,11 +30,25 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.python-version }}
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin' # See 'Supported distributions' for available options
+        java-version: '21'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
         pip install -r requirements.txt
+    - name: Install Kaitai Struct compiler
+      run: |
+        wget https://github.com/kaitai-io/kaitai_struct_compiler/releases/download/0.10/kaitai-struct-compiler-0.10.zip
+        unzip kaitai-struct-compiler-0.10.zip
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-0.10/bin/kaitai-struct-compiler.bat)" >> "$GITHUB_ENV"
+        else
+          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-0.10/bin/kaitai-struct-compiler)" >> "$GITHUB_ENV"
+        fi
     - name: Build package
       run: |
         make clean parsers

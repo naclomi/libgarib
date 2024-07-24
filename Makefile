@@ -1,4 +1,10 @@
-pyinstaller-flags = --clean --noconfirm
+PYINSTALLER-FLAGS = --clean --noconfirm
+
+KAITAI_BIN ?= kaitai-struct-compiler
+KAITAI_LANGUAGES = -t javascript -t python -t construct
+ifeq "$(KAITAI_COMPILE_TYPESCRIPT)" "1"
+    KAITAI_LANGUAGES += -t typescript
+endif
 
 parsers:
 	mkdir -p python/libgarib/parsers
@@ -10,8 +16,8 @@ parsers:
 
 	mkdir -p build_artifacts
 	
-	kaitai-struct-compiler --read-pos --outdir ./build_artifacts \
-		-t javascript -t typescript -t python -t construct \
+	$(KAITAI_BIN) --read-pos --outdir ./build_artifacts \
+		$(KAITAI_LANGUAGES) \
 		formats/glover.lev.ksy \
 		formats/glover.objbank.ksy \
 		formats/glover.texbank.ksy
@@ -21,7 +27,10 @@ parsers:
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct
 	mv build_artifacts/javascript/* js/parsers
-	mv build_artifacts/typescript/* js/parsers
+
+	if [ -n "$(KAITAI_COMPILE_TYPESCRIPT)" ]; then	\
+		mv build_artifacts/typescript/* js/parsers; \
+	fi
 
 	./tools/level-tool.py xml-schema formats/glover.lev.ksy > formats/glover.lev.rng
 	cp formats/glover.lev.rng python/libgarib/parsers
@@ -38,7 +47,7 @@ python-package: clean parsers
 	python3 -m build
 
 standalone-tools:
-	pyinstaller $(pyinstaller-flags) tools/tools.spec
+	pyinstaller $(PYINSTALLER-FLAGS) tools/tools.spec
 
 clean:
 	rm -rf python/libgarib/parsers/*
