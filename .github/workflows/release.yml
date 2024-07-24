@@ -42,17 +42,19 @@ jobs:
         pip install -r requirements.txt
     - name: Install Kaitai Struct compiler
       run: |
-        wget https://github.com/kaitai-io/kaitai_struct_compiler/releases/download/0.10/kaitai-struct-compiler-0.10.zip
-        unzip kaitai-struct-compiler-0.10.zip
         if [ "$RUNNER_OS" == "Windows" ]; then
-          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-0.10/bin/kaitai-struct-compiler.bat)" >> "$GITHUB_ENV"
+          export PATH=$PATH:"/C/msys64/usr/bin/"
+        fi
+        wget https://github.com/kaitai-io/kaitai_struct_compiler/releases/download/0.10/kaitai-struct-compiler-0.10.zip
+        unzip kaitai-struct-compiler-*.zip
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-*/bin/kaitai-struct-compiler.bat)" >> "$GITHUB_ENV"
         else
-          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-0.10/bin/kaitai-struct-compiler)" >> "$GITHUB_ENV"
+          echo "KAITAI_BIN=$(realpath kaitai-struct-compiler-*/bin/kaitai-struct-compiler)" >> "$GITHUB_ENV"
         fi
     - name: Build package
       run: |
-        make clean parsers
-        python -m build
+        make clean parsers python-package
     - name: Recover build metadata
       run: |
         WHEEL_NAME=$(cd dist && ls *.whl | tail -n 1)
@@ -61,7 +63,7 @@ jobs:
     - name: Freeze tools
       run: |
         python -m pip install dist/${{ env.WHEEL_NAME }} pyinstaller
-        pyinstaller -y --clean tools/tools.spec
+        make standalone-tools
     - name: Archive python package
       uses: actions/upload-artifact@v4
       with:
