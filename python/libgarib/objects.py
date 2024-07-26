@@ -231,7 +231,7 @@ def packSprite(sprite_idx, file, texture_db):
     if len(mesh.primitives) != 1 or len(attrs["indices"]) != 6:
         raise gltf_helper.GLTFStructureException("Sprite mesh must be a 2-polygon square")
 
-    # TODO: also take xyz/scale from geo
+    # TODO: also take xyz/scale from geo + scale factor
 
     return objbank_writer.glover_objbank__sprite.build({
         "texture_id": gltf_helper.textureIdFromMaterial(attrs["material"][0], file), # / Int32ub,
@@ -246,18 +246,31 @@ def packSprite(sprite_idx, file, texture_db):
         "flags": 0, # TODO
     })
 
-DEFAULT_PACK_LIST = '["display_list", "faces", "verts", "norms"]'
+DEFAULT_PACK_LIST = ["display_list", "faces", "verts", "norms"]
 
-def packGeo(node_idx, bank, file, pack_list, texture_db):
+def updatePackList(obj, pack_list):
+    try:
+        new_list = json.loads(obj.extras["pack_list"])
+        pack_list.clear()
+        pack_list += new_list
+    except:
+        pass
+
+def packGeo(node_idx, bank, file, texture_db, scale_factor):
+    pack_list = DEFAULT_PACK_LIST[:]
+
     node = file.nodes[node_idx]
+    updatePackList(node, pack_list)
     mesh = file.meshes[node.mesh]
+    updatePackList(mesh, pack_list)
 
     geo_root = LinkableGeometry()
     bank.include(geo_root)
 
-    pack_list = json.loads(node.extras.get("pack_list", DEFAULT_PACK_LIST))
     if should_pack_geo(pack_list):
         attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
+        attrs["POSITION"] *= scale_factor
+        attrs["NORMAL"] *= scale_factor
         raw_geo_root = objbank_writer.glover_objbank__geometry.build({
             "num_faces": len(attrs["indices"])//3,
             "num_vertices": len(attrs["POSITION"]),
@@ -297,7 +310,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
             setPtr("vertices_ptr", geo_root.verts)
         if "colors" in pack_list:
             ubyte_values = (attrs["COLOR_0"]*255).astype("B")
-            raw_colors = b"".join(struct.pack("4B", *color[:2], 0) for color in ubyte_values)
+            raw_colors = b"".join(struct.pack("4B", *color[:3], 255) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
         if "norms" in pack_list:
@@ -340,7 +353,7 @@ def packGeo(node_idx, bank, file, pack_list, texture_db):
             toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
             texture_ids = toTextureIds(attrs["material"], file).astype(">I")
 
-            if "texture_ids" in pack_list:
+            if "textures" in pack_list:
                 raw_attr = []
                 for base_idx in range(0, len(attrs["indices"]), 3):
                     v0 = texture_ids[attrs["indices"][base_idx]]
@@ -402,7 +415,8 @@ def packAnimChannel(channel_data, bank):
 def packNode(node_idx, bank, file, texture_db, dopesheet):
     node = file.nodes[node_idx]
 
-    pack_list = json.loads(node.extras.get("pack_list", DEFAULT_PACK_LIST))
+    pack_list = DEFAULT_PACK_LIST[:]
+    updatePackList(node, pack_list)
 
     pointers = []
 
@@ -455,6 +469,10 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     if node.mesh is not None:
         gltf_mesh = file.meshes[node.mesh]
 
+        mesh_pack_list = pack_list[:]
+        updatePackList(gltf_mesh, mesh_pack_list)
+
+
         render_mode = RenderMode()
         render_mode.ripple = bool(gltf_mesh.extras.get("ripple", 0))
         render_mode.sync_to_global_clock = bool(gltf_mesh.extras.get("sync_to_global_clock", 0))
@@ -470,7 +488,8 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
                 material = file.materials[prims.material]
                 xlu = material.alphaMode == gltf.BLEND
                 masked = material.alphaMode == gltf.MASK
-                unlit = "KHR_materials_unlit" in material.extensions
+                unlit = ("KHR_materials_unlit" in material.extensions or
+                         int(material.extras.get("unlit", "0")) == 1)
             if first_material:
                 render_mode.xlu = xlu
                 render_mode.masked = masked
@@ -482,11 +501,11 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
                     render_mode.unlit != unlit):
                     print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
 
-        if "display_list" not in pack_list:
+        if "display_list" not in mesh_pack_list:
             render_mode.per_vertex_cn = render_mode.unlit
-            if render_mode.per_vertex_cn and "colors" not in pack_list:
+            if render_mode.per_vertex_cn and "colors" not in mesh_pack_list:
                 print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
-            elif not render_mode.per_vertex_cn and "norms" not in pack_list:
+            elif not render_mode.per_vertex_cn and "norms" not in mesh_pack_list:
                 print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
 
         render_mode = render_mode.toInt()
@@ -558,7 +577,8 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     if node.mesh is not None:
         # Pack geo
-        geo_root = packGeo(node_idx, bank, file, pack_list, texture_db)
+        # TODO: parameterize scale factor
+        geo_root = packGeo(node_idx, bank, file, texture_db, 1000)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
             dtype = ">I",
@@ -736,11 +756,7 @@ def setupActorAnimations(file, root_node_idx, bank):
 
 
 def packActor(file, bank, texture_db):
-
-    if len(file.scenes) != 1:
-        raise gltf_helper.GLTFStructureException("There must be only one scene")
-
-    for node_idx in file.scenes[0].nodes:
+    for node_idx in file.scenes[file.scene].nodes:
 
         root_node = file.nodes[node_idx]
 
