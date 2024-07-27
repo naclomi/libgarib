@@ -310,7 +310,7 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
             setPtr("vertices_ptr", geo_root.verts)
         if "colors" in pack_list:
             ubyte_values = (attrs["COLOR_0"]*255).astype("B")
-            raw_colors = b"".join(struct.pack("4B", *color[:3], 255) for color in ubyte_values)
+            raw_colors = b"".join(struct.pack("4B", *color[:3], 0) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
         if "norms" in pack_list:

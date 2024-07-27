@@ -1,6 +1,5 @@
+
 # general
-- build python packaging infrastucture to deploy libgarib modules and their C extensions
-  - see: https://stackoverflow.com/questions/42656388/how-to-put-a-swig-pybind11-c-project-on-pypi
 
 # rom-asset-tool
 
@@ -13,6 +12,12 @@
 ## common
 - Refactor pack list so it is less prone to silent errors
 - Try turning an extracted display list into a packed geo object and viewing it in model viewer
+
+## blender plugins
+- New plugin that can auto-create materials from texure banks?
+- Plugin that makes a UI element to graphically manage mesh
+  properties. ARTISTS SHOULD NOT HAVE TO MANUALLY MANAGE PACK LISTS
+  - See: https://docs.blender.org/api/current/info_quickstart.html#example-panel
 
 ## dumping
 - make sure metadata is placed consistently in heirarchy
@@ -48,6 +53,8 @@
   very slightly less than that.
   Unclear what it's for -- doesn't seem to be accessed
   by game code during normal operation
+  Possibly an accumulation of boundary paddings across
+  multiple modifications of the asset pack?
 
 # fla2.c
 
