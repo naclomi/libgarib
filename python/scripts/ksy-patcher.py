@@ -160,7 +160,16 @@ def getPrivate(cls, field_name, default=None):
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         return default
-    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+    if "." not in field_name:
+        qualname = cls.__qualname__
+    else:
+        parent_field, field_name = field_name.split(".")
+        try:
+            seq_idx = cls.SEQ_FIELDS.index(parent_field)
+        except ValueError:
+            return default
+        qualname = "{:}.Seq[{:}]".format(cls.__qualname__, seq_idx)
+    return private_fields.get(qualname, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
