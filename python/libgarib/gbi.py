@@ -111,13 +111,6 @@ class Command(object):
             (field.name, field) for field in self.fields
         )
 
-    def toBytes(self, values):
-        word = (self.opcode << 24) << 32
-        for field_name, field_value in values.items():
-            field = self.byName[field_name]
-            word |= (field_value << field.offset) & field.mask
-        return struct.pack(">Q", word)
-
     def __repr__(self):
         return self.name
 
