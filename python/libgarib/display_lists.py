@@ -67,6 +67,7 @@ def gltfNodeToDisplayList(node_idx, bank, file):
     if rebuild_dl:
         # TODO: rebuild dl
         start_offset = 0
+
         raise Exception()
     else:
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])

@@ -1,3 +1,4 @@
+import re
 import struct
 
 
@@ -97,11 +98,14 @@ class Field(object):
 
 
 class Command(object):
-    def __init__(self, name, opcode, fields=[], xform=None):
+    def __init__(self, name, opcode, fields=[], xform=None, inverse_xform=None):
         self.name = name
         self.opcode = opcode
         self.fields = fields
         self.xform = xform
+        self.inverse_xform = inverse_xform
+        if (self.xform is None) ^ (self.inverse_xform is None):
+            raise Exception("{:}: If xform is provided, inverse must be as well".format(name))
 
         self.byName = dict(
             (field.name, field) for field in self.fields
@@ -222,6 +226,11 @@ Fast3D = GBI(commands=[
         ("matrix", "G_MTX_PROJECTION" if args["matrix"] else "G_MTX_MODELVIEW"),
         ("math_op", "G_MTX_LOAD" if args["math_op"] else "G_MTX_MUL"),
         ("stack_op", "G_MTX_PUSH" if args["stack_op"] else "G_MTX_NOPUSH")
+    ), lambda args: mutate(
+        args,
+        ("matrix", {"G_MTX_PROJECTION": 1, "G_MTX_MODELVIEW":0}[args["matrix"]]),
+        ("math_op", {"G_MTX_LOAD": 1, "G_MTX_MUL":0}[args["math_op"]]),
+        ("stack_op",  {"G_MTX_PUSH": 1, "G_MTX_NOPUSH":0}[args["stack_op"]])
     )),
     ("G_RESERVED0", 2),
     ("G_MOVEMEM", 3, Field.list(
@@ -241,6 +250,18 @@ Fast3D = GBI(commands=[
                 12: "G_MV_POINT",
                 14: "G_MV_MATRIX"
             }.get(args["index"], "UNKNOWN_0x{:02X}".format(args["index"])))
+    ), lambda args: mutate(
+        args,
+        ("size", ((args["size"]//8)-1) << 3),
+        ("offset", args["offset"]//8),
+        ("index", {
+                "G_MV_MMTX": 2,
+                "G_MV_PMTX": 6,
+                "G_MV_VIEWPORT": 8,
+                "G_MV_LIGHT": 10,
+                "G_MV_POINT": 12,
+                "G_MV_MATRIX": 14
+            }.get(args["index"], int(re.match("UNKNOWN_(0x[0-9A-Fa-f]{2})$", "UNKNOWN_0xAF").group(1),0)))
     )),
     ("G_VTX", 4),
     ("G_RESERVED1", 5),
@@ -250,6 +271,9 @@ Fast3D = GBI(commands=[
     ), lambda args: mutate(
         args,
         ("link", args["link"] == 0),
+    ), lambda args: mutate(
+        args,
+        ("link", 0 if args["link"] else 1),
     )),
     ("G_RESERVED2", 7),
     ("G_RESERVED3", 8),
@@ -265,6 +289,11 @@ Fast3D = GBI(commands=[
         ("v0", args["v0"]//2),
         ("v1", args["v1"]//2),
         ("v2", args["v2"]//2)
+    ), lambda args: mutate(
+        args,
+        ("v0", int(args["v0"]*2)),
+        ("v1", int(args["v1"]*2)),
+        ("v2", int(args["v2"]*2))
     )),
     ("G_CULLDL", 0xBE, Field.list(
         ("vstart", 32, 16),
@@ -289,6 +318,18 @@ Fast3D = GBI(commands=[
                 0x0C: "G_MW_FORCEMTX",
                 0x0E: "G_MW_PERSPNORM",
             }[args["index"]]),
+    ), lambda args: mutate(
+        args,
+        ("index", {
+                "G_MW_MATRIX": 0x00,
+                "G_MW_NUMLIGHT": 0x02,
+                "G_MW_CLIP": 0x04,
+                "G_MW_SEGMENT": 0x06,
+                "G_MW_FOG": 0x08,
+                "G_MW_LIGHTCOL": 0x0A,
+                "G_MW_FORCEMTX": 0x0C,
+                "G_MW_PERSPNORM": 0x0E,
+            }[args["index"]]),
     )),
     ("G_TEXTURE", 0xBB, Field.list(
         ("mipmap_levels", 43, 3),
@@ -301,6 +342,11 @@ Fast3D = GBI(commands=[
         ("enable", args["enable"] == 1),
         ("scale_s", args["scale_s"]/2**16),
         ("scale_t", args["scale_t"]/2**16),
+    ), lambda args: mutate(
+        args,
+        ("enable", 1 if args["enable"] else 0),
+        ("scale_s", args["scale_s"]*2**16),
+        ("scale_t", args["scale_t"]*2**16),
     )),
     ("G_SETOTHERMODE_H", 0xBA, Field.list(
         ("sft", 40, 8),
@@ -400,6 +446,10 @@ Fast3D = GBI(commands=[
         args,
         ("lod_min", args["lod_min"]/256),
         ("lod_fraction", args["lod_fraction"]/256),
+    ), lambda args: mutate(
+        args,
+        ("lod_min", args["lod_min"]*256),
+        ("lod_fraction", args["lod_fraction"]*256),
     )),
     ("G_SETBLENDCOLOR", 0xf9, Field.list(
         ("r", 24, 8),
@@ -447,6 +497,12 @@ Fast3D = GBI(commands=[
         ("ult", args["ult"]/4),
         ("lrs", args["lrs"]/4),
         ("lrt", args["lrt"]/4),
+    ), lambda args: mutate(
+        args,
+        ("uls", args["uls"]*4),
+        ("ult", args["ult"]*4),
+        ("lrs", args["lrs"]*4),
+        ("lrt", args["lrt"]*4),
     )),
     ("G_LOADBLOCK", 0xf3, Field.list(
         ("uls", 44, 12),
@@ -460,6 +516,12 @@ Fast3D = GBI(commands=[
         ("ult", args["ult"]/4),
         ("lrs", (args["lrs"]+1)/4),
         ("dxt", args["dxt"]/2048),
+    ), lambda args: mutate(
+        args,
+        ("uls", args["uls"]*4),
+        ("ult", args["ult"]*4),
+        ("lrs", (args["lrs"]*4)-1),
+        ("dxt", args["dxt"]*2048),
     )),
     ("G_SETTILESIZE", 0xf2, Field.list(
         ("uls", 44, 12),
@@ -473,6 +535,12 @@ Fast3D = GBI(commands=[
         ("ult", args["ult"]/4),
         ("lrs", args["lrs"]/4),
         ("lrt", args["lrt"]/4),
+    ), lambda args: mutate(
+        args,
+        ("uls", args["uls"]*4),
+        ("ult", args["ult"]*4),
+        ("lrs", args["lrs"]*4),
+        ("lrt", args["lrt"]*4),
     )),
     ("G_LOADTLUT", 0xf0, Field.list(
         ("tile", 24, 3),
