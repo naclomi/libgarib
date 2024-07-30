@@ -208,6 +208,10 @@ def process_othermode_h_args(args):
     return out_args
 
 
+def process_othermode_h_args_inv(args):
+    # TODO
+    raise NotImplementedError()
+
 color_format = {0: "RGBA", 1: "YUV", 2: "CI", 3: "IA", 4: "I"}
 color_format_inv = {"RGBA": 0, "YUV": 1, "CI": 2, "IA": 3, "I": 4}
 
@@ -353,7 +357,8 @@ Fast3D = GBI(commands=[
         ("sft", 40, 8),
         ("len", 32, 8),
         ("data", 0, 32),
-    ), process_othermode_h_args),
+    ), process_othermode_h_args,
+       process_othermode_h_args_inv),
     ("G_SETOTHERMODE_L", 0xB9, Field.list(
         ("sft", 40, 8),
         ("len", 32, 8),
