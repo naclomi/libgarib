@@ -176,6 +176,16 @@ class GBI(object):
             args = command.xform(args)
         return (command, args)
 
+    def pack(self, command, args):
+        bits = 0
+        bits |= command.opcode << 56
+        if command.inverse_xform is not None:
+            args = command.inverse_xform(args)
+        for arg_name, arg_value in args.items():
+            field = command.byName[arg_name]
+            bits |= (arg_value & (2**field.size - 1)) << field.offset
+        return struct.pack(">II", (bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF)
+
 
 othermode_h_fields = Field.list(
     ("G_MDSFT_ALPHADITHER", 4, 2),
