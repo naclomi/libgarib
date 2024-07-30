@@ -209,6 +209,7 @@ def process_othermode_h_args(args):
 
 
 color_format = {0: "RGBA", 1: "YUV", 2: "CI", 3: "IA", 4: "I"}
+color_format_inv = {"RGBA": 0, "YUV": 1, "CI": 2, "IA": 3, "I": 4}
 
 # TODO:
 #   Find some way to parse G_TEXRECT alongside
@@ -414,6 +415,10 @@ Fast3D = GBI(commands=[
         args,
         ("fmt", color_format[args["fmt"]]),
         ("siz", {0: 4, 1: 8, 2: 16, 3: 32}[args["siz"]])
+    ),  lambda args: mutate(
+        args,
+        ("fmt", color_format_inv[args["fmt"]]),
+        ("siz", {4: 0, 8: 1, 16: 2, 32: 3}[args["siz"]])
     )),
 
     ("G_SETCOMBINE", 0xfc, Field.list(
@@ -484,6 +489,10 @@ Fast3D = GBI(commands=[
         args,
         ("fmt", color_format[args["fmt"]]),
         ("siz", {0: 4, 1: 8, 2: 16, 3: 32}[args["siz"]])
+    ),  lambda args: mutate(
+        args,
+        ("fmt", color_format_inv[args["fmt"]]),
+        ("siz", {4: 0, 8: 1, 16: 2, 32: 3}[args["siz"]])
     )),
     ("G_LOADTILE", 0xf4, Field.list(
         ("uls", 44, 12),
@@ -554,7 +563,8 @@ Fast3D = GBI(commands=[
         args,
         ("z", signed(args["z"], 16)),
         ("delta_z", signed(args["delta_z"], 16))
-    )),
+    ), mutate # inverse is just a no-op, args don't need to be cast as signed when packing
+    ),
     ("G_SETSCISSOR", 0xed, Field.list(
         ("ulx", 44, 12),
         ("uly", 32, 12),
@@ -567,6 +577,13 @@ Fast3D = GBI(commands=[
                 0x00: "G_SC_NON_INTERLACE",
                 0x02: "G_SC_EVEN_INTERLACE",
                 0x03: "G_SC_ODD_INTERLACE",
+            }[args["mode"]]),
+    ), lambda args: mutate(
+        args,
+        ("mode", {
+                "G_SC_NON_INTERLACE": 0x00,
+                "G_SC_EVEN_INTERLACE": 0x02,
+                "G_SC_ODD_INTERLACE": 0x03,
             }[args["mode"]]),
     )),
     ("G_SETCONVERT", 0xec),
@@ -625,6 +642,9 @@ F3DEX = GBI(inherit=Fast3D, commands=[
     ), lambda args: mutate(
         args,
         ("v0", args["v0"]//2)
+    ), lambda args: mutate(
+        args,
+        ("v0", int(args["v0"]*2))
     )),
 
     # New commands
@@ -642,6 +662,16 @@ F3DEX = GBI(inherit=Fast3D, commands=[
             0x18: "G_MWO_POINT_XYSCREEN",
             0x1C: "G_MWO_POINT_ZSCREEN",
         }[args["where"]]),
+    ), lambda args: mutate(
+        args,
+        ("vtx", int(args["vtx"]*2)),
+        ("val", struct.unpack(">I", args["val"])[0]),
+        ("where", {
+            "G_MWO_POINT_RGBA": 0x10,
+            "G_MWO_POINT_ST": 0x14,
+            "G_MWO_POINT_XYSCREEN": 0x18,
+            "G_MWO_POINT_ZSCREEN": 0x1C,
+        }[args["where"]]),
     )),
     ("G_TRI2", 0xB1, Field.list(
         ("v00", 48, 8),
@@ -658,6 +688,14 @@ F3DEX = GBI(inherit=Fast3D, commands=[
         ("v10", args["v10"]//2),
         ("v11", args["v11"]//2),
         ("v12", args["v12"]//2)
+    ), lambda args: mutate(
+        args,
+        ("v00", int(args["v00"]*2)),
+        ("v01", int(args["v01"]*2)),
+        ("v02", int(args["v02"]*2)),
+        ("v10", int(args["v10"]*2)),
+        ("v11", int(args["v11"]*2)),
+        ("v12", int(args["v12"]*2))
     )),
     ("G_BRANCH_Z", 0xB0),
     ("G_LOAD_UCODE", 0xAF),
