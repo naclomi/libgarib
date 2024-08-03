@@ -910,8 +910,9 @@ original_names = {
 private_fields = {
 }
 
-import sys
 import importlib
+import re
+import sys
 
 _module_cache = {}
 _cls_cache = {}
@@ -943,8 +944,28 @@ def getPrivate(cls, field_name, default=None):
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         return default
-    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+    if "." not in field_name:
+        qualname = cls.__qualname__
+    else:
+        parent_field, field_name = field_name.split(".")
+        try:
+            seq_idx = cls.SEQ_FIELDS.index(parent_field)
+        except ValueError:
+            return default
+        qualname = "{:}.Seq[{:}]".format(cls.__qualname__, seq_idx)
+    return private_fields.get(qualname, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getPrivateChildren(cls):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        raise StopIteration()
+    children = cls.getPrivate("_annotated_children")
+    for child_key in children:
+        field_idx = int(re.findall(r"\[([0-9]+)\]$", child_key)[-1])
+        yield cls.SEQ_FIELDS[idx], private_fields[child_key]
 
 @classmethod
 def getSwitches(cls):

@@ -2006,6 +2006,8 @@ types:
     seq:
       - id: object_id
         type: u4
+        -semantic:
+          namespace: objects
       - id: name
         encoding: ASCII
         type: str

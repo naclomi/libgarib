@@ -43,7 +43,15 @@ def scrapePrivateFields(node, path):
     fields = {}
     crawlYaml(node, path, dict_callback=(_scrapePrivateFieldsCallback, fields))
     return fields
-
+def cacheAnnotatedChildren(fields):
+    for key in list(fields.keys()):
+        parent = ".".join(key.split(".")[:-1])
+        parent_fields = fields.get(parent, {})
+        child_list = parent_fields.get("_annotated_children", [])
+        child_list.append(to_upper_camel(key))
+        parent_fields["_annotated_children"] = child_list
+        fields[parent] = parent_fields
+        
 
 def _scrapeNamesCallback(node, path, k, v, names):
     if len(path.split(".")) <= 1:
@@ -80,11 +88,11 @@ if __name__ == "__main__":
             ksy_sha1 = hashlib.sha1(f.read().encode("utf-8"))
 
         fields = scrapePrivateFields(ksy["types"], ksy["meta"]["id"])
+        cacheAnnotatedChildren(fields)
         names = scrapeNames(ksy["types"], ksy["meta"]["id"])
         type_codes = ksy_scrape_type_codes(ksy)
 
         code_suffix = "\n"
-
 
         code_suffix += "switch_fields = {\n"
         for type_name, type_def in type_codes.items():
@@ -127,8 +135,9 @@ if __name__ == "__main__":
         code_suffix += "}\n"
 
         code_suffix += r"""
-import sys
 import importlib
+import re
+import sys
 
 _module_cache = {}
 _cls_cache = {}
@@ -171,6 +180,23 @@ def getPrivate(cls, field_name, default=None):
         qualname = "{:}.Seq[{:}]".format(cls.__qualname__, seq_idx)
     return private_fields.get(qualname, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getAnnotatedChildren(cls):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        raise StopIteration()
+    children = cls.getPrivate("_annotated_children")
+    for child_key in children:
+        subscript_suffix = re.findall(r"\[([0-9]+)\]$", child_key)
+        if len(subscript_suffix) > 0:
+            field_idx = int(re.findall(r"\[([0-9]+)\]$", child_key)[-1])
+            child_name = cls.SEQ_FIELDS[field_idx]
+        else:
+            child_name = child_key
+        yield child_name, private_fields[child_key]
+KaitaiStruct.getAnnotatedChildren = getAnnotatedChildren
 
 @classmethod
 def getSwitches(cls):

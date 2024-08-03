@@ -4591,7 +4591,8 @@ private_fields = {
     'GloverLevel.PlatScale': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Vent': {'semantic': {'declares': 'VENT'}},
     'GloverLevel.VentDutyCycle': {'semantic': {'modifies': 'VENT'}},
-    'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}},
+    'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}, '_annotated_children': ['GloverLevel.Platform.Seq[0]']},
+    'GloverLevel.Platform.Seq[0]': {'semantic': {'namespace': 'objects'}},
     'GloverLevel.NullPlatform': {'semantic': {'declares': 'PLATFORM'}},
     'GloverLevel.Enemy': {'semantic': {'declares': 'ENEMY'}},
     'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
@@ -4600,10 +4601,12 @@ private_fields = {
     'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions'}},
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
+    'GloverLevel': {'_annotated_children': ['GloverLevel.Actor0xbf', 'GloverLevel.AnimatedBackgroundActor', 'GloverLevel.BackgroundActor', 'GloverLevel.LandActor', 'GloverLevel.SetActorRotation', 'GloverLevel.SetActorScale', 'GloverLevel.Cameo', 'GloverLevel.CameoInst', 'GloverLevel.Puzzle', 'GloverLevel.PuzzleAnd', 'GloverLevel.PuzzleOr', 'GloverLevel.PuzzleNumtimes', 'GloverLevel.PuzzleAny', 'GloverLevel.PuzzleCond', 'GloverLevel.PuzzleAction', 'GloverLevel.GaribGroup', 'GloverLevel.Garib', 'GloverLevel.PlatMvspn0x58', 'GloverLevel.PlatMvspn0x59', 'GloverLevel.PlatMvspn0x5a', 'GloverLevel.PlatSetParent', 'GloverLevel.PlatMvspn0x73', 'GloverLevel.PlatMvspn0x74', 'GloverLevel.PlatCopySpinFromParent', 'GloverLevel.PlatSpecial0xb8', 'GloverLevel.PlatActorEnableWaterAnimation', 'GloverLevel.Buzzer', 'GloverLevel.BuzzerDutyCycle', 'GloverLevel.SetObjectSparkle', 'GloverLevel.PlatSpecial0xb9', 'GloverLevel.SetExit', 'GloverLevel.PlatCat0x69', 'GloverLevel.PlatformConveyor', 'GloverLevel.PlatSpecial0x9e', 'GloverLevel.SetTeleport', 'GloverLevel.PlatFan0x8a', 'GloverLevel.PlatMagnet0x8b', 'GloverLevel.PlatCheckpoint', 'GloverLevel.PlatCrumb0x67', 'GloverLevel.PlatSpecial0xc7', 'GloverLevel.PlatSpecial0x6e', 'GloverLevel.PlatSpecial0x8e', 'GloverLevel.PlatPush0x5b', 'GloverLevel.PlatConf0x72', 'GloverLevel.PlatOrbitSound0xc4', 'GloverLevel.Plat0xc6', 'GloverLevel.PlatOrbitAroundPoint', 'GloverLevel.PlatOrbitPause', 'GloverLevel.PlatOrbitFlip0x77', 'GloverLevel.Plat0xc3', 'GloverLevel.PlatSpinSound0xc5', 'GloverLevel.Plat0x9f', 'GloverLevel.PlatSpinPause0x7c', 'GloverLevel.PlatSpinFlip', 'GloverLevel.Plat0x7e', 'GloverLevel.PlatConstantSpin', 'GloverLevel.PlatSpin0x80', 'GloverLevel.PlatTopple0x81', 'GloverLevel.LookAtHand0x60', 'GloverLevel.LookAtBall0x61', 'GloverLevel.PlatRocking', 'GloverLevel.Plat0x78', 'GloverLevel.PlatSound0xc1', 'GloverLevel.PlatSound0xc2', 'GloverLevel.PlatTurnTowardsPathPoint', 'GloverLevel.PlatGoForwards0x5f', 'GloverLevel.PlatPathPoint', 'GloverLevel.PlatMaxVelocity', 'GloverLevel.PlatPathAcceleration', 'GloverLevel.PlatPos0xa7', 'GloverLevel.PlatSetInitialPos', 'GloverLevel.PlatPlayObjectAnimation', 'GloverLevel.Plat0xa4', 'GloverLevel.PlatVentAdvanceFrames', 'GloverLevel.PlatNoClip', 'GloverLevel.PlatDestructible', 'GloverLevel.PlatDestructibleSound', 'GloverLevel.Plat0x9d', 'GloverLevel.Plat0x66', 'GloverLevel.PlatActorSurfaceType', 'GloverLevel.PlatSetTag', 'GloverLevel.PlatSpike', 'GloverLevel.PlatScale', 'GloverLevel.Vent', 'GloverLevel.VentDutyCycle', 'GloverLevel.Platform', 'GloverLevel.NullPlatform', 'GloverLevel.Enemy', 'GloverLevel.EnemySetAttentionBbox', 'GloverLevel.Enemy0xba', 'GloverLevel.EnemyFinalize', 'GloverLevel.EnemyNormalInstruction', 'GloverLevel.EnemyConditionalInstruction', 'GloverLevel.EnemyAttackInstruction']},
 }
 
-import sys
 import importlib
+import re
+import sys
 
 _module_cache = {}
 _cls_cache = {}
@@ -4635,8 +4638,34 @@ def getPrivate(cls, field_name, default=None):
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         return default
-    return private_fields.get(cls.__qualname__, {}).get(field_name, default)
+    if "." not in field_name:
+        qualname = cls.__qualname__
+    else:
+        parent_field, field_name = field_name.split(".")
+        try:
+            seq_idx = cls.SEQ_FIELDS.index(parent_field)
+        except ValueError:
+            return default
+        qualname = "{:}.Seq[{:}]".format(cls.__qualname__, seq_idx)
+    return private_fields.get(qualname, {}).get(field_name, default)
 KaitaiStruct.getPrivate = getPrivate
+
+@classmethod
+def getPrivateChildren(cls):
+    try:
+        private_fields = sys.modules[cls.__module__].private_fields
+    except AttributeError:
+        raise StopIteration()
+    children = cls.getPrivate("_annotated_children")
+    for child_key in children:
+        subscript_suffix = re.findall(r"\[([0-9]+)\]$", child_key)
+        if len(subscript_suffix) > 0:
+            field_idx = int(re.findall(r"\[([0-9]+)\]$", child_key)[-1])
+            child_name = cls.SEQ_FIELDS[field_idx]
+        else:
+            child_name = child_key
+        yield child_name, private_fields[child_key]
+KaitaiStruct.getPrivateChildren = getPrivateChildren
 
 @classmethod
 def getSwitches(cls):
@@ -4647,5 +4676,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = 'c63a364204ebedf2e33cf671b0c73ac9f2dbb237'
+ksy_hash = '69d283564a622af419ce94a6cccd90ccb78dec52'
 #############
