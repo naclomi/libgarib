@@ -211,8 +211,15 @@ glover_level__plat_mvspn_0x59 = Struct(
 glover_level__cameo = Struct(
 )
 
+def glover_level__plat_constant_spin__axis(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+	)
+
 glover_level__plat_constant_spin = Struct(
-	'axis' / Int16ub,
+	'axis' / glover_level__plat_constant_spin__axis(Int16ub),
 	'initial_theta' / Float32b,
 	'speed' / Float32b,
 )
@@ -672,11 +679,19 @@ glover_level__puzzle_action_default = Struct(
 	'u32_0x20' / Int32ub,
 )
 
+def glover_level__garib__garib_type(subcon):
+	return Enum(subcon,
+		garib=0,
+		bang_500pt=1,
+		extra_life=2,
+		mad_garib=3,
+	)
+
 glover_level__garib = Struct(
 	'x' / Float32b,
 	'y' / Float32b,
 	'z' / Float32b,
-	'type' / Int16ub,
+	'type' / glover_level__garib__garib_type(Int16ub),
 	'dynamic_shadow' / Int16ub,
 )
 

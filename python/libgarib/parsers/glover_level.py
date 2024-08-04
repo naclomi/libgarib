@@ -777,6 +777,11 @@ class GloverLevel(KaitaiStruct):
 
 
     class PlatConstantSpin(KaitaiStruct):
+
+        class Axis(Enum):
+            x = 0
+            y = 1
+            z = 2
         SEQ_FIELDS = ["axis", "initial_theta", "speed"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
@@ -787,7 +792,7 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             self._debug['axis']['start'] = self._io.pos()
-            self.axis = self._io.read_u2be()
+            self.axis = KaitaiStream.resolve_enum(GloverLevel.PlatConstantSpin.Axis, self._io.read_u2be())
             self._debug['axis']['end'] = self._io.pos()
             self._debug['initial_theta']['start'] = self._io.pos()
             self.initial_theta = self._io.read_f4be()
@@ -2552,6 +2557,12 @@ class GloverLevel(KaitaiStruct):
 
 
     class Garib(KaitaiStruct):
+
+        class GaribType(Enum):
+            garib = 0
+            bang_500pt = 1
+            extra_life = 2
+            mad_garib = 3
         SEQ_FIELDS = ["x", "y", "z", "type", "dynamic_shadow"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
@@ -2571,7 +2582,7 @@ class GloverLevel(KaitaiStruct):
             self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
             self._debug['type']['start'] = self._io.pos()
-            self.type = self._io.read_u2be()
+            self.type = KaitaiStream.resolve_enum(GloverLevel.Garib.GaribType, self._io.read_u2be())
             self._debug['type']['end'] = self._io.pos()
             self._debug['dynamic_shadow']['start'] = self._io.pos()
             self.dynamic_shadow = self._io.read_u2be()
@@ -4684,5 +4695,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '15d2f382567d0314d342d5f2fb622fe8f7a66112'
+ksy_hash = '903403fab83eb57e6cb63ee282643610e70f743a'
 #############

@@ -984,7 +984,6 @@ types:
   garib:
     -semantic:
       modifies: GARIB_GROUP
-    # type: {"0": "garib", "1": "500pt-bang", "2": "extra-life", "3": "mad-garib"}
     seq:
       - id: x
         type: f4
@@ -994,8 +993,15 @@ types:
         type: f4
       - id: type
         type: u2
+        enum: garib_type
       - id: dynamic_shadow
         type: u2
+    enums:
+      garib_type:
+        0: garib
+        1: bang_500pt
+        2: extra_life
+        3: mad_garib
 
   powerup:
     seq:
@@ -1532,16 +1538,21 @@ types:
         type: u4
 
   plat_constant_spin: # 0x7f
-    # TODO: axis is enum: {"0": "x", "1": "y", "2": "z"}
     -semantic:
       modifies: PLATFORM
     seq:
       - id: axis
         type: u2
+        enum: axis
       - id: initial_theta
         type: f4
       - id: speed
         type: f4
+    enums:
+      axis:
+        0: "x"
+        1: "y"
+        2: "z"
 
   plat_spin_0x80: # 0x80
     -semantic:

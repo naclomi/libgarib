@@ -898,6 +898,16 @@ var GloverLevel = (function() {
   })();
 
   var PlatConstantSpin = GloverLevel.PlatConstantSpin = (function() {
+    PlatConstantSpin.Axis = Object.freeze({
+      X: 0,
+      Y: 1,
+      Z: 2,
+
+      0: "X",
+      1: "Y",
+      2: "Z",
+    });
+
     function PlatConstantSpin(_io, _parent, _root) {
       this.__type = 'PlatConstantSpin';
       this._io = _io;
@@ -908,7 +918,7 @@ var GloverLevel = (function() {
       this._read();
     }
     PlatConstantSpin.prototype._read = function() {
-      this._debug.axis = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this._debug.axis = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.PlatConstantSpin.Axis" };
       this.axis = this._io.readU2be();
       this._debug.axis.end = this._io.pos;
       this._debug.initialTheta = { start: this._io.pos, ioOffset: this._io.byteOffset };
@@ -3135,6 +3145,18 @@ var GloverLevel = (function() {
   })();
 
   var Garib = GloverLevel.Garib = (function() {
+    Garib.GaribType = Object.freeze({
+      GARIB: 0,
+      BANG_500PT: 1,
+      EXTRA_LIFE: 2,
+      MAD_GARIB: 3,
+
+      0: "GARIB",
+      1: "BANG_500PT",
+      2: "EXTRA_LIFE",
+      3: "MAD_GARIB",
+    });
+
     function Garib(_io, _parent, _root) {
       this.__type = 'Garib';
       this._io = _io;
@@ -3154,7 +3176,7 @@ var GloverLevel = (function() {
       this._debug.z = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.z = this._io.readF4be();
       this._debug.z.end = this._io.pos;
-      this._debug.type = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this._debug.type = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.Garib.GaribType" };
       this.type = this._io.readU2be();
       this._debug.type.end = this._io.pos;
       this._debug.dynamicShadow = { start: this._io.pos, ioOffset: this._io.byteOffset };
