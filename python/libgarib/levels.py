@@ -2,13 +2,16 @@ import base64
 import hashlib
 import enum
 import os
+import re
 
+import construct
 from lxml import etree as ET
 import kaitaistruct
 
 from . import parsers as parsers 
 from .ksy import to_upper_camel
 from .linkable import padSize
+from .hash import canonicalize_reference
 from .parsers.glover_level import GloverLevel, ksy_hash as glover_level_ksy_hash
 from ._version import __version__
 
@@ -39,9 +42,17 @@ def coerce_to_subcon_type(str_value, subcon):
         except KeyError:
             cast_value = int(str_value, 0)
     else:
-        # TODO: pad/truncate if fixed size string
-        # use field_size = subcon_curson.sizeof()
-        cast_value = str_value
+        try:
+            dst_len = subcon.sizeof()
+        except construct.core.SizeofError:
+            dst_len = len(str_value)
+
+        if len(str_value) > dst_len:
+            cast_value = str_value[:dst_len]
+        elif len(str_value) < dst_len:
+            cast_value = str_value.ljust(dst_len, "\x00")
+        else:
+            cast_value = str_value
 
     return cast_value
 
@@ -55,6 +66,13 @@ def prepareConstructDict(xml_node, xml_iter):
     complex_param_types = {}
     cmd_params = {}
 
+    for annotated_field, annotations in ksy_type.getAnnotatedChildren():
+        hash_namespace = annotations.get("semantic", {}).get("hash-namespace", None)
+        if hash_namespace is not None:
+            raw_ref = xml_node.attrib[annotated_field]
+            canonical_ref = canonicalize_reference(raw_ref)
+            xml_node.attrib[annotated_field] = "0x{:08X}".format(canonical_ref)
+
     for subcon in construct_type.subcons:
         if (subcon.name not in xml_node.attrib and
                 subcon.name not in switch_fields):
@@ -67,7 +85,7 @@ def prepareConstructDict(xml_node, xml_iter):
     for subcon in construct_type.subcons:
         if subcon.name in cmd_params:
             continue
-        elif subcon.name in xml_node.attrib:
+        if subcon.name in xml_node.attrib:
             cmd_params[subcon.name] = coerce_to_subcon_type(xml_node.attrib[subcon.name], subcon)
 
     for subcon in construct_type.subcons:

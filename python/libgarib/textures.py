@@ -7,18 +7,10 @@ import PIL.Image
 
 from .parsers.glover_texbank import GloverTexbank
 from .parsers.construct import glover_texbank as texbank_writer
-from .hash import hash_str
+from .hash import canonicalize_reference
 
 #######################################
 # Conversion functions
-
-def filenameToTexID(name):
-    basename = os.path.basename(name)
-    if basename.startswith("0x"):
-        return int(basename.split(".")[0], 16)
-    else:
-        return hash_str(basename)
-
 
 def encodeRGBA16(r, g, b, a):
     r = (int((r/255)*31) & 0x1f) << 11
@@ -185,7 +177,7 @@ class TextureDB(object):
         self.byFilename = {}
 
     def addIm(self, im, filename):
-        tex_raw = imToTex(im, filenameToTexID(filename))
+        tex_raw = imToTex(im, canonicalize_reference(filename))
         tex = GloverTexbank.Texture.from_bytes(tex_raw)
         self.byId[tex.id] = tex
 

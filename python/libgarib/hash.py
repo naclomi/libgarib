@@ -1,3 +1,6 @@
+import os.path
+import re
+
 # Table and algorithm provided by:
 # http://www.mrob.com/pub/comp/crc-all.html
 # https://web.mit.edu/wwwdev/src/harvest-1.3.pl3/components/gatherer/standard/unbinhex/crc/ccitt32.c
@@ -74,3 +77,11 @@ def hash_str(text):
         table_index = ((value >> 24) ^ ord(char))
         value = ((value << 8) ^ CRC_TABLE[table_index]) & 0xFFFFFFFF
     return value
+
+def canonicalize_reference(raw_ref):
+    basename = os.path.basename(raw_ref)
+    match = re.match("^(0x[0-9A-Fa-f]{8})", basename)
+    if match is None:
+        return hash_str(basename)
+    else:
+        return int(match.group(1), 0)

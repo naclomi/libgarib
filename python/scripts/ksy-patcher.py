@@ -187,7 +187,7 @@ def getAnnotatedChildren(cls):
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         raise StopIteration()
-    children = cls.getPrivate("_annotated_children")
+    children = cls.getPrivate("_annotated_children", [])
     for child_key in children:
         subscript_suffix = re.findall(r"\[([0-9]+)\]$", child_key)
         if len(subscript_suffix) > 0:

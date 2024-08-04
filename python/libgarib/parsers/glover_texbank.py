@@ -178,15 +178,21 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
-def getPrivateChildren(cls):
+def getAnnotatedChildren(cls):
     try:
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         raise StopIteration()
     children = cls.getPrivate("_annotated_children")
     for child_key in children:
-        field_idx = int(re.findall(r"\[([0-9]+)\]$", child_key)[-1])
-        yield cls.SEQ_FIELDS[idx], private_fields[child_key]
+        subscript_suffix = re.findall(r"\[([0-9]+)\]$", child_key)
+        if len(subscript_suffix) > 0:
+            field_idx = int(re.findall(r"\[([0-9]+)\]$", child_key)[-1])
+            child_name = cls.SEQ_FIELDS[field_idx]
+        else:
+            child_name = child_key
+        yield child_name, private_fields[child_key]
+KaitaiStruct.getAnnotatedChildren = getAnnotatedChildren
 
 @classmethod
 def getSwitches(cls):

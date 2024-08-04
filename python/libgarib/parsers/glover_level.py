@@ -4507,11 +4507,16 @@ original_names = {
 }
 private_fields = {
     'GloverLevel.Actor0xbf': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
-    'GloverLevel.AnimatedBackgroundActor': {'semantic': {'declares': 'ANIMATED_BG_ACTOR'}},
-    'GloverLevel.BackgroundActor': {'semantic': {'declares': 'BG_ACTOR'}},
-    'GloverLevel.LandActor': {'semantic': {'declares': 'LAND_ACTOR'}},
+    'GloverLevel.AnimatedBackgroundActor': {'semantic': {'declares': 'ANIMATED_BG_ACTOR'}, '_annotated_children': ['GloverLevel.AnimatedBackgroundActor.Seq[0]']},
+    'GloverLevel.AnimatedBackgroundActor.Seq[0]': {'semantic': {'hash-namespace': 'object'}},
+    'GloverLevel.BackgroundActor': {'semantic': {'declares': 'BG_ACTOR'}, '_annotated_children': ['GloverLevel.BackgroundActor.Seq[0]']},
+    'GloverLevel.BackgroundActor.Seq[0]': {'semantic': {'hash-namespace': 'object'}},
+    'GloverLevel.LandActor': {'semantic': {'declares': 'LAND_ACTOR'}, '_annotated_children': ['GloverLevel.LandActor.Seq[0]']},
+    'GloverLevel.LandActor.Seq[0]': {'semantic': {'hash-namespace': 'object'}},
     'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.Water.Seq[10]': {'semantic': {'hash-namespace': 'object'}},
+    'GloverLevel.Backdrop.Seq[0]': {'semantic': {'hash-namespace': 'texture'}},
     'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
     'GloverLevel.CameoInst': {'semantic': {'modifies': 'CAMEO'}},
     'GloverLevel.Puzzle': {'semantic': {'declares': 'PUZZLE'}},
@@ -4581,7 +4586,8 @@ private_fields = {
     'GloverLevel.Plat0xa4': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatVentAdvanceFrames': {'semantic': {'modifies': ['PLATFORM', 'VENT']}},
     'GloverLevel.PlatNoClip': {'semantic': {'modifies': 'PLATFORM'}},
-    'GloverLevel.PlatDestructible': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatDestructible': {'semantic': {'modifies': 'PLATFORM'}, '_annotated_children': ['GloverLevel.PlatDestructible.Seq[2]']},
+    'GloverLevel.PlatDestructible.Seq[2]': {'semantic': {'hash-namespace': 'object'}},
     'GloverLevel.PlatDestructibleSound': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Plat0x9d': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Plat0x66': {'semantic': {'modifies': 'PLATFORM'}},
@@ -4592,7 +4598,7 @@ private_fields = {
     'GloverLevel.Vent': {'semantic': {'declares': 'VENT'}},
     'GloverLevel.VentDutyCycle': {'semantic': {'modifies': 'VENT'}},
     'GloverLevel.Platform': {'semantic': {'declares': 'PLATFORM'}, '_annotated_children': ['GloverLevel.Platform.Seq[0]']},
-    'GloverLevel.Platform.Seq[0]': {'semantic': {'namespace': 'objects'}},
+    'GloverLevel.Platform.Seq[0]': {'semantic': {'hash-namespace': 'object'}},
     'GloverLevel.NullPlatform': {'semantic': {'declares': 'PLATFORM'}},
     'GloverLevel.Enemy': {'semantic': {'declares': 'ENEMY'}},
     'GloverLevel.EnemySetAttentionBbox': {'semantic': {'modifies': 'ENEMY'}},
@@ -4602,6 +4608,8 @@ private_fields = {
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
     'GloverLevel': {'_annotated_children': ['GloverLevel.Actor0xbf', 'GloverLevel.AnimatedBackgroundActor', 'GloverLevel.BackgroundActor', 'GloverLevel.LandActor', 'GloverLevel.SetActorRotation', 'GloverLevel.SetActorScale', 'GloverLevel.Cameo', 'GloverLevel.CameoInst', 'GloverLevel.Puzzle', 'GloverLevel.PuzzleAnd', 'GloverLevel.PuzzleOr', 'GloverLevel.PuzzleNumtimes', 'GloverLevel.PuzzleAny', 'GloverLevel.PuzzleCond', 'GloverLevel.PuzzleAction', 'GloverLevel.GaribGroup', 'GloverLevel.Garib', 'GloverLevel.PlatMvspn0x58', 'GloverLevel.PlatMvspn0x59', 'GloverLevel.PlatMvspn0x5a', 'GloverLevel.PlatSetParent', 'GloverLevel.PlatMvspn0x73', 'GloverLevel.PlatMvspn0x74', 'GloverLevel.PlatCopySpinFromParent', 'GloverLevel.PlatSpecial0xb8', 'GloverLevel.PlatActorEnableWaterAnimation', 'GloverLevel.Buzzer', 'GloverLevel.BuzzerDutyCycle', 'GloverLevel.SetObjectSparkle', 'GloverLevel.PlatSpecial0xb9', 'GloverLevel.SetExit', 'GloverLevel.PlatCat0x69', 'GloverLevel.PlatformConveyor', 'GloverLevel.PlatSpecial0x9e', 'GloverLevel.SetTeleport', 'GloverLevel.PlatFan0x8a', 'GloverLevel.PlatMagnet0x8b', 'GloverLevel.PlatCheckpoint', 'GloverLevel.PlatCrumb0x67', 'GloverLevel.PlatSpecial0xc7', 'GloverLevel.PlatSpecial0x6e', 'GloverLevel.PlatSpecial0x8e', 'GloverLevel.PlatPush0x5b', 'GloverLevel.PlatConf0x72', 'GloverLevel.PlatOrbitSound0xc4', 'GloverLevel.Plat0xc6', 'GloverLevel.PlatOrbitAroundPoint', 'GloverLevel.PlatOrbitPause', 'GloverLevel.PlatOrbitFlip0x77', 'GloverLevel.Plat0xc3', 'GloverLevel.PlatSpinSound0xc5', 'GloverLevel.Plat0x9f', 'GloverLevel.PlatSpinPause0x7c', 'GloverLevel.PlatSpinFlip', 'GloverLevel.Plat0x7e', 'GloverLevel.PlatConstantSpin', 'GloverLevel.PlatSpin0x80', 'GloverLevel.PlatTopple0x81', 'GloverLevel.LookAtHand0x60', 'GloverLevel.LookAtBall0x61', 'GloverLevel.PlatRocking', 'GloverLevel.Plat0x78', 'GloverLevel.PlatSound0xc1', 'GloverLevel.PlatSound0xc2', 'GloverLevel.PlatTurnTowardsPathPoint', 'GloverLevel.PlatGoForwards0x5f', 'GloverLevel.PlatPathPoint', 'GloverLevel.PlatMaxVelocity', 'GloverLevel.PlatPathAcceleration', 'GloverLevel.PlatPos0xa7', 'GloverLevel.PlatSetInitialPos', 'GloverLevel.PlatPlayObjectAnimation', 'GloverLevel.Plat0xa4', 'GloverLevel.PlatVentAdvanceFrames', 'GloverLevel.PlatNoClip', 'GloverLevel.PlatDestructible', 'GloverLevel.PlatDestructibleSound', 'GloverLevel.Plat0x9d', 'GloverLevel.Plat0x66', 'GloverLevel.PlatActorSurfaceType', 'GloverLevel.PlatSetTag', 'GloverLevel.PlatSpike', 'GloverLevel.PlatScale', 'GloverLevel.Vent', 'GloverLevel.VentDutyCycle', 'GloverLevel.Platform', 'GloverLevel.NullPlatform', 'GloverLevel.Enemy', 'GloverLevel.EnemySetAttentionBbox', 'GloverLevel.Enemy0xba', 'GloverLevel.EnemyFinalize', 'GloverLevel.EnemyNormalInstruction', 'GloverLevel.EnemyConditionalInstruction', 'GloverLevel.EnemyAttackInstruction']},
+    'GloverLevel.Water': {'_annotated_children': ['GloverLevel.Water.Seq[10]']},
+    'GloverLevel.Backdrop': {'_annotated_children': ['GloverLevel.Backdrop.Seq[0]']},
 }
 
 import importlib
@@ -4651,12 +4659,12 @@ def getPrivate(cls, field_name, default=None):
 KaitaiStruct.getPrivate = getPrivate
 
 @classmethod
-def getPrivateChildren(cls):
+def getAnnotatedChildren(cls):
     try:
         private_fields = sys.modules[cls.__module__].private_fields
     except AttributeError:
         raise StopIteration()
-    children = cls.getPrivate("_annotated_children")
+    children = cls.getPrivate("_annotated_children", [])
     for child_key in children:
         subscript_suffix = re.findall(r"\[([0-9]+)\]$", child_key)
         if len(subscript_suffix) > 0:
@@ -4665,7 +4673,7 @@ def getPrivateChildren(cls):
         else:
             child_name = child_key
         yield child_name, private_fields[child_key]
-KaitaiStruct.getPrivateChildren = getPrivateChildren
+KaitaiStruct.getAnnotatedChildren = getAnnotatedChildren
 
 @classmethod
 def getSwitches(cls):
@@ -4676,5 +4684,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '69d283564a622af419ce94a6cccd90ccb78dec52'
+ksy_hash = '15d2f382567d0314d342d5f2fb622fe8f7a66112'
 #############

@@ -14,7 +14,7 @@ import libgarib.textures
 from libgarib.parsers.glover_texbank import GloverTexbank
 from libgarib.parsers.construct import glover_texbank as texbank_writer
 
-from libgarib.hash import hash_str
+from libgarib.hash import canonicalize_reference
 from libgarib.fla2 import compress, data_from_stream
 
 def pack(args):
@@ -26,7 +26,7 @@ def pack(args):
             continue
         try:
             with PIL.Image.open(filename) as im:
-                texID = libgarib.textures.filenameToTexID(filename)
+                texID = canonicalize_reference(filename)
                 textures.append(libgarib.textures.imToTex(im, texID))
             metadata_filename = os.path.basename(filename)
             if not metadata_filename.startswith("0x"):

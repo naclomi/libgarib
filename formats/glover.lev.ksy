@@ -349,6 +349,8 @@ types:
     seq:
       - id: object_id
         type: u4
+        -semantic:
+          hash-namespace: object
       - id: name
         type: str
         encoding: ASCII
@@ -366,6 +368,8 @@ types:
     seq:
       - id: object_id
         type: u4
+        -semantic:
+          hash-namespace: object
       - id: name
         type: str
         encoding: ASCII
@@ -383,6 +387,8 @@ types:
     seq:
       - id: object_id
         type: u4
+        -semantic:
+          hash-namespace: object
       - id: name
         type: str
         encoding: ASCII
@@ -480,6 +486,8 @@ types:
         type: u2
       - id: object_id
         type: u4
+        -semantic:
+          hash-namespace: object
       - id: name
         type: str
         encoding: ASCII
@@ -495,7 +503,8 @@ types:
     seq:
       - id: texture_id
         type: u4
-
+        -semantic:
+          hash-namespace: texture
       - id: decal_pos_x
         type: u2
       - id: decal_pos_y
@@ -1750,6 +1759,8 @@ types:
         type: u4
       - id: fragment_object_id
         type: u4
+        -semantic:
+          hash-namespace: object
       - id: name
         type: str
         encoding: ASCII
@@ -2007,7 +2018,7 @@ types:
       - id: object_id
         type: u4
         -semantic:
-          namespace: objects
+          hash-namespace: object
       - id: name
         encoding: ASCII
         type: str
