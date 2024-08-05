@@ -1,6 +1,7 @@
 import logging
 import io
 import os
+import re
 import struct
 import sys
 
@@ -209,10 +210,54 @@ class PtrCode(object):
 
 ptrCode = PtrCode()
 
+def _dump_to_file(descriptor, data_bytes, data_offset, basepath, data_idx=None):
+    if descriptor["data_type"] in file_extensions:
+        basepath = os.path.join(basepath, descriptor["data_type"])
+    os.makedirs(basepath, exist_ok=True)
+    if data_idx is not None:
+        filename = "{:}.".format(data_idx)
+    else:
+        filename = ""
+    if "name" in descriptor:
+        filename += descriptor["name"]
+    elif descriptor["data_type"] in name_extractors:
+        filename += name_extractors[descriptor["data_type"]](data_bytes)
+    else:
+        filename = "0x{:08X}".format(data_offset)
+    filename += file_extensions.get(descriptor["data_type"], ".bin")
+    filename = os.path.join(basepath, filename)
+    filename = unique_filename(filename)
+    with open(filename, "wb") as f:
+        f.write(data_bytes)
+    return filename
+
+def _patch_data(data_name, data_buffer, manifest_directive, manifest_dir):
+    fn_pattern = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)")
+    if manifest_directive is None:
+        data_buffer.clear()
+        logging.info("Deleted region {:}".format(data_name))
+    elif (match := fn_pattern.match(manifest_directive)) is not None:
+        fn, arg = match.groups()
+        if fn.lower() == "ips":
+            # TODO
+            ...
+            # patch_filename = os.path.join(manifest_dir, arg)
+            # apply_ips_patch(self.data, patch_filename)
+            # print("ips")
+        else:
+            raise Exception("Unknown function in manifest: {:}".format(fn))
+    else:
+        manifest_directive = os.path.join(manifest_dir, manifest_directive)
+        with open(manifest_directive, "rb") as f:
+            new_data = f.read()
+        data_buffer.clear()
+        data_buffer += new_data
+        logging.info("Patched {:} into {:}".format(manifest_directive, data_name))
+
 class Region(object):
     def __init__(self, descriptor):
         self.offset = 0
-        self.data = b""
+        self.data = bytearray()
         self.descriptor = descriptor
 
     def key(self):
@@ -234,25 +279,12 @@ class Region(object):
     def size(self):
         return len(self.data)
 
+
     def dump_to_buffer(self, buffer):
         buffer.write(self.data)
 
     def dump_to_file(self, basepath):
-        if self.descriptor["data_type"] in file_extensions:
-            basepath = os.path.join(basepath, self.descriptor["data_type"])
-            os.makedirs(basepath, exist_ok=True)
-        if "name" in self.descriptor:
-            filename = self.descriptor["name"]
-        elif self.descriptor["data_type"] in name_extractors:
-            filename = name_extractors[self.descriptor["data_type"]](self.data)
-        else:
-            filename = "0x{:08X}".format(self.offset)
-        filename += file_extensions.get(self.descriptor["data_type"], ".bin")
-        filename = os.path.join(basepath, filename)
-        filename = unique_filename(filename)
-        with open(filename, "wb") as f:
-            f.write(self.data)
-        return [filename]
+        return [_dump_to_file(self.descriptor, self.data, self.offset, basepath)]
 
     def update_pointers(self, buffer):
         pass
@@ -263,6 +295,8 @@ class Region(object):
     def parse(self, rom_data):
         pass
 
+    def patch(self, manifest_directive, manifest_dir):
+        _patch_data("{:}".format(self.key()), self.data, manifest_directive, manifest_dir)
 
 def scrape_pointers(rom_data, pointer_list):
     val = None
@@ -280,7 +314,7 @@ class BoundedSingleRegion(Region):
         start_pointer = scrape_pointers(rom_data, self.descriptor["start_pointers"]) & 0x0FFFFFFF
         end_pointer = scrape_pointers(rom_data, self.descriptor["end_pointers"]) & 0x0FFFFFFF
         self.offset = start_pointer
-        self.data = rom_data[start_pointer:end_pointer]
+        self.data = bytearray(rom_data[start_pointer:end_pointer])
 
     def update_pointers(self, buffer):
         addr = self.offset | 0xB0000000
@@ -298,7 +332,7 @@ class UnboundedSingleRegion(Region):
         start_pointer = scrape_pointers(rom_data, self.descriptor["start_pointers"]) & 0x0FFFFFFF
         end_pointer = start_pointer + self.descriptor["size"]
         self.offset = start_pointer
-        self.data = rom_data[start_pointer:end_pointer]
+        self.data = bytearray(rom_data[start_pointer:end_pointer])
 
     def update_descriptor(self):
         self.descriptor["size"] = len(self.data)
@@ -321,7 +355,7 @@ class BoundedArrayRegion(Region):
         cursor = start_pointer
         while cursor < end_pointer:
             elem_len = struct.unpack(">I", rom_data[cursor:cursor+4])[0]
-            self.data.append(rom_data[cursor:cursor+elem_len])
+            self.data.append(bytearray(rom_data[cursor:cursor+elem_len]))
             cursor += elem_len
 
     def pad(self, boundary=8):
@@ -338,29 +372,16 @@ class BoundedArrayRegion(Region):
         buffer.write(self.pad_data)
 
     def dump_to_file(self, basepath):
-        if self.descriptor["data_type"] in file_extensions:
-            basepath = os.path.join(basepath, self.descriptor["data_type"])
-        if "name" in self.descriptor:
-            basename = self.descriptor["name"]
-        else:
-            basename = "0x{:08X}".format(self.offset)
-        basepath = os.path.join(basepath, basename)
-        os.makedirs(basepath, exist_ok=True)
-
-        extension = file_extensions.get(self.descriptor["data_type"], ".bin")
-        filenames = []
+        files = []
+        running_offset = self.offset
         for idx, elem_data in enumerate(self.data):
-            if self.descriptor["data_type"] in name_extractors:
-                filename = name_extractors[self.descriptor["data_type"]](elem_data)
-                filename = "{:}.{:}{:}".format(idx, filename, extension)
-            else:
-                filename = "{:}{:}".format(idx, extension)
-            filename = os.path.join(basepath, filename)
-            filename = unique_filename(filename)
-            filenames.append(filename)
-            with open(filename, "wb") as f:
-                f.write(elem_data)
-        return filenames
+            files.append(_dump_to_file(
+                self.descriptor, elem_data, running_offset, basepath, idx))
+            running_offset += len(elem_data)
+        return files
+
+    def patch(self, manifest_directive, manifest_dir, idx):
+        _patch_data("{:}[{:}]".format(self.key(), idx), self.data[idx], manifest_directive, manifest_dir)
 
     def update_pointers(self, buffer):
         # TODO: update individual elem lengths?
@@ -377,7 +398,7 @@ class BoundedArrayRegion(Region):
 class StaticRegion(Region):
     def parse(self, rom_data):
         self.offset = self.descriptor["start"]
-        self.data = rom_data[self.descriptor["start"]:self.descriptor["end"]]
+        self.data = bytearray(rom_data[self.descriptor["start"]:self.descriptor["end"]])
 
     def update_descriptor(self):
         self.descriptor["start"] = self.offset

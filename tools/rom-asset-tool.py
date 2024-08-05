@@ -3,6 +3,7 @@ import ast
 import argparse
 import logging
 import os
+import re
 import shutil
 import sys
 
@@ -17,6 +18,7 @@ def patch(rom_data, map_data, args):
         manifest = yaml.safe_load(f.read())
     manifest_dir = os.path.dirname(args.manifest)
 
+
     for region_key, region_filename in manifest.items():
         region_key = ast.literal_eval(region_key)
         try:
@@ -26,25 +28,9 @@ def patch(rom_data, map_data, args):
             continue
         if type(region_filename) is dict:
             for elem_idx, elem_filename in region_filename.items():
-                if elem_filename is None:
-                    region.data[elem_idx] = b""
-                    logging.info("Deleted region {:}[{:}]".format(region_key, elem_idx))    
-                else:
-                    elem_filename = os.path.join(manifest_dir, elem_filename)
-                    with open(elem_filename, "rb") as f:
-                        new_elem_data = f.read()
-                    region.data[elem_idx] = new_elem_data
-                    logging.info("Patched {:} into {:}[{:}]".format(elem_filename, region_key, elem_idx))
+                region.patch(elem_filename, manifest_dir, elem_idx)
         else:
-            if region_filename is None:
-                region.data = b""
-                logging.info("Deleted region {:}".format(region_key))
-            else:
-                region_filename = os.path.join(manifest_dir, region_filename)
-                with open(region_filename, "rb") as f:
-                    new_region_data = f.read()
-                region.data = new_region_data
-                logging.info("Patched {:} into {:}".format(region_filename, region_key))
+            region.patch(elem_filename, manifest_dir)
 
     final_rom_data = rom.finalize()
     out_filename = os.path.basename(args.rom_file).split(".")
