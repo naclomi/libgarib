@@ -231,19 +231,67 @@ def _dump_to_file(descriptor, data_bytes, data_offset, basepath, data_idx=None):
         f.write(data_bytes)
     return filename
 
+
+def apply_ips(buffer, patch):
+    cursor = 0
+    if patch[cursor:cursor+5] != b"PATCH":
+        raise Exception("Not an IPS patch")
+    cursor += 5
+    while patch[cursor:cursor+3] != b"EOF":
+        offset = int.from_bytes(patch[cursor:cursor+3], "big", signed=False)
+        cursor += 3
+        length = int.from_bytes(patch[cursor:cursor+2], "big", signed=False)
+        cursor += 2
+        if length != 0:
+            # Normal diff
+            buffer[offset:offset+length] = patch[cursor:cursor+length]
+        else:
+            # RLE
+            run_length = int.from_bytes(patch[cursor:cursor+2], "big", signed=False)
+            cursor += 2
+            val = patch[cursor:cursor+1]
+            cursor += 1
+            buffer[offset:offset+length] = val * run_length
+    trunc_length_raw = buffer[cursor:cursor+3]
+    if len(trunc_length_raw) == 3:
+        trunc_length = int.from_bytes(trunc_length_raw, "big", signed=False)
+        buffer = buffer[:trunc_length]
+
+def apply_asm(buffer, asm):
+    cursor = 0
+    num_instructions = 0
+    text_pattern = re.compile(r"^\s*\.text\s*(0x[A-Fa-f0-9]+)")
+    asm_statements = re.split(";|\n", asm)
+    assembler = keystone.Ks(keystone.KS_ARCH_MIPS, keystone.KS_MODE_MIPS32 | keystone.KS_MODE_BIG_ENDIAN)
+    for asm_statement in asm_statements:
+        asm_statement = asm_statement.split("#")[0]
+        if (match := text_pattern.match(asm_statement)) is not None:
+            cursor = int(match.group(1),0)
+        else:
+            asm_output = assembler.asm(asm_statement, cursor)
+            if asm_output[1] == 1:
+                buffer[cursor:cursor+4] = bytes(asm_output[0])
+                cursor += 4
+                num_instructions += 1
+    return num_instructions
+
 def _patch_data(data_name, data_buffer, manifest_directive, manifest_dir):
-    fn_pattern = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)")
     if manifest_directive is None:
         data_buffer.clear()
         logging.info("Deleted region {:}".format(data_name))
-    elif (match := fn_pattern.match(manifest_directive)) is not None:
-        fn, arg = match.groups()
-        if fn.lower() == "ips":
-            # TODO
-            ...
-            # patch_filename = os.path.join(manifest_dir, arg)
-            # apply_ips_patch(self.data, patch_filename)
-            # print("ips")
+    elif isinstance(manifest_directive, dict):
+        if len(manifest_directive) != 1:
+            raise Exception("Bad directive @ {:}".format(data_name))
+        fn, arg = next(iter(manifest_directive.items()))
+        fn = fn.lower() 
+        if fn == "ips":
+            with open(arg, "rb") as patch_file:
+                patch = patch_file.read()
+            apply_ips(data_buffer, patch)
+            logging.info("Applied IPS patch {:} to {:}".format(arg, data_name))
+        if fn == "asm":
+            num_instructions = apply_asm(data_buffer, arg)
+            logging.info("Patched {:} instructions into {:}".format(num_instructions, data_name))
         else:
             raise Exception("Unknown function in manifest: {:}".format(fn))
     else:
