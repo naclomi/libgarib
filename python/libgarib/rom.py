@@ -258,20 +258,37 @@ def apply_ips(buffer, patch):
         buffer = buffer[:trunc_length]
 
 def apply_asm(buffer, asm):
-    cursor = 0
+    base_addr = 0
+    buffer_cursor = 0
     num_instructions = 0
     text_pattern = re.compile(r"^\s*\.text\s*(0x[A-Fa-f0-9]+)")
+    label_pattern = re.compile(r"^\s*([A-Za-z0-9_]+)\s*:")
     asm_statements = re.split(";|\n", asm)
     assembler = keystone.Ks(keystone.KS_ARCH_MIPS, keystone.KS_MODE_MIPS32 | keystone.KS_MODE_BIG_ENDIAN)
+    labels = {}
+    def sym_resolver(symbol, value):
+        symbol = symbol.decode()
+        if symbol in labels:
+            value = labels[symbol]
+            return True
+        return False
+    assembler.sym_resolver = sym_resolver
     for asm_statement in asm_statements:
         asm_statement = asm_statement.split("#")[0]
         if (match := text_pattern.match(asm_statement)) is not None:
-            cursor = int(match.group(1),0)
+            base_addr = int(match.group(1),0)
+            if (base_addr & 0x80000000) != 0:
+                buffer_cursor = (base_addr & 0xFFFFF) + 0x1000
+            else:
+                buffer_cursor = base_addr
         else:
-            asm_output = assembler.asm(asm_statement, cursor)
+            if (match := label_pattern.match(asm_statement)) is not None:
+                labels[match.group(1)] = base_addr
+            asm_output = assembler.asm(asm_statement, base_addr)
             if asm_output[1] == 1:
-                buffer[cursor:cursor+4] = bytes(asm_output[0])
-                cursor += 4
+                buffer[buffer_cursor:buffer_cursor+4] = bytes(asm_output[0][0:4])
+                base_addr += 4
+                buffer_cursor += 4
                 num_instructions += 1
     return num_instructions
 
