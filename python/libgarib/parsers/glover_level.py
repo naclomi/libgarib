@@ -841,6 +841,21 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x84']['end'] = self._io.pos()
 
 
+    class SetGravity(KaitaiStruct):
+        SEQ_FIELDS = ["strength"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['strength']['start'] = self._io.pos()
+            self.strength = self._io.read_f4be()
+            self._debug['strength']['end'] = self._io.pos()
+
+
     class EndLevelData(KaitaiStruct):
         SEQ_FIELDS = []
         def __init__(self, _io, _parent=None, _root=None):
@@ -1263,21 +1278,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['body']['end'] = self._io.pos()
 
 
-    class Unknown0xa9(KaitaiStruct):
-        SEQ_FIELDS = ["i_0x00"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['i_0x00']['start'] = self._io.pos()
-            self.i_0x00 = self._io.read_u4be()
-            self._debug['i_0x00']['end'] = self._io.pos()
-
-
     class PlatVentAdvanceFrames(KaitaiStruct):
         SEQ_FIELDS = ["num_frames"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1294,7 +1294,11 @@ class GloverLevel(KaitaiStruct):
 
 
     class SetExit(KaitaiStruct):
-        SEQ_FIELDS = ["type", "plat_flags"]
+
+        class ExitType(Enum):
+            loading_zone = 0
+            solid_platform = 1
+        SEQ_FIELDS = ["behavior", "type"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1303,12 +1307,12 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
+            self._debug['behavior']['start'] = self._io.pos()
+            self.behavior = self._io.read_u2be()
+            self._debug['behavior']['end'] = self._io.pos()
             self._debug['type']['start'] = self._io.pos()
-            self.type = self._io.read_u2be()
+            self.type = KaitaiStream.resolve_enum(GloverLevel.SetExit.ExitType, self._io.read_s2be())
             self._debug['type']['end'] = self._io.pos()
-            self._debug['plat_flags']['start'] = self._io.pos()
-            self.plat_flags = self._io.read_u2be()
-            self._debug['plat_flags']['end'] = self._io.pos()
 
 
     class PlatSound0xc1(KaitaiStruct):
@@ -1721,7 +1725,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 4:
                 self.params = GloverLevel.Puzzle(self._io, self, self._root)
             elif _on == 169:
-                self.params = GloverLevel.Unknown0xa9(self._io, self, self._root)
+                self.params = GloverLevel.SetGravity(self._io, self, self._root)
             elif _on == 162:
                 self.params = GloverLevel.Vent(self._io, self, self._root)
             elif _on == 116:
@@ -2146,7 +2150,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class Water(KaitaiStruct):
-        SEQ_FIELDS = ["left", "top", "front", "width", "bottom", "depth", "surface_y", "current_x", "current_z", "unknown_1", "object_id", "name", "x", "y", "z"]
+        SEQ_FIELDS = ["left", "top", "front", "width", "bottom", "depth", "surface_y", "current_x", "current_z", "puzzle_tag", "object_id", "name", "x", "y", "z"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2182,9 +2186,9 @@ class GloverLevel(KaitaiStruct):
             self._debug['current_z']['start'] = self._io.pos()
             self.current_z = self._io.read_f4be()
             self._debug['current_z']['end'] = self._io.pos()
-            self._debug['unknown_1']['start'] = self._io.pos()
-            self.unknown_1 = self._io.read_u2be()
-            self._debug['unknown_1']['end'] = self._io.pos()
+            self._debug['puzzle_tag']['start'] = self._io.pos()
+            self.puzzle_tag = self._io.read_u2be()
+            self._debug['puzzle_tag']['end'] = self._io.pos()
             self._debug['object_id']['start'] = self._io.pos()
             self.object_id = self._io.read_u4be()
             self._debug['object_id']['end'] = self._io.pos()
@@ -3992,7 +3996,7 @@ switch_fields = {
             'code-to-type': {
                 0xbd: GloverLevel.UnknownSound0xbd,
                 0xbe: GloverLevel.EnvironmentalSound,
-                0xa9: GloverLevel.Unknown0xa9,
+                0xa9: GloverLevel.SetGravity,
                 0xbb: GloverLevel.MrTip,
                 0x97: GloverLevel.DiffuseLight,
                 0x98: GloverLevel.AmbientLight,
@@ -4110,7 +4114,7 @@ switch_fields = {
             'type-to-code': {
                 GloverLevel.UnknownSound0xbd: 0xbd,
                 GloverLevel.EnvironmentalSound: 0xbe,
-                GloverLevel.Unknown0xa9: 0xa9,
+                GloverLevel.SetGravity: 0xa9,
                 GloverLevel.MrTip: 0xbb,
                 GloverLevel.DiffuseLight: 0x97,
                 GloverLevel.AmbientLight: 0x98,
@@ -4366,7 +4370,7 @@ original_names = {
     'GloverLevel.Cmd': 'glover_level.cmd',
     'GloverLevel.UnknownSound0xbd': 'glover_level.unknown_sound_0xbd',
     'GloverLevel.EnvironmentalSound': 'glover_level.environmental_sound',
-    'GloverLevel.Unknown0xa9': 'glover_level.unknown_0xa9',
+    'GloverLevel.SetGravity': 'glover_level.set_gravity',
     'GloverLevel.MrTip': 'glover_level.mr_tip',
     'GloverLevel.DiffuseLight': 'glover_level.diffuse_light',
     'GloverLevel.AmbientLight': 'glover_level.ambient_light',
@@ -4526,6 +4530,7 @@ private_fields = {
     'GloverLevel.LandActor.Seq[0]': {'semantic': {'hash-namespace': 'object'}},
     'GloverLevel.SetActorRotation': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
     'GloverLevel.SetActorScale': {'semantic': {'modifies': ['LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.Water.Seq[9]': {'semantic': {'tag-namespace': 'water'}},
     'GloverLevel.Water.Seq[10]': {'semantic': {'hash-namespace': 'object'}},
     'GloverLevel.Backdrop.Seq[0]': {'semantic': {'hash-namespace': 'texture'}},
     'GloverLevel.Cameo': {'semantic': {'declares': 'CAMEO'}},
@@ -4603,7 +4608,8 @@ private_fields = {
     'GloverLevel.Plat0x9d': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Plat0x66': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatActorSurfaceType': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
-    'GloverLevel.PlatSetTag': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatSetTag': {'semantic': {'modifies': 'PLATFORM'}, '_annotated_children': ['GloverLevel.PlatSetTag.Seq[0]']},
+    'GloverLevel.PlatSetTag.Seq[0]': {'semantic': {'tag-namespace': 'platform'}},
     'GloverLevel.PlatSpike': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatScale': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Vent': {'semantic': {'declares': 'VENT'}},
@@ -4619,7 +4625,7 @@ private_fields = {
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
     'GloverLevel': {'_annotated_children': ['GloverLevel.Actor0xbf', 'GloverLevel.AnimatedBackgroundActor', 'GloverLevel.BackgroundActor', 'GloverLevel.LandActor', 'GloverLevel.SetActorRotation', 'GloverLevel.SetActorScale', 'GloverLevel.Cameo', 'GloverLevel.CameoInst', 'GloverLevel.Puzzle', 'GloverLevel.PuzzleAnd', 'GloverLevel.PuzzleOr', 'GloverLevel.PuzzleNumtimes', 'GloverLevel.PuzzleAny', 'GloverLevel.PuzzleCond', 'GloverLevel.PuzzleAction', 'GloverLevel.GaribGroup', 'GloverLevel.Garib', 'GloverLevel.PlatMvspn0x58', 'GloverLevel.PlatMvspn0x59', 'GloverLevel.PlatMvspn0x5a', 'GloverLevel.PlatSetParent', 'GloverLevel.PlatMvspn0x73', 'GloverLevel.PlatMvspn0x74', 'GloverLevel.PlatCopySpinFromParent', 'GloverLevel.PlatSpecial0xb8', 'GloverLevel.PlatActorEnableWaterAnimation', 'GloverLevel.Buzzer', 'GloverLevel.BuzzerDutyCycle', 'GloverLevel.SetObjectSparkle', 'GloverLevel.PlatSpecial0xb9', 'GloverLevel.SetExit', 'GloverLevel.PlatCat0x69', 'GloverLevel.PlatformConveyor', 'GloverLevel.PlatSpecial0x9e', 'GloverLevel.SetTeleport', 'GloverLevel.PlatFan0x8a', 'GloverLevel.PlatMagnet0x8b', 'GloverLevel.PlatCheckpoint', 'GloverLevel.PlatCrumb0x67', 'GloverLevel.PlatSpecial0xc7', 'GloverLevel.PlatSpecial0x6e', 'GloverLevel.PlatSpecial0x8e', 'GloverLevel.PlatPush0x5b', 'GloverLevel.PlatConf0x72', 'GloverLevel.PlatOrbitSound0xc4', 'GloverLevel.Plat0xc6', 'GloverLevel.PlatOrbitAroundPoint', 'GloverLevel.PlatOrbitPause', 'GloverLevel.PlatOrbitFlip0x77', 'GloverLevel.Plat0xc3', 'GloverLevel.PlatSpinSound0xc5', 'GloverLevel.Plat0x9f', 'GloverLevel.PlatSpinPause0x7c', 'GloverLevel.PlatSpinFlip', 'GloverLevel.Plat0x7e', 'GloverLevel.PlatConstantSpin', 'GloverLevel.PlatSpin0x80', 'GloverLevel.PlatTopple0x81', 'GloverLevel.LookAtHand0x60', 'GloverLevel.LookAtBall0x61', 'GloverLevel.PlatRocking', 'GloverLevel.Plat0x78', 'GloverLevel.PlatSound0xc1', 'GloverLevel.PlatSound0xc2', 'GloverLevel.PlatTurnTowardsPathPoint', 'GloverLevel.PlatGoForwards0x5f', 'GloverLevel.PlatPathPoint', 'GloverLevel.PlatMaxVelocity', 'GloverLevel.PlatPathAcceleration', 'GloverLevel.PlatPos0xa7', 'GloverLevel.PlatSetInitialPos', 'GloverLevel.PlatPlayObjectAnimation', 'GloverLevel.Plat0xa4', 'GloverLevel.PlatVentAdvanceFrames', 'GloverLevel.PlatNoClip', 'GloverLevel.PlatDestructible', 'GloverLevel.PlatDestructibleSound', 'GloverLevel.Plat0x9d', 'GloverLevel.Plat0x66', 'GloverLevel.PlatActorSurfaceType', 'GloverLevel.PlatSetTag', 'GloverLevel.PlatSpike', 'GloverLevel.PlatScale', 'GloverLevel.Vent', 'GloverLevel.VentDutyCycle', 'GloverLevel.Platform', 'GloverLevel.NullPlatform', 'GloverLevel.Enemy', 'GloverLevel.EnemySetAttentionBbox', 'GloverLevel.Enemy0xba', 'GloverLevel.EnemyFinalize', 'GloverLevel.EnemyNormalInstruction', 'GloverLevel.EnemyConditionalInstruction', 'GloverLevel.EnemyAttackInstruction']},
-    'GloverLevel.Water': {'_annotated_children': ['GloverLevel.Water.Seq[10]']},
+    'GloverLevel.Water': {'_annotated_children': ['GloverLevel.Water.Seq[9]', 'GloverLevel.Water.Seq[10]']},
     'GloverLevel.Backdrop': {'_annotated_children': ['GloverLevel.Backdrop.Seq[0]']},
 }
 
@@ -4695,5 +4701,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '903403fab83eb57e6cb63ee282643610e70f743a'
+ksy_hash = '2b965ea755f0f5cc56cf684b7e805237fd83a622'
 #############

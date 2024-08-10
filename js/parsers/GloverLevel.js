@@ -979,6 +979,25 @@ var GloverLevel = (function() {
     return Plat0xc3;
   })();
 
+  var SetGravity = GloverLevel.SetGravity = (function() {
+    function SetGravity(_io, _parent, _root) {
+      this.__type = 'SetGravity';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    SetGravity.prototype._read = function() {
+      this._debug.strength = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.strength = this._io.readF4be();
+      this._debug.strength.end = this._io.pos;
+    }
+
+    return SetGravity;
+  })();
+
   var EndLevelData = GloverLevel.EndLevelData = (function() {
     function EndLevelData(_io, _parent, _root) {
       this.__type = 'EndLevelData';
@@ -1485,25 +1504,6 @@ var GloverLevel = (function() {
     return Unknown;
   })();
 
-  var Unknown0xa9 = GloverLevel.Unknown0xa9 = (function() {
-    function Unknown0xa9(_io, _parent, _root) {
-      this.__type = 'Unknown0xa9';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    Unknown0xa9.prototype._read = function() {
-      this._debug.i0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x00 = this._io.readU4be();
-      this._debug.i0x00.end = this._io.pos;
-    }
-
-    return Unknown0xa9;
-  })();
-
   var PlatVentAdvanceFrames = GloverLevel.PlatVentAdvanceFrames = (function() {
     function PlatVentAdvanceFrames(_io, _parent, _root) {
       this.__type = 'PlatVentAdvanceFrames';
@@ -1524,6 +1524,14 @@ var GloverLevel = (function() {
   })();
 
   var SetExit = GloverLevel.SetExit = (function() {
+    SetExit.ExitType = Object.freeze({
+      LOADING_ZONE: 0,
+      SOLID_PLATFORM: 1,
+
+      0: "LOADING_ZONE",
+      1: "SOLID_PLATFORM",
+    });
+
     function SetExit(_io, _parent, _root) {
       this.__type = 'SetExit';
       this._io = _io;
@@ -1534,12 +1542,12 @@ var GloverLevel = (function() {
       this._read();
     }
     SetExit.prototype._read = function() {
-      this._debug.type = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.type = this._io.readU2be();
+      this._debug.behavior = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.behavior = this._io.readU2be();
+      this._debug.behavior.end = this._io.pos;
+      this._debug.type = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.SetExit.ExitType" };
+      this.type = this._io.readS2be();
       this._debug.type.end = this._io.pos;
-      this._debug.platFlags = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platFlags = this._io.readU2be();
-      this._debug.platFlags.end = this._io.pos;
     }
 
     return SetExit;
@@ -2039,7 +2047,7 @@ var GloverLevel = (function() {
         this.params = new Puzzle(this._io, this, this._root);
         break;
       case 169:
-        this.params = new Unknown0xa9(this._io, this, this._root);
+        this.params = new SetGravity(this._io, this, this._root);
         break;
       case 162:
         this.params = new Vent(this._io, this, this._root);
@@ -2656,9 +2664,9 @@ var GloverLevel = (function() {
       this._debug.currentZ = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.currentZ = this._io.readF4be();
       this._debug.currentZ.end = this._io.pos;
-      this._debug.unknown1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.unknown1 = this._io.readU2be();
-      this._debug.unknown1.end = this._io.pos;
+      this._debug.puzzleTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.puzzleTag = this._io.readU2be();
+      this._debug.puzzleTag.end = this._io.pos;
       this._debug.objectId = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.objectId = this._io.readU4be();
       this._debug.objectId.end = this._io.pos;

@@ -23,7 +23,7 @@
           <ref name="EnvironmentalSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Unknown0xa9"/>
+          <ref name="SetGravity"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="MrTip"/>
@@ -420,9 +420,9 @@
       </attribute>
     </element>
   </define>
-  <define name="Unknown0xa9">
-    <element name="Unknown0xa9">
-      <attribute name="i_0x00">
+  <define name="SetGravity">
+    <element name="SetGravity">
+      <attribute name="strength">
         <text/>
       </attribute>
     </element>
@@ -767,7 +767,7 @@
       <attribute name="current_z">
         <text/>
       </attribute>
-      <attribute name="unknown_1">
+      <attribute name="puzzle_tag">
         <text/>
       </attribute>
       <attribute name="object_id">
@@ -1873,10 +1873,10 @@
   </define>
   <define name="SetExit">
     <element name="SetExit">
-      <attribute name="type">
+      <attribute name="behavior">
         <text/>
       </attribute>
-      <attribute name="plat_flags">
+      <attribute name="type">
         <text/>
       </attribute>
     </element>

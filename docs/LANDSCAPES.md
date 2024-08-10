@@ -22,7 +22,6 @@ Notably, this does _not_ include the following:
 - Actual graphical and collision data (meshes, animations and textures)
     - This is all stored in the _object data_ being referenced by the
       landscape layout. That data is in the game's object banks.
-- Gravity strength (TODO, confirm if this is true)
 - Mr. Tip message text
 - Which object banks and texture banks need to be loaded for the landscape to
   function
@@ -95,8 +94,6 @@ which alter game physics:
   renders the water's "surface", though this actor does not have to correspond
   with the actual volume in any way and does not affect game physics at all.
   
-  [TODO how does atlantis 2 change water level? it looks like 'unknown_1' is a tag. is this in the platform namespace of tags? or just for water?]
-
 - **Wind**: Defines an axis-aligned rectangular volume of 3D space inside of
   which a "wind current" that can move Glover and the ball. The velocity of
   the wind can be specified independently for each axis. Wind volumes are

@@ -23,7 +23,7 @@ types:
           cases:
             0xBD: unknown_sound_0xbd
             0xBE: environmental_sound
-            0xA9: unknown_0xa9
+            0xA9: set_gravity
             0xBB: mr_tip
             0x97: diffuse_light
             0x98: ambient_light
@@ -222,11 +222,10 @@ types:
       - id: radius
         type: f4
 
-  unknown_0xa9:
-    # TODO
+  set_gravity: # 0xA9
     seq:
-      - id: i_0x00
-        type: u4
+      - id: strength
+        type: f4
 
   mr_tip:
     seq:
@@ -482,8 +481,10 @@ types:
         type: f4
       - id: current_z
         type: f4
-      - id: unknown_1
+      - id: puzzle_tag
         type: u2
+        -semantic:
+          tag-namespace: water
       - id: object_id
         type: u4
         -semantic:
@@ -1191,10 +1192,15 @@ types:
     -semantic:
       modifies: PLATFORM
     seq:
-      - id: type # TODO: enumerate types
+      - id: behavior # TODO: enumerate behaviors
         type: u2
-      - id: plat_flags
-        type: u2
+      - id: type
+        type: s2
+        enum: exit_type
+    enums:
+      exit_type:
+        0: "loading_zone"
+        1: "solid_platform"
 
   plat_cat_0x69: # 0x69
     -semantic:
@@ -1813,6 +1819,9 @@ types:
     seq:
       - id: tag
         type: u2
+        -semantic:
+          tag-namespace: platform
+
 
   plat_spike: # 0x82
     -semantic:
