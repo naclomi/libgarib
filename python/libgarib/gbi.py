@@ -27,12 +27,15 @@ class Vertex(object):
     GL_STRUCTURE = "3f2f4f"
     GL_LENGTH = struct.calcsize("="+GL_STRUCTURE)
 
-    def __init__(self):
-        self.x, self.y, self.z = 0, 0, 0
+    def __init__(self, pos=(0,0,0), uv=(0,0), rgba=(0,0,0,0), n=(0,0,0)):
+        self.x, self.y, self.z = pos
         self.f = 0
-        self.u, self.v = 0, 0
-        self.r, self.g, self.b, self.a = 0, 0, 0, 0
-        self.nx, self.ny, self.nz = 0, 0, 0
+        self.u, self.v = uv
+        self.r, self.g, self.b, self.a = rgba
+        self.nx, self.ny, self.nz = n
+
+    def asDLBytes(self, lighting):
+        raise NotImplementedError()
 
     def asGLBytes(self, lighting):
         # TODO: deal w/ lighting
@@ -145,6 +148,12 @@ class GBI(object):
         self.byOpcode = dict(
             (command.opcode, command) for command in self.commands
         )
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.byName[key]
+        elif isinstance(key, int):
+            return self.byOpcode[key]
 
     def parseList(self, display_list_bytes):
         offset = 0

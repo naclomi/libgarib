@@ -4,6 +4,7 @@ import cmd
 import io
 import json
 import os
+import subprocess
 import sys
 
 import _prefer_local_implementation
@@ -66,7 +67,7 @@ def bankmap(args):
 
             print("\t{:}\t{:}\t{:}".format(
                 mem_str,
-                segment.dtype,
+                segment.dtype.value,
                 segment.name))
  
 
@@ -137,6 +138,28 @@ def pack(args):
             f.write(bank)
     sys.stdout.write("Packed {:} objects into bank '{:}'\n".format(len(root.directory.actors), args.output_file))
 
+def dlist_rip(args):
+    texture_db = build_texture_db(args.textures)
+
+    for bank_filename in args.bank_file:
+        os.makedirs(args.output_dir, exist_ok=True)
+        with open(bank_filename, "rb") as f:
+            bank_data = data_from_stream(f)
+        segments = libgarib.objects.scrapeBankSegments(bank_data)
+        for seg in segments:
+            if seg.dtype is libgarib.objects.BankmapDtype.DISPLAY_LIST:
+                dl_name = seg.name
+                dl_raw = bank_data[seg.memory_range[0]:seg.memory_range[1]]
+
+                bin_filename = os.path.join(args.output_dir, "{:}.dlist.bin".format(dl_name))
+                with open(bin_filename, "wb") as f:
+                    f.write(dl_raw)
+                if args.gfxdis is not None:
+                    disasm_run = subprocess.run([args.gfxdis, "-f", bin_filename], capture_output=True)
+                    c_filename = os.path.join(args.output_dir, "{:}.dlist.c".format(dl_name))
+                    with open(c_filename, "wb") as f:
+                        f.write(disasm_run.stdout)
+
 def query(args):
     json_banks = {}
     for bank_filename in args.bank_file:
@@ -204,6 +227,16 @@ if __name__=="__main__":
     map_parser.add_argument("--zla", action="store_true",
                         help="Print pointers to zero-length arrays")
 
+    unpack_parser = subparsers.add_parser('dlist-rip', help='Rip display lists from an object bank')
+    unpack_parser.add_argument("bank_file", type=str, nargs="+",
+                        help="Object bank file (potentially FLA2-compressed)")
+    unpack_parser.add_argument("--output-dir", type=str, default=os.getcwd(),
+                        help="Directory to output bank contents")
+    unpack_parser.add_argument("--gfxdis", type=str, required=False,
+                        help="Path to display list disassembler (to convert binary dumps to C macros)")
+    unpack_parser.add_argument("-t", "--textures", action="append", type=str,
+                        help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
+
     query_parser = subparsers.add_parser('query', help='Extract individual pieces of data from object data en masse')
     query_parser.add_argument("--query", action="append",
                         help="JMESPath query")
@@ -221,6 +254,8 @@ if __name__=="__main__":
         split(args)
     elif args.command == "map":
         bankmap(args)
+    elif args.command == "dlist-rip":
+        dlist_rip(args)
     elif args.command == "query":
         query(args)
 

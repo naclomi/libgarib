@@ -50,8 +50,7 @@ def relocatableDisplayListToLinkable(raw_mesh_dl):
     raw_dl = raw_mesh_dl[payload_base:payload_base+data_size]
     return LinkableDisplayList(data=raw_dl, pointers=pointers), start_offset
 
-
-def gltfNodeToDisplayList(node_idx, bank, file):
+def gltfNodeToDisplayList(node_idx, bank, file, texture_db, vertex_cache):
     node = file.nodes[node_idx]
     mesh = file.meshes[node.mesh]
 
@@ -65,10 +64,103 @@ def gltfNodeToDisplayList(node_idx, bank, file):
             rebuild_dl = False
 
     if rebuild_dl:
-        # TODO: rebuild dl
+
+        # Assume triangles are arranged to optimize cache use
+
         start_offset = 0
 
-        raise Exception()
+        linkable_dl = linkable.LinkableStruct()
+        start_offset = 0
+        cmds = linkable.LinkableBytes(b"")
+        linkable_dl.append(cmds)
+
+        total_faces = len(vertex_cache["indices"])//3,
+        total_vertices = len(vertex_cache["POSITION"])
+
+        face_cursor = 0
+
+        while face_cursor < len(vertex_cache["indices"]):
+            # Step through mesh faces accumulating them in a list
+            # and keep track of unique indices, stopping when we've
+            # hit 32.
+            batch_indices = []
+            unique_indices = set()
+            while face_cursor < len(vertex_cache["indices"]):
+                next_index = vertex_cache["indices"][face_cursor]
+                if next_index not in unique_indices:
+                    if len(unique_indices) >= 32:
+                        break
+                    unique_indices.add(next_index)
+                batch_indices.append(next_index)
+                face_cursor += 1
+            face_overhang = len(batch_indices) % 3
+            if face_overhang > 0:
+                batch_indices = batch_indices[:len(batch_indices) - face_overhang]
+                face_cursor -= face_overhang
+                unique_indices = set(batch_indices)
+
+            # Now for each unique index, pack it into the gbi vertex
+            # batch and store a mapping from gltf index to gbi batch index
+            batch_mapping = {}
+            gbi_vertices = []
+            for idx in sorted(unique_indices):
+                gbi_v = GbiVertex(
+                    TODO # fill in with actual vertex data
+                ) 
+                batch_mapping[idx] = len(gbi_vertices)
+                gbi_vertices.append(gbi_v)
+            
+            vertex_data_block = linkable.LinkableBytes(b"".join(
+                v.asDLBytes(TODO_LIGHTING) for v in gbi_vertices
+            ))
+            linkable_dl.append(vertex_data_block)
+
+            # Write the display list commands, starting with loading
+            # the vertex batch into the RDP and then the triangle
+            # commands themselves, interleaved with texture loads
+            # as appropriate
+
+            cmds.data.append(F3DEX.pack(F3DEX["G_VTX"], {
+                "v0": 0,
+                "n": len(gbi_vertices),
+                "length": GbiVertex.LENGTH * len(gbi_vertices),
+                "address": 0
+            }))
+            cmds.pointers.append(linkable.LinkablePointer(
+                offset = len(cmds.data) - 4,
+                dtype = ">I",
+                target = vertex_data_block
+            ))
+
+            tri_cursor = 0
+            current_texture = None
+            while tri_cursor < len(batch_indices):
+                can_do_two = (
+                    (tri_cursor + 6 <= len(batch_indices)) and 
+                    TODO
+                )
+                if TODO_needs_tex_load:
+                    # TODO: texture loads
+                    raise NotImplementedError()
+                if can_do_two:
+                    cmds.data.append(F3DEX.pack(F3DEX["G_TRI1"], {
+                        "v00": batch_mapping[batch_indices[tri_cursor]],
+                        "v01": batch_mapping[batch_indices[tri_cursor+1]],
+                        "v02": batch_mapping[batch_indices[tri_cursor+2]],
+                        "v10": batch_mapping[batch_indices[tri_cursor+3]],
+                        "v11": batch_mapping[batch_indices[tri_cursor+4]],
+                        "v12": batch_mapping[batch_indices[tri_cursor+5]]
+                    }))
+                    tri_cursor += 6
+                else:
+                    cmds.data.append(F3DEX.pack(F3DEX["G_TRI1"], {
+                        "v0": batch_mapping[batch_indices[tri_cursor]],
+                        "v1": batch_mapping[batch_indices[tri_cursor+1]],
+                        "v2": batch_mapping[batch_indices[tri_cursor+2]],
+                    }))
+                    tri_cursor += 3
+
+        raise NotImplementedError()
     else:
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])
         linkable_dl, start_offset = relocatableDisplayListToLinkable(raw_mesh_dl)

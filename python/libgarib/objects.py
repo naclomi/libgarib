@@ -1,5 +1,6 @@
 import base64
 import dataclasses
+import enum
 import json
 import math
 import struct
@@ -256,24 +257,16 @@ def updatePackList(obj, pack_list):
     except:
         pass
 
-def packGeo(node_idx, bank, file, texture_db, scale_factor):
-    pack_list = DEFAULT_PACK_LIST[:]
-
+def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):    
     node = file.nodes[node_idx]
-    updatePackList(node, pack_list)
-    mesh = file.meshes[node.mesh]
-    updatePackList(mesh, pack_list)
 
     geo_root = LinkableGeometry()
     bank.include(geo_root)
 
     if should_pack_geo(pack_list):
-        attrs = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
-        attrs["POSITION"] *= scale_factor
-        attrs["NORMAL"] *= scale_factor
         raw_geo_root = objbank_writer.glover_objbank__geometry.build({
-            "num_faces": len(attrs["indices"])//3,
-            "num_vertices": len(attrs["POSITION"]),
+            "num_faces": len(vertex_cache["indices"])//3,
+            "num_vertices": len(vertex_cache["POSITION"]),
             "vertices_ptr": 0,
             "faces_ptr": 0,
             "face_cn_ptr": 0,
@@ -303,24 +296,24 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
             ))
 
         if "faces" in pack_list:
-            geo_root.faces = linkable.LinkableBytes(data=attrs["indices"].astype(">H").tobytes())
+            geo_root.faces = linkable.LinkableBytes(data=vertex_cache["indices"].astype(">H").tobytes())
             setPtr("faces_ptr", geo_root.faces)
         if "verts" in pack_list:
-            geo_root.verts = linkable.LinkableBytes(data=attrs["POSITION"].astype(">f").tobytes())
+            geo_root.verts = linkable.LinkableBytes(data=vertex_cache["POSITION"].astype(">f").tobytes())
             setPtr("vertices_ptr", geo_root.verts)
         if "colors" in pack_list:
-            ubyte_values = (attrs["COLOR_0"]*255).astype("B")
+            ubyte_values = (vertex_cache["COLOR_0"]*255).astype("B")
             raw_colors = b"".join(struct.pack("4B", *color[:3], 0) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
         if "norms" in pack_list:
             # Have to recalculate face norms
             raw_norms = []
-            for base_idx in range(0, len(attrs["indices"]), 3):
+            for base_idx in range(0, len(vertex_cache["indices"]), 3):
                 # Calculate ortho vector
-                v0 = attrs["POSITION"][attrs["indices"][base_idx]]
-                v1 = attrs["POSITION"][attrs["indices"][base_idx+1]]
-                v2 = attrs["POSITION"][attrs["indices"][base_idx+2]]
+                v0 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx]]
+                v1 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx+1]]
+                v2 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx+2]]
                 n = np.cross(v1-v0, v2-v0)
 
                 # Normalize
@@ -328,7 +321,7 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
                 n /= n_mag
 
                 # Correct orientation
-                v0n = attrs["NORMAL"][attrs["indices"][base_idx]]
+                v0n = vertex_cache["NORMAL"][vertex_cache["indices"][base_idx]]
                 if np.dot(n, v0n) < 0:
                     n *= -1
 
@@ -340,10 +333,10 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
             setPtr("face_cn_ptr", geo_root.face_cn)   
         if "flags" in pack_list:
             raw_attr = []
-            for base_idx in range(0, len(attrs["indices"]), 3):
-                v0 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx]]
-                v1 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx+1]]
-                v2 = attrs["_GLOVER_FLAGS"][attrs["indices"][base_idx+2]]
+            for base_idx in range(0, len(vertex_cache["indices"]), 3):
+                v0 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx]]
+                v1 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx+1]]
+                v2 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx+2]]
                 raw_attr.append(struct.pack("B", v0))
                 if v1 != v2 or v1 != v0:
                     print("WARNING: Inconsistent vertex flags in {:}".format(node.name))
@@ -351,14 +344,14 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
             setPtr("flags_ptr", geo_root.flags)
         if "uvs" in pack_list or "texture_ids" in pack_list:
             toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
-            texture_ids = toTextureIds(attrs["material"], file).astype(">I")
+            texture_ids = toTextureIds(vertex_cache["material"], file).astype(">I")
 
             if "textures" in pack_list:
                 raw_attr = []
-                for base_idx in range(0, len(attrs["indices"]), 3):
-                    v0 = texture_ids[attrs["indices"][base_idx]]
-                    v1 = texture_ids[attrs["indices"][base_idx+1]]
-                    v2 = texture_ids[attrs["indices"][base_idx+2]]
+                for base_idx in range(0, len(vertex_cache["indices"]), 3):
+                    v0 = texture_ids[vertex_cache["indices"][base_idx]]
+                    v1 = texture_ids[vertex_cache["indices"][base_idx+1]]
+                    v2 = texture_ids[vertex_cache["indices"][base_idx+2]]
                     raw_attr.append(struct.pack(">I", v0))
                     if v1 != v2 or v1 != v0:
                         print("WARNING: Inconsistent texture ids in {:}".format(node.name))
@@ -367,7 +360,7 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
 
             if "uvs" in pack_list:
                 # Go from normalized coordinates to pixel coordinates
-                uvs = attrs["TEXCOORD_0"]
+                uvs = vertex_cache["TEXCOORD_0"]
                 for idx in range(len(uvs)):
                     tex = texture_db.byId.get(texture_ids[idx])
                     if tex is None:
@@ -380,10 +373,10 @@ def packGeo(node_idx, bank, file, texture_db, scale_factor):
 
                 # Per-vertex -> per-face
                 raw_attr = []
-                for base_idx in range(0, len(attrs["indices"]), 3):
-                    v0 = uvs[attrs["indices"][base_idx]]
-                    v1 = uvs[attrs["indices"][base_idx+1]]
-                    v2 = uvs[attrs["indices"][base_idx+2]]
+                for base_idx in range(0, len(vertex_cache["indices"]), 3):
+                    v0 = uvs[vertex_cache["indices"][base_idx]]
+                    v1 = uvs[vertex_cache["indices"][base_idx+1]]
+                    v2 = uvs[vertex_cache["indices"][base_idx+2]]
                     raw_attr.append(struct.pack(">6h", *v0, *v1, *v2))
                 geo_root.uvs = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("uvs_ptr", geo_root.uvs)
@@ -578,7 +571,15 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
     if node.mesh is not None:
         # Pack geo
         # TODO: parameterize scale factor
-        geo_root = packGeo(node_idx, bank, file, texture_db, 1000)
+        mesh = file.meshes[node.mesh]
+        updatePackList(mesh, pack_list)
+
+        scale_factor = 1000
+        vertex_cache = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
+        vertex_cache["POSITION"] *= scale_factor
+        vertex_cache["NORMAL"] *= scale_factor
+
+        geo_root = packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
             dtype = ">I",
@@ -588,7 +589,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
         # Pack DL
         if "display_list" in pack_list:
-            display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, bank, file)
+            display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, bank, file, texture_db, vertex_cache)
             pointers.append(linkable.LinkablePointer(
                 offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
                 dtype = ">I",
@@ -1347,6 +1348,30 @@ def animation_to_gltf(anim, root_mesh, file, data):
 ###############################################
 # Bank mapping utlities
 
+class BankmapDtype(enum.Enum):
+    DL_VERTEX_DATA = "DL Vertex Data"
+    PADDING = "Padding"
+    UNKNOWN = "???"
+    DIRECTORY = "Directory"
+    ACTOR = "Actor root"
+    MESH = "Mesh"
+    GEO = "Geometry root"
+    GEO_FACE_CN = "Geometry (face colors/normals)"
+    GEO_VERTICES = "Geometry (vertices)"
+    GEO_FACES = "Geometry (faces)"
+    GEO_UV = "Geometry (UVs)"
+    GEO_UV_ORIGINAL = "Geometry (UV original copies)"
+    GEO_VERT_CN = "Geometry (vertex colors/normals)"
+    GEO_FACE_PROPS = "Geometry (face properties)"
+    GEO_TEXTURES = "Geometry (texture ids)"
+    SPRITES = "Sprites"
+    KEYFRAMES_SCALE = "Keyframes (scale)"
+    KEYFRAMES_TRANSLATION = "Keyframes (translation)"
+    KEYFRAMES_ROTATION = "Keyframes (rotation)"
+    DISPLAY_LIST = "Display list"
+    ANIM_PROPS = "Animation props"
+    ANIM_DEFS = "Animation defs"
+
 def kaitaiObjectRange(parent, field):
     if field is None:
         start_field = parent.SEQ_FIELDS[0]
@@ -1393,33 +1418,33 @@ def scrapeBankSegments(bank_data):
             name=name
         ))
 
-    bank_push(bank, "directory", "Directory", "")
+    bank_push(bank, "directory", BankmapDtype.DIRECTORY, "")
     for dir_entry in bank.directory:
         actor = dir_entry.obj_root
         if actor is None:
             continue
-        bank_push(dir_entry, "obj_root", "Actor root", "{:08X}".format(dir_entry.obj_id))
+        bank_push(dir_entry, "obj_root", BankmapDtype.ACTOR, "{:08X}".format(dir_entry.obj_id))
 
         def scrape_mesh(mesh, parents):
             name = "{:08X}.".format(dir_entry.obj_id) + parent_str(parents + [mesh])
-            bank_push(mesh, None, "Mesh", name)
+            bank_push(mesh, None, BankmapDtype.MESH, name)
 
             if mesh.geometry is not None:
                 geo = mesh.geometry
-                bank_push(mesh, "geometry", "Geometry root", name)
-                bank_push(geo, "face_cn", "Geometry (face colors/normals)", name)
-                bank_push(geo, "vertices", "Geometry (vertices)", name)
-                bank_push(geo, "faces", "Geometry (faces)", name)
-                bank_push(geo, "uvs", "Geometry (UVs)", name)
-                bank_push(geo, "uvs_unmodified", "Geometry (UV original copies)", name)
-                bank_push(geo, "vertex_cn", "Geometry (vertex colors/normals)", name)
-                bank_push(geo, "flags", "Geometry (face properties)", name)
-                bank_push(geo, "texture_ids", "Geometry (texture ids)", name)
-            bank_push(mesh, "sprites", "Sprites", name)
-            bank_push(mesh, "scale", "Keyframes (scale)", name)
-            bank_push(mesh, "translation", "Keyframes (translation)", name)
-            bank_push(mesh, "rotation", "Keyframes (rotation)", name)
-            bank_push(mesh, "display_list", "Display list", name)
+                bank_push(mesh, "geometry", BankmapDtype.GEO, name)
+                bank_push(geo, "face_cn", BankmapDtype.GEO_FACE_CN, name)
+                bank_push(geo, "vertices", BankmapDtype.GEO_VERTICES, name)
+                bank_push(geo, "faces", BankmapDtype.GEO_FACES, name)
+                bank_push(geo, "uvs", BankmapDtype.GEO_UV, name)
+                bank_push(geo, "uvs_unmodified", BankmapDtype.GEO_UV_ORIGINAL, name)
+                bank_push(geo, "vertex_cn", BankmapDtype.GEO_VERT_CN, name)
+                bank_push(geo, "flags", BankmapDtype.GEO_FACE_PROPS, name)
+                bank_push(geo, "texture_ids", BankmapDtype.GEO_TEXTURES, name)
+            bank_push(mesh, "sprites", BankmapDtype.SPRITES, name)
+            bank_push(mesh, "scale", BankmapDtype.KEYFRAMES_SCALE, name)
+            bank_push(mesh, "translation", BankmapDtype.KEYFRAMES_TRANSLATION, name)
+            bank_push(mesh, "rotation", BankmapDtype.KEYFRAMES_ROTATION, name)
+            bank_push(mesh, "display_list", BankmapDtype.DISPLAY_LIST, name)
 
             if mesh.display_list is not None:
                 def scrape_dl(file, offset):
@@ -1434,7 +1459,7 @@ def scrapeBankSegments(bank_data):
                             end = start + cmd_args["length"] + 1
                             bank_map.append(BankSegment(
                                 memory_range=(start, end),
-                                dtype="DL Vertex Data",
+                                dtype=BankmapDtype.DL_VERTEX_DATA,
                                 name="{:}.dl.cmd[0x{:04X}]".format(name, offset-base_offset)
                             ))
                         elif (cmd is F3DEX.byName["G_MTX"]
@@ -1449,8 +1474,8 @@ def scrapeBankSegments(bank_data):
 
         try:
             if actor.animation is not None:
-                bank_push(actor, "animation", "Animation props", "{:08X}".format(dir_entry.obj_id))
-                bank_push(actor.animation, "animation_definitions", "Animation defs", "{:08X}".format(dir_entry.obj_id))
+                bank_push(actor, "animation", BankmapDtype.ANIM_PROPS, "{:08X}".format(dir_entry.obj_id))
+                bank_push(actor.animation, "animation_definitions", BankmapDtype.ANIM_DEFS, "{:08X}".format(dir_entry.obj_id))
         except EOFError as e:
             print("ERROR: Bad pointer for actor 0x{:08X} animation data".format(dir_entry.obj_id))
     bank_map.sort(key=lambda s: s.memory_range[0])
@@ -1468,7 +1493,7 @@ def fillGaps(segments, bank_data):
             if bank_data[addr] != 0:
                 padding = False
                 break
-        return "Padding" if padding else "???"
+        return BankmapDtype.PADDING if padding else BankmapDtype.UNKNOWN
 
 
     for segment in segments:

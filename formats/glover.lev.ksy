@@ -422,7 +422,7 @@ types:
       - id: z
         type: f4
 
-  wind:
+  wind: # 0x8C
     # TODO: figure out exactly what unknown_0x2c does,
     #       seems to have something to do with effect distance
     seq:
@@ -458,9 +458,12 @@ types:
 
       - id: tag
         type: u4
+        -semantic:
+          tag-namespace: wind
 
 
-  water:
+
+  water: # 0xA0
     # lol dear lord
     seq:
       - id: left
