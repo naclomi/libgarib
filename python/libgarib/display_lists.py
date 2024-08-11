@@ -66,6 +66,8 @@ def gltfNodeToDisplayList(node_idx, bank, file, texture_db, vertex_cache):
     if rebuild_dl:
 
         # Assume triangles are arranged to optimize cache use
+        # TODO: write order optimizer. ALSO, make sure to sort/segment
+        #       by material too
 
         start_offset = 0
 

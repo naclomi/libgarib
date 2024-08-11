@@ -175,16 +175,19 @@ class TextureDB(object):
     def __init__(self):
         self.byId = {}
         self.byFilename = {}
+        self.origin = {}
 
     def addIm(self, im, filename):
         tex_raw = imToTex(im, canonicalize_reference(filename))
         tex = GloverTexbank.Texture.from_bytes(tex_raw)
+        self.origin[tex.id] = filename
         self.byId[tex.id] = tex
 
-    def addBank(self, buffer):
+    def addBank(self, buffer, bank_filename=None):
         bank = GloverTexbank.from_bytes(buffer)
         for idx, texture in enumerate(bank.assets):
             self.byId[texture.id] = texture
+            self.origin[texture.id] = bank_filename or "bank"
             if bank.filenames is not None and len(bank.filenames) > idx:
                 if bank.filenames[idx] != "":
                     self.byFilename[bank.filenames[idx]] = texture

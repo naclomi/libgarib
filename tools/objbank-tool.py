@@ -4,6 +4,7 @@ import cmd
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -33,7 +34,7 @@ def build_texture_db(textures):
                     db.addIm(im, filename)
                 else:
                     raw_data = data_from_stream(f)
-                    db.addBank(raw_data)
+                    db.addBank(raw_data, bank_filename=filename)
     return db
 
 def bankmap(args):
@@ -140,6 +141,19 @@ def pack(args):
 
 def dlist_rip(args):
     texture_db = build_texture_db(args.textures)
+    def texture_summary(tex_id):
+        texture = texture_db.byId[tex_id]
+        origin = os.path.basename(texture_db.origin[tex_id])
+        return """//***************************
+//* TEXTURE REFERENCE:
+//* id: 0x{tex_id:08X}
+//* size: {texture.width}x{texture.height}
+//* mask: {texture.masks}x{texture.maskt}
+//* format: {texture.color_format.name} / {texture.compression_format.name}
+//* flags: 0x{texture.flags:X}
+//* palette: +0x{texture.palette_offset:X}
+//* origin: {origin}
+//***************************""".format(**locals())
 
     for bank_filename in args.bank_file:
         os.makedirs(args.output_dir, exist_ok=True)
@@ -157,8 +171,21 @@ def dlist_rip(args):
                 if args.gfxdis is not None:
                     disasm_run = subprocess.run([args.gfxdis, "-f", bin_filename], capture_output=True)
                     c_filename = os.path.join(args.output_dir, "{:}.dlist.c".format(dl_name))
-                    with open(c_filename, "wb") as f:
-                        f.write(disasm_run.stdout)
+                    c_output = disasm_run.stdout.decode()
+                    if len(texture_db.byId) > 0:
+                        addr_pattern = re.compile("0x[A-Fa-f0-9]{8}")
+                        new_c_output = []
+                        last_tex_ref_id = None
+                        for c_line in c_output.split("\n"):
+                            for addr_match in addr_pattern.finditer(c_line):
+                                addr = int(addr_match.group(0), 0)
+                                if addr in texture_db.byId and last_tex_ref_id != addr:
+                                    last_tex_ref_id = addr
+                                    new_c_output.append(texture_summary(addr))
+                            new_c_output.append(c_line)
+                        c_output = "\n".join(new_c_output)
+                    with open(c_filename, "w") as f:
+                        f.write(c_output)
 
 def query(args):
     json_banks = {}
