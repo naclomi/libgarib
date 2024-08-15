@@ -189,6 +189,9 @@ def gltfMaterialToGloverMaterial(gltf_material, file):
         texture_id=textureIdFromMaterial(gltf_material, file)
     )
 
+def extractGloverMaterialsFromGLTF(file):
+    return [gltfMaterialToGloverMaterial(material, file) for material in file.materials]
+
 def hashGLTFMesh(gltf_mesh, file):
     materials = collections.OrderedDict()
     bufferviews = collections.OrderedDict()

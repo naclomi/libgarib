@@ -26,16 +26,31 @@ class Vertex(object):
     LENGTH = 16
     GL_STRUCTURE = "3f2f4f"
     GL_LENGTH = struct.calcsize("="+GL_STRUCTURE)
-
-    def __init__(self, pos=(0,0,0), uv=(0,0), rgba=(0,0,0,0), n=(0,0,0)):
+    GBI_STRUCTURE_UNLIT = ">3hH2h4B"
+    GBI_STRUCTURE_LIT = ">3hH2h3bB"
+    def __init__(self, pos=(0,0,0), uv=(0,0), rgb=(0,0,0,0), n=(0,0,0), a=0):
         self.x, self.y, self.z = pos
         self.f = 0
         self.u, self.v = uv
-        self.r, self.g, self.b, self.a = rgba
+        self.r, self.g, self.b = rgb
+        self.a = a
         self.nx, self.ny, self.nz = n
 
     def asDLBytes(self, lighting):
-        raise NotImplementedError()
+        if lighting:
+            return struct.pack(
+                self.GBI_STRUCTURE_LIT,
+                self.x, self.y, self.z,
+                0,
+                self.u * (2**5), self.v * (2**5),
+                int(self.nx * 128), int(self.ny * 128), int(self.nz * 128), int(self.a * 255))
+        else:
+            return struct.pack(
+                self.GBI_STRUCTURE_UNLIT,
+                self.x, self.y, self.z,
+                0,
+                self.u * (2**5), self.v * (2**5),
+                int(self.r * 255), int(self.g * 255), int(self.b * 255), int(self.a * 255))
 
     def asGLBytes(self, lighting):
         # TODO: deal w/ lighting
@@ -117,6 +132,18 @@ class Command(object):
     def __repr__(self):
         return self.name
 
+    def pack(self, **kwargs):
+        bits = 0
+        bits |= self.opcode << 56
+        if kwargs.keys() != self.fields.keys():
+            raise ValueError()
+        if self.inverse_xform is not None:
+            kwargs = self.inverse_xform(kwargs)
+        for arg_name, arg_value in kwargs.items():
+            field = self.byName[arg_name]
+            bits |= (arg_value & (2**field.size - 1)) << field.offset
+        return struct.pack(">II", (bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF)
+
     @classmethod
     def list(cls, *tuples):
         return tuple(cls(*tuple) for tuple in tuples)
@@ -178,16 +205,8 @@ class GBI(object):
             args = command.xform(args)
         return (command, args)
 
-    def pack(self, command, args):
-        bits = 0
-        bits |= command.opcode << 56
-        if command.inverse_xform is not None:
-            args = command.inverse_xform(args)
-        for arg_name, arg_value in args.items():
-            field = command.byName[arg_name]
-            bits |= (arg_value & (2**field.size - 1)) << field.offset
-        return struct.pack(">II", (bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF)
-
+    def pack(self, command, **kwargs):
+        return command.pack(kwargs)
 
 othermode_h_fields = Field.list(
     ("G_MDSFT_ALPHADITHER", 4, 2),
@@ -647,6 +666,13 @@ Fast3D = GBI(commands=[
     "G_TT_NONE": 0,
     "G_TT_RGBA16": 2,
     "G_TT_IA16": 3,
+
+    # G_SETTILE values
+    "G_TX_NOLOD": 0,
+    "G_TX_RENDERTILE": 0,
+
+    # G_SETOTHERMODE_H sft values
+    "G_MDSFT_TEXTLUT": 14
 })
 
 F3DEX = GBI(inherit=Fast3D, commands=[
