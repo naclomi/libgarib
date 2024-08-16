@@ -13,7 +13,7 @@ from .parsers.glover_texbank import GloverTexbank
 ################################
 # Packing
 
-class LinkableDisplayList(linkable.LinkableBytes):
+class LinkableDisplayList(linkable.LinkableStruct):
     pass
 
 def relocatableDisplayListToLinkable(raw_mesh_dl):
@@ -50,7 +50,9 @@ def relocatableDisplayListToLinkable(raw_mesh_dl):
         ))
         cursor += 4
     raw_dl = raw_mesh_dl[payload_base:payload_base+data_size]
-    return LinkableDisplayList(data=raw_dl, pointers=pointers), start_offset
+    
+    relocatable = linkable.LinkableBytes(data=raw_dl, pointers=pointers)
+    return LinkableDisplayList([relocatable]), start_offset
 
 def writeCullDL(linkable_dl, vertex_cache):
     # TODO: gsSPCullDisplayList with a cube based on the min/max values
@@ -106,7 +108,7 @@ def tileLineSize(texture):
         formats.ci8: 1,
         formats.uncompressed_16b: 2,
         formats.uncompressed_32b: 4
-    }[texture.compression_format.value]
+    }[texture.compression_format]
     line_bytes = int(texture.width * bpp)
     return line_bytes >> 3
 
@@ -126,7 +128,7 @@ def writeTextureLoad(dl_cmds, material, texture):
     else:
         raise ValueError("Unsupported compression/color format combo {:}+{:}".format(
             texture.color_format, texture.compression_format))
-    dl_cmds.data += F3DEX["G_SETOTHERMODE_H"].pack(
+    dl_cmds.data += F3DEX["G_SETOTHERMODE_H"].pack(_raw=True,
         sft=F3DEX.constants["G_MDSFT_TEXTLUT"],
         len=2,
         data=lut_type
@@ -146,7 +148,7 @@ def writeTextureLoad(dl_cmds, material, texture):
             fmt=texture.color_format.value,
             siz=formats.uncompressed_16b,
             width=1,
-            i=texture.texture_id,
+            i=material.texture_id,
         )
         dl_cmds.data += F3DEX["G_RDPTILESYNC"].pack()
         dl_cmds.data += F3DEX["G_SETTILE"].pack(
@@ -169,7 +171,7 @@ def writeTextureLoad(dl_cmds, material, texture):
         fmt=texture.color_format.value,
         siz=block_px_size,
         width=1,
-        i=texture.texture_id,
+        i=material.texture_id,
     )
     dl_cmds.data += F3DEX["G_SETTILE"].pack(
         fmt=texture.color_format.value,
@@ -294,10 +296,11 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
         #   a) reorders triangles to fit well into the cache
         #   b) orders materials such that seam vertices can be reused
         #      with gsSPModifyVertex()
-
+        materials = gltf_helper.extractGloverMaterialsFromGLTF(file)
+        print(materials)
         start_offset = 0
 
-        linkable_dl = linkable.LinkableStruct()
+        linkable_dl = LinkableDisplayList()
         start_offset = 0
         cmds = linkable.LinkableBytes(b"")
         linkable_dl.append(cmds)
@@ -319,27 +322,30 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             writeVtxLoad(cmds, vertex_data_block)
 
             face_cursor = batch_cursor
-            previous_material = None
+            previous_material = gltf_helper.Material()
             vertices_loaded = False
             while face_cursor < next_batch_cursor:
-                material = vertex_cache["material"][batch_cursor + face_cursor]
+                material = materials[vertex_cache["material"][face_cursor]]
                 can_do_two = face_cursor + 6 <= len(vertex_cache["indices"])
                 if can_do_two:
-                    material_2 = vertex_cache["material"][batch_cursor + face_cursor + 3]
+                    material_2 = materials[vertex_cache["material"][face_cursor + 3]]
                     can_do_two &= (material == material_2)
                 if material != previous_material:
-                    texture = texture_db.byId[material.texture_id]
-                    if material.texture_id != previous_material.texture_id:
-                        writeTextureLoad(cmds, material, texture)
-                        writeVtxLoad(cmds, vertex_data_block)
-                        vertices_loaded = True
+                    if material.texture_id is not None:
+                        texture = texture_db.byId[material.texture_id]
+                        if material.texture_id != previous_material.texture_id:
+                            writeTextureLoad(cmds, material, texture)
+                            writeVtxLoad(cmds, vertex_data_block)
+                            vertices_loaded = True
                         writeTileSettings(cmds, material, texture)
+                    else:
+                        raise NotImplementedError("Non-textured faces")
                     previous_material = material
                 if not vertices_loaded:
                     writeVtxLoad(cmds, vertex_data_block)
                     vertices_loaded = True
                 if can_do_two:
-                    cmds.data += F3DEX["G_TRI1"].pack(
+                    cmds.data += F3DEX["G_TRI2"].pack(
                         v00=batch_mapping[vertex_cache["indices"][face_cursor]],
                         v01=batch_mapping[vertex_cache["indices"][face_cursor+1]],
                         v02=batch_mapping[vertex_cache["indices"][face_cursor+2]],

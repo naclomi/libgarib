@@ -8,7 +8,7 @@ import math
 import struct
 
 from . import animation
-from .hash import hash_str
+from .hash import canonicalize_reference
 
 import numpy as np
 import pygltflib as gltf
@@ -161,31 +161,36 @@ def textureIdFromMaterial(material_or_idx, file):
         material = material_or_idx
     else:
         material = file.materials[int(material_or_idx)]
-
     # TODO: fallback chain -- first look in URI, then look in gltf image's name, then in material's name
     try:
         texture_idx = material.pbrMetallicRoughness.baseColorTexture.index
         texture = file.textures[texture_idx]
         image = file.images[texture.source]
         basename = os.path.basename(image.uri)
-    except Exception:
+    except AttributeError:
         basename = os.path.basename(material.name)
-
     try:
         return int(next(re.finditer("(0x[0-9A-Fa-f]{8})\.", basename)).group(1),16)
     except StopIteration:
-        return hash_str(basename)
+        return canonicalize_reference(basename)
 
 def gltfMaterialToGloverMaterial(gltf_material, file):
-    if gltf_material.pbrMetallicRoughness is None or gltf_material.pbrMetallicRoughness.baseColorTexture is None:
-        return Material()
-    texture = file.textures[gltf_material.pbrMetallicRoughness.baseColorTexture.index]
-    sampler = file.samplers[texture.sampler]
+    try:
+        texture = file.textures[gltf_material.pbrMetallicRoughness.baseColorTexture.index]
+        sampler = file.samplers[texture.sampler]
+
+        clamp_s = sampler.wrapS == gltf.CLAMP_TO_EDGE,
+        clamp_t = sampler.wrapT == gltf.CLAMP_TO_EDGE,
+        mirror_s = sampler.wrapS == gltf.MIRRORED_REPEAT,
+        mirror_t = sampler.wrapT == gltf.MIRRORED_REPEAT,
+    except AttributeError:
+        clamp_s, clamp_t = False, False
+        mirror_s, mirror_t = False, False
     return Material(
-        clamp_s=sampler.wrapS == gltf.CLAMP_TO_EDGE,
-        clamp_t=sampler.wrapT == gltf.CLAMP_TO_EDGE,
-        mirror_s=sampler.wrapS == gltf.MIRRORED_REPEAT,
-        mirror_t=sampler.wrapT == gltf.MIRRORED_REPEAT,
+        clamp_s=clamp_s,
+        clamp_t=clamp_t,
+        mirror_s=mirror_s,
+        mirror_t=mirror_t,
         texture_id=textureIdFromMaterial(gltf_material, file)
     )
 

@@ -1,3 +1,4 @@
+from enum import Enum
 import re
 import struct
 
@@ -135,9 +136,10 @@ class Command(object):
     def pack(self, **kwargs):
         bits = 0
         bits |= self.opcode << 56
+        raw_args = kwargs.pop("_raw", False)
         if kwargs.keys() != self.byName.keys():
             raise ValueError()
-        if self.inverse_xform is not None:
+        if raw_args is False and self.inverse_xform is not None:
             kwargs = self.inverse_xform(kwargs)
         for arg_name, arg_value in kwargs.items():
             field = self.byName[arg_name]
@@ -240,11 +242,26 @@ def process_othermode_h_args(args):
 
 
 def process_othermode_h_args_inv(args):
-    # TODO
     raise NotImplementedError()
 
-color_format = {0: "RGBA", 1: "YUV", 2: "CI", 3: "IA", 4: "I"}
-color_format_inv = {"RGBA": 0, "YUV": 1, "CI": 2, "IA": 3, "I": 4}
+class ImSize(Enum):
+    ci4 = 0
+    ci8 = 1
+    uncompressed_16b = 2
+    uncompressed_32b = 3
+
+class ImFormat(Enum):
+    rgba = 0
+    yuv = 1
+    ci = 2
+    ia = 3
+    i = 4
+
+def unwrap_enum(val):
+    if isinstance(val, Enum):
+        return val.value
+    else:
+        return val
 
 # TODO:
 #   Find some way to parse G_TEXRECT alongside
@@ -449,12 +466,12 @@ Fast3D = GBI(commands=[
         ("i", 0, 32),
     ), lambda args: mutate(
         args,
-        ("fmt", color_format[args["fmt"]]),
-        ("siz", {0: 4, 1: 8, 2: 16, 3: 32}[args["siz"]])
+        ("fmt", ImFormat(args["fmt"])),
+        ("siz", ImSize(args["siz"]))
     ),  lambda args: mutate(
         args,
-        ("fmt", color_format_inv[args["fmt"]]),
-        ("siz", {4: 0, 8: 1, 16: 2, 32: 3}[args["siz"]])
+        ("fmt", unwrap_enum(args["fmt"])),
+        ("siz", unwrap_enum(args["siz"]))
     )),
 
     ("G_SETCOMBINE", 0xfc, Field.list(
@@ -523,12 +540,12 @@ Fast3D = GBI(commands=[
         ("shifts", 0, 4),
     ), lambda args: mutate(
         args,
-        ("fmt", color_format[args["fmt"]]),
-        ("siz", {0: 4, 1: 8, 2: 16, 3: 32}[args["siz"]])
+        ("fmt", ImFormat(args["fmt"])),
+        ("siz", ImSize(args["siz"]))
     ),  lambda args: mutate(
         args,
-        ("fmt", color_format_inv[args["fmt"]]),
-        ("siz", {4: 0, 8: 1, 16: 2, 32: 3}[args["siz"]])
+        ("fmt", unwrap_enum(args["fmt"])),
+        ("siz", unwrap_enum(args["siz"]))
     )),
     ("G_LOADTILE", 0xf4, Field.list(
         ("uls", 44, 12),
