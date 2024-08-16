@@ -589,9 +589,9 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
         # Pack DL
         if "display_list" in pack_list:
-            if render_mode.ripple:
+            if RenderMode().fromInt(render_mode).ripple:
                 print("WARNING: Static display list will take precedence over water ripple effect in node {:}".format(node.name))
-            display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_cache)
+            display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, RenderMode().fromInt(render_mode), bank, file, texture_db, vertex_cache)
             pointers.append(linkable.LinkablePointer(
                 offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
                 dtype = ">I",

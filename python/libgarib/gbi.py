@@ -40,16 +40,16 @@ class Vertex(object):
         if lighting:
             return struct.pack(
                 self.GBI_STRUCTURE_LIT,
-                self.x, self.y, self.z,
+                int(self.x), int(self.y), int(self.z),
                 0,
-                self.u * (2**5), self.v * (2**5),
+                int(self.u * (2**5)), int(self.v * (2**5)),
                 int(self.nx * 128), int(self.ny * 128), int(self.nz * 128), int(self.a * 255))
         else:
             return struct.pack(
                 self.GBI_STRUCTURE_UNLIT,
-                self.x, self.y, self.z,
+                int(self.x), int(self.y), int(self.z),
                 0,
-                self.u * (2**5), self.v * (2**5),
+                int(self.u * (2**5)), int(self.v * (2**5)),
                 int(self.r * 255), int(self.g * 255), int(self.b * 255), int(self.a * 255))
 
     def asGLBytes(self, lighting):
@@ -135,7 +135,7 @@ class Command(object):
     def pack(self, **kwargs):
         bits = 0
         bits |= self.opcode << 56
-        if kwargs.keys() != self.fields.keys():
+        if kwargs.keys() != self.byName.keys():
             raise ValueError()
         if self.inverse_xform is not None:
             kwargs = self.inverse_xform(kwargs)
@@ -670,6 +670,11 @@ Fast3D = GBI(commands=[
     # G_SETTILE values
     "G_TX_NOLOD": 0,
     "G_TX_RENDERTILE": 0,
+    "G_TX_LOADTILE": 7,
+
+    "G_TEXTURE_IMAGE_FRAC": 2,
+
+    "G_TX_DXT_FRAC": 11,
 
     # G_SETOTHERMODE_H sft values
     "G_MDSFT_TEXTLUT": 14
