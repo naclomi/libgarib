@@ -54,10 +54,21 @@ def relocatableDisplayListToLinkable(raw_mesh_dl):
     relocatable = linkable.LinkableBytes(data=raw_dl, pointers=pointers)
     return LinkableDisplayList([relocatable]), start_offset
 
-def writeCullDL(linkable_dl, vertex_cache):
+def writeCullDL(linkable_dl, cmds, vertex_cache):
     # TODO: gsSPCullDisplayList with a cube based on the min/max values
     # of the position accessor, **scaled appropriately**
-    # raise NotImplementedError()
+    cmds.data += F3DEX["G_CLEARGEOMETRYMODE"].pack(
+        G_ZBUFFER=False,
+        G_SHADE=False,
+        G_SHADING_SMOOTH=False,
+        G_CULL_FRONT=False,
+        G_CULL_BACK=False,
+        G_FOG=False,
+        G_LIGHTING=True,
+        G_TEXTURE_GEN=False,
+        G_TEXTURE_GEN_LINEAR=False,
+        G_CLIPPING=False
+    )
     print("WARNING: gsSPCullDisplayList() not yet implemented")
 
 def buildDLFaceBatch(vertex_cache, cursor, unlit):
@@ -120,11 +131,11 @@ def writeTextureLoad(dl_cmds, material, texture):
     dl_cmds.data += F3DEX["G_RDPLOADSYNC"].pack()
 
     if texture.compression_format not in (formats.ci4, formats.ci8):
-        lut_type = F3DEX.constants["G_TT_NONE"]
+        lut_type = F3DEX.constants["G_TT_NONE"] << F3DEX.constants["G_MDSFT_TEXTLUT"]
     elif texture.color_format == colors.rgba:
-        lut_type = F3DEX.constants["G_TT_RGBA16"]
+        lut_type = F3DEX.constants["G_TT_RGBA16"] << F3DEX.constants["G_MDSFT_TEXTLUT"]
     elif texture.color_format == colors.ia:
-        lut_type = F3DEX.constants["G_TT_IA16"]
+        lut_type = F3DEX.constants["G_TT_IA16"] << F3DEX.constants["G_MDSFT_TEXTLUT"]
     else:
         raise ValueError("Unsupported compression/color format combo {:}+{:}".format(
             texture.color_format, texture.compression_format))
@@ -144,21 +155,21 @@ def writeTextureLoad(dl_cmds, material, texture):
             tlut_addr = 256
             tlut_count = 255
 
-        dl_cmds.data += F3DEX["G_SETTIMG"].pack(
+        dl_cmds.data += F3DEX["G_SETTIMG"].pack(_raw=True,
             fmt=texture.color_format.value,
             siz=formats.uncompressed_16b,
-            width=1,
+            width=0,
             i=material.texture_id,
         )
         dl_cmds.data += F3DEX["G_RDPTILESYNC"].pack()
-        dl_cmds.data += F3DEX["G_SETTILE"].pack(
+        dl_cmds.data += F3DEX["G_SETTILE"].pack(_raw=True,
             fmt=0, siz=0, line=0,
             tmem=tlut_addr,
             tile=F3DEX.constants["G_TX_LOADTILE"],
             palette=0, clampt=0, mirrort=0, maskt=0, shiftt=0, clamps=0, mirrors=0, masks=0, shifts=0,
         )
         dl_cmds.data += F3DEX["G_RDPLOADSYNC"].pack()
-        dl_cmds.data += F3DEX["G_LOADTLUT"].pack(
+        dl_cmds.data += F3DEX["G_LOADTLUT"].pack(_raw=True,
             tile=F3DEX.constants["G_TX_LOADTILE"],
             count=tlut_count
         )
@@ -167,13 +178,13 @@ def writeTextureLoad(dl_cmds, material, texture):
     #  gsDPLoadTextureBlock / gsDPLoadTextureBlock_4b
 
     block_px_size = formats.uncompressed_16b if texture.compression_format != formats.uncompressed_32b else formats.uncompressed_32b
-    dl_cmds.data += F3DEX["G_SETTIMG"].pack(
+    dl_cmds.data += F3DEX["G_SETTIMG"].pack(_raw=True,
         fmt=texture.color_format.value,
         siz=block_px_size,
-        width=1,
+        width=0,
         i=material.texture_id,
     )
-    dl_cmds.data += F3DEX["G_SETTILE"].pack(
+    dl_cmds.data += F3DEX["G_SETTILE"].pack(_raw=True,
         fmt=texture.color_format.value,
         siz=block_px_size,
         line=0,
@@ -203,7 +214,7 @@ def writeTextureLoad(dl_cmds, material, texture):
     else:
         row_words = max(1, texture.width * bytes_per_texel // 8)
     dxt = ((1 << F3DEX.constants["G_TX_DXT_FRAC"]) + row_words - 1) // row_words
-    dl_cmds.data += F3DEX["G_LOADBLOCK"].pack(
+    dl_cmds.data += F3DEX["G_LOADBLOCK"].pack(_raw=True,
         tile=F3DEX.constants["G_TX_LOADTILE"],
         uls=0,
         ult=0,
@@ -216,7 +227,7 @@ def writeTextureLoad(dl_cmds, material, texture):
         line = ((texture.width >> 1) + 7) >> 3
     else:
         line = ((texture.width * line_bytes) + 7) >> 3
-    dl_cmds.data += F3DEX["G_SETTILE"].pack(
+    dl_cmds.data += F3DEX["G_SETTILE"].pack(_raw=True,
         fmt=texture.color_format.value,
         siz=texture.compression_format.value,
         line=line,
@@ -233,7 +244,7 @@ def writeTextureLoad(dl_cmds, material, texture):
         shifts=F3DEX.constants["G_TX_NOLOD"],
     )
 
-    dl_cmds.data += F3DEX["G_SETTILESIZE"].pack(
+    dl_cmds.data += F3DEX["G_SETTILESIZE"].pack(_raw=True,
         tile=F3DEX.constants["G_TX_RENDERTILE"],
         uls=0,
         ult=0,
@@ -244,7 +255,7 @@ def writeTextureLoad(dl_cmds, material, texture):
 
 def writeTileSettings(dl_cmds, material, texture):
     dl_cmds.data += F3DEX["G_RDPTILESYNC"].pack()
-    dl_cmds.data += F3DEX["G_SETTILE"].pack(
+    dl_cmds.data += F3DEX["G_SETTILE"].pack(_raw=True,
         fmt=texture.color_format.value,
         siz=texture.compression_format.value,
         line=tileLineSize(texture),
@@ -263,10 +274,10 @@ def writeTileSettings(dl_cmds, material, texture):
 
 
 def writeVtxLoad(dl_cmds, vertex_data_block):
-    dl_cmds.data += F3DEX["G_VTX"].pack(
+    dl_cmds.data += F3DEX["G_VTX"].pack(_raw=True,
         v0=0,
         n=len(vertex_data_block.data) // GbiVertex.LENGTH,
-        length=len(vertex_data_block.data),
+        length=len(vertex_data_block.data)-1,
         address=0
     )
     dl_cmds.pointers.append(linkable.LinkablePointer(
@@ -297,18 +308,20 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
         #   b) orders materials such that seam vertices can be reused
         #      with gsSPModifyVertex()
         materials = gltf_helper.extractGloverMaterialsFromGLTF(file)
-        print(materials)
-        start_offset = 0
 
         linkable_dl = LinkableDisplayList()
-        start_offset = 0
         cmds = linkable.LinkableBytes(b"")
         linkable_dl.append(cmds)
 
-        writeCullDL(linkable_dl, vertex_cache)
+        writeCullDL(linkable_dl, cmds, vertex_cache)
+
+        mode_cmd = "G_CLEARGEOMETRYMODE" if render_mode.unlit else "G_SETGEOMETRYMODE"
+        cmds.data += F3DEX[mode_cmd].pack(
+            G_LIGHTING=True
+        )
 
         batch_cursor = 0
-
+        previous_material = gltf_helper.Material()
         while batch_cursor < len(vertex_cache["indices"]):
             next_batch_cursor, vertex_data_block, batch_mapping = buildDLFaceBatch(
                 vertex_cache, batch_cursor, render_mode.unlit)
@@ -318,11 +331,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             # the vertex batch into the RDP and then the triangle
             # commands themselves, interleaved with texture loads
             # as appropriate
-
-            writeVtxLoad(cmds, vertex_data_block)
-
             face_cursor = batch_cursor
-            previous_material = gltf_helper.Material()
             vertices_loaded = False
             while face_cursor < next_batch_cursor:
                 material = materials[vertex_cache["material"][face_cursor]]
@@ -365,6 +374,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             batch_cursor = next_batch_cursor
 
         cmds.data += F3DEX["G_ENDDL"].pack()
+        start_offset = 0
     else:
         raw_mesh_dl = base64.b64decode(mesh.extras["display_list"])
         linkable_dl, start_offset = relocatableDisplayListToLinkable(raw_mesh_dl)

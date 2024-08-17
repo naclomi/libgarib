@@ -169,23 +169,27 @@ def dlist_rip(args):
                 with open(bin_filename, "wb") as f:
                     f.write(dl_raw)
                 if args.gfxdis is not None:
-                    disasm_run = subprocess.run([args.gfxdis, "-f", bin_filename], capture_output=True)
-                    c_filename = os.path.join(args.output_dir, "{:}.dlist.c".format(dl_name))
-                    c_output = disasm_run.stdout.decode()
-                    if len(texture_db.byId) > 0:
-                        addr_pattern = re.compile("0x[A-Fa-f0-9]{8}")
-                        new_c_output = []
-                        last_tex_ref_id = None
-                        for c_line in c_output.split("\n"):
-                            for addr_match in addr_pattern.finditer(c_line):
-                                addr = int(addr_match.group(0), 0)
-                                if addr in texture_db.byId and last_tex_ref_id != addr:
-                                    last_tex_ref_id = addr
-                                    new_c_output.append(texture_summary(addr))
-                            new_c_output.append(c_line)
-                        c_output = "\n".join(new_c_output)
-                    with open(c_filename, "w") as f:
-                        f.write(c_output)
+                    disasm_run = subprocess.run([args.gfxdis, "-r", "-i", "-f", bin_filename], capture_output=True)
+                    if disasm_run.returncode != 0:
+                        print("{:} returned code {:}:".format(args.gfxdis, disasm_run.returncode))
+                        print(disasm_run.stderr.decode())
+                    else:
+                        c_filename = os.path.join(args.output_dir, "{:}.dlist.c".format(dl_name))
+                        c_output = disasm_run.stdout.decode()
+                        if len(texture_db.byId) > 0:
+                            addr_pattern = re.compile("0x[A-Fa-f0-9]{8}")
+                            new_c_output = []
+                            last_tex_ref_id = None
+                            for c_line in c_output.split("\n"):
+                                for addr_match in addr_pattern.finditer(c_line):
+                                    addr = int(addr_match.group(0), 0)
+                                    if addr in texture_db.byId and last_tex_ref_id != addr:
+                                        last_tex_ref_id = addr
+                                        new_c_output.append(texture_summary(addr))
+                                new_c_output.append(c_line)
+                            c_output = "\n".join(new_c_output)
+                        with open(c_filename, "w") as f:
+                            f.write(c_output)
 
 def query(args):
     json_banks = {}

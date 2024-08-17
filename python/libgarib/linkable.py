@@ -79,7 +79,10 @@ class LinkableBytes(Linkable):
 class LinkableStruct(Linkable):
     def __init__(self, data: typing.List[Linkable] = None):
         super().__init__()
-        self.data = data or []
+        self.data = []
+        if data is not None:
+            for new_child in data:
+                self.append(new_child)
 
     def __len__(self):
         data_len = sum(len(d) for d in self.data)

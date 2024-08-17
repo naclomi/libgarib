@@ -29,7 +29,7 @@ class Vertex(object):
     GL_LENGTH = struct.calcsize("="+GL_STRUCTURE)
     GBI_STRUCTURE_UNLIT = ">3hH2h4B"
     GBI_STRUCTURE_LIT = ">3hH2h3bB"
-    def __init__(self, pos=(0,0,0), uv=(0,0), rgb=(0,0,0,0), n=(0,0,0), a=0):
+    def __init__(self, pos=(0,0,0), uv=(0,0), rgb=(0,0,0), n=(0,0,0), a=0):
         self.x, self.y, self.z = pos
         self.f = 0
         self.u, self.v = uv
@@ -73,6 +73,7 @@ class Vertex(object):
         self.setZ(raw_bytes[4:8])
         self.setUV(raw_bytes[8:12])
         self.setNormRGBA(raw_bytes[12:16])
+        return self
 
     def setXY(self, raw_bytes):
         self.x, self.y = struct.unpack(">hh", raw_bytes)
@@ -105,11 +106,12 @@ class Vertex(object):
 
 
 class Field(object):
-    def __init__(self, name, offset, size):
+    def __init__(self, name, offset, size, default=None):
         self.name = name
         self.offset = offset
         self.size = size
         self.mask = mask(self.size, self.offset)
+        self.default = default
 
     @classmethod
     def list(cls, *tuples):
@@ -134,14 +136,18 @@ class Command(object):
         return self.name
 
     def pack(self, **kwargs):
-        bits = 0
-        bits |= self.opcode << 56
         raw_args = kwargs.pop("_raw", False)
+        for field in self.fields:
+            if field.default is not None and field.name not in kwargs:
+                kwargs[field.name] = field.default
         if kwargs.keys() != self.byName.keys():
             raise ValueError()
+        bits = 0
+        bits |= self.opcode << 56
         if raw_args is False and self.inverse_xform is not None:
             kwargs = self.inverse_xform(kwargs)
         for arg_name, arg_value in kwargs.items():
+            arg_value = unwrap_enum(arg_value)
             field = self.byName[arg_name]
             bits |= (arg_value & (2**field.size - 1)) << field.offset
         return struct.pack(">II", (bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF)
@@ -414,28 +420,28 @@ Fast3D = GBI(commands=[
     )),
     ("G_ENDDL", 0xB8),
     ("G_SETGEOMETRYMODE", 0xB7, Field.list(
-        ("G_ZBUFFER", 0, 1),
-        ("G_SHADE", 2, 1),
-        ("G_SHADING_SMOOTH", 9, 1),
-        ("G_CULL_FRONT", 12, 1),
-        ("G_CULL_BACK", 13, 1),
-        ("G_FOG", 16, 1),
-        ("G_LIGHTING", 17, 1),
-        ("G_TEXTURE_GEN", 18, 1),
-        ("G_TEXTURE_GEN_LINEAR", 19, 1),
-        ("G_CLIPPING", 23, 1),
+        ("G_ZBUFFER", 0, 1, False),
+        ("G_SHADE", 2, 1, False),
+        ("G_SHADING_SMOOTH", 9, 1, False),
+        ("G_CULL_FRONT", 12, 1, False),
+        ("G_CULL_BACK", 13, 1, False),
+        ("G_FOG", 16, 1, False),
+        ("G_LIGHTING", 17, 1, False),
+        ("G_TEXTURE_GEN", 18, 1, False),
+        ("G_TEXTURE_GEN_LINEAR", 19, 1, False),
+        ("G_CLIPPING", 23, 1, False),
     )),
     ("G_CLEARGEOMETRYMODE", 0xB6, Field.list(
-        ("G_ZBUFFER", 0, 1),
-        ("G_SHADE", 2, 1),
-        ("G_SHADING_SMOOTH", 9, 1),
-        ("G_CULL_FRONT", 12, 1),
-        ("G_CULL_BACK", 13, 1),
-        ("G_FOG", 16, 1),
-        ("G_LIGHTING", 17, 1),
-        ("G_TEXTURE_GEN", 18, 1),
-        ("G_TEXTURE_GEN_LINEAR", 19, 1),
-        ("G_CLIPPING", 23, 1),
+        ("G_ZBUFFER", 0, 1, False),
+        ("G_SHADE", 2, 1, False),
+        ("G_SHADING_SMOOTH", 9, 1, False),
+        ("G_CULL_FRONT", 12, 1, False),
+        ("G_CULL_BACK", 13, 1, False),
+        ("G_FOG", 16, 1, False),
+        ("G_LIGHTING", 17, 1, False),
+        ("G_TEXTURE_GEN", 18, 1, False),
+        ("G_TEXTURE_GEN_LINEAR", 19, 1, False),
+        ("G_CLIPPING", 23, 1, False),
     )),
     ("G_LINE3D", 0xB5),
     ("G_RDPHALF_1", 0xB4, Field.list(
@@ -466,12 +472,14 @@ Fast3D = GBI(commands=[
         ("i", 0, 32),
     ), lambda args: mutate(
         args,
+        ("width", args["width"]+1),
         ("fmt", ImFormat(args["fmt"])),
         ("siz", ImSize(args["siz"]))
     ),  lambda args: mutate(
         args,
-        ("fmt", unwrap_enum(args["fmt"])),
-        ("siz", unwrap_enum(args["siz"]))
+        ("width", args["width"]-1),
+        ("fmt", args["fmt"]),
+        ("siz", args["siz"])
     )),
 
     ("G_SETCOMBINE", 0xfc, Field.list(
@@ -544,8 +552,8 @@ Fast3D = GBI(commands=[
         ("siz", ImSize(args["siz"]))
     ),  lambda args: mutate(
         args,
-        ("fmt", unwrap_enum(args["fmt"])),
-        ("siz", unwrap_enum(args["siz"]))
+        ("fmt", args["fmt"]),
+        ("siz", args["siz"])
     )),
     ("G_LOADTILE", 0xf4, Field.list(
         ("uls", 44, 12),
