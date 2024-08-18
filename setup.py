@@ -51,7 +51,10 @@ setup(
         "libgarib.cppcore": "c"
     },
     package_data={
-        "libgarib": [os.path.join("parsers", "*.rng")],
+        "libgarib": [
+            os.path.join("parsers", "*.rng"),
+            os.path.join("maps", "*.yaml")
+        ],
         "libgarib.cppcore": ["*"]
     },
     ext_modules=[

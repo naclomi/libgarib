@@ -5,12 +5,64 @@ import logging
 import os
 import re
 import shutil
+import string
+import struct
 import sys
+import textwrap
 
 import yaml
 
 import _prefer_local_implementation
 import libgarib.rom
+import libgarib.maps
+
+
+class QolPatch(object):
+    def __init__(self, name, desc, src):
+        self.name = name
+        self.desc = desc
+        self.src = textwrap.dedent(src)
+        self.args = []
+        for seg in string.Formatter().parse(self.src):
+            arg = seg[1]
+            if arg is None:
+                continue
+            self.args.append(arg)
+
+    def format(self, *args, **kwargs):
+        return self.src.format(*args, **kwargs)
+
+    def signature(self):
+        if len(self.args) > 0:
+            return "{:}({:})".format(self.name, ", ".join(self.args))
+        else:
+            return self.name
+
+    @staticmethod
+    def to_dict(*patches):
+        d = {}
+        for qol_patch in patches:
+            d[qol_patch.name] = qol_patch
+        return d
+
+qol_patches = QolPatch.to_dict(
+    QolPatch("copyskip", "Skip copyright screen",
+    """
+        .text 0x8010e86c
+        j 0x8010eb0c
+        addi $v0, $zero, 1        
+    """),
+    QolPatch("quickboot", "Make opening logo scene playable and force to specified level",
+    """
+        # Force presentation segment to be playable:
+        .text 0x8012bcfc
+        addi $v0, $zero, 0
+
+        # Force presentation loader to boot specific level:
+        .text 0x8012bd0c
+        addi $a0, $zero, {level_id} # Immediate is level ID to start on
+    """),
+)
 
 def patch(rom_data, map_data, args):    
     rom = libgarib.rom.Rom(rom_data, map_data)
@@ -18,6 +70,29 @@ def patch(rom_data, map_data, args):
         manifest = yaml.safe_load(f.read())
     manifest_dir = os.path.dirname(args.manifest)
 
+    if args.qol is not None:
+        try:
+            combined_txt = []
+            for qol_patch in args.qol:
+                match = re.match("([A-Za-z0-9_-]+)(\(([^)]*)\))?", qol_patch)
+                patch_name = match.group(1).strip()
+                patch_args = match.group(3)
+                arg_dict = {}
+                if patch_args is not None:
+                    for patch_arg in patch_args.split(","):
+                        arg_name, arg_val = patch_arg.split("=")
+                        arg_name = arg_name.strip()
+                        arg_val = arg_val.strip()
+                        arg_dict[arg_name] = arg_val
+                combined_txt.append(qol_patches[patch_name].format(
+                    **arg_dict
+                ))
+
+            combined_txt = "\n".join(combined_txt)
+            code_region = rom.get_region(('opaque', 'code'))
+            code_region.patch({"asm": combined_txt}, manifest_dir)
+        except IndexError:
+            raise Exception("Bad QoL patch spec '{:}'".format(qol_patch))
 
     for region_key, region_filename in manifest.items():
         region_key = ast.literal_eval(region_key)
@@ -70,32 +145,56 @@ def dump(rom_data, map_data, args):
     with open(os.path.join(output_dir, "manifest.yaml"), "w") as f:
         yaml.dump(manifest, f, indent=3)
 
+def findBuiltinRomMap(rom_file):
+    with open(rom_file, "rb") as f:
+        cksum = tuple(struct.unpack(">I", w)[0] for w in libgarib.rom.calculateChecksum(f, bigEndian=True))
+        map_filename = "map.0x{:08x}.0x{:08x}.yaml".format(*cksum)
+        maps_dir = os.path.dirname(libgarib.maps.__file__)
+        return os.path.join(maps_dir, map_filename)
+
+
+def patch_list_help(patches):
+    text = []
+    for qol_patch in patches.values():
+        text.append("  {:}\n    {:}".format(qol_patch.signature(), qol_patch.desc))
+    return "\n".join(text)
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser(description="Tool to dump/replace/relocate ROM assets within Glover (N64)")
+    parser = argparse.ArgumentParser(
+        description="Tool to dump/replace/relocate ROM assets within Glover (N64)")
     
-    parser.add_argument("rom_file", type=str,
-                        help="Glover N64 ROM")
-    parser.add_argument("--map", type=str, required=True,
-                        help="YAML file outlining ROM memory regions and the pointers to them within the game code")
-    parser.add_argument("--output-dir", type=str, default=os.getcwd(),
-                        help="Directory to output bank contents")
-
+    parser.add_argument("--map", type=str, required=False,
+                        help="YAML file describing structure of input ROM")
     parser.add_argument('-v', '--verbose', action="store_const", dest="loglevel",
                         const=logging.DEBUG, default=logging.WARNING,
                         help="Be verbose")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    patch_parser = subparsers.add_parser('patch', help='Patch new assets into game ROM')
+    patch_parser = subparsers.add_parser('patch',
+        description='Patch new assets into game ROM',
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="Available QoL patches:\n{:}".format(patch_list_help(qol_patches)))
+    patch_parser.add_argument("rom_file", type=str,
+                        help="Glover N64 ROM")
     patch_parser.add_argument("--manifest", type=str, required=True,
                         help="YAML file outlining binary assets to patch into game ROM")
+    patch_parser.add_argument("--qol", type=str, action="append",
+                        help="Include the specified quality-of-life patch")
 
 
-    dump_parser = subparsers.add_parser('dump', help='Extract raw binary assets from game ROM')    
+    dump_parser = subparsers.add_parser('dump',
+        description='Extract raw binary assets from game ROM')    
+    dump_parser.add_argument("rom_file", type=str,
+                        help="Glover N64 ROM")
+    parser.add_argument("--output-dir", type=str, default=os.getcwd(),
+                        help="Directory to output bank contents")
 
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel)
+
+    if args.map is None:
+        args.map = findBuiltinRomMap(args.rom_file)
 
     with open(args.rom_file, "rb") as f:
         rom_data = f.read()

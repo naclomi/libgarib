@@ -40,7 +40,6 @@
     - Child/sib nodes
     - Alpha
     - Geopacking: Multiple materials
-- compile new display lists
 - vertex compressor
 - better validation
 - look for missing properties in parent nodes

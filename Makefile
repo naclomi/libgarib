@@ -9,6 +9,8 @@ ifeq "$(KAITAI_COMPILE_TYPESCRIPT)" "1"
 endif
 
 parsers:
+	cp formats/map.*.yaml python/libgarib/maps
+
 	mkdir -p python/libgarib/parsers
 	mkdir -p python/libgarib/parsers/construct
 	touch python/libgarib/parsers/__init__.py
@@ -53,6 +55,7 @@ standalone-tools:
 
 clean:
 	rm -rf python/libgarib/parsers/*
+	rm -rf python/libgarib/maps/*.yaml
 	rm -rf js/parsers/*
 	rm -rf dist/
 	rm -rf libgarib.egg-info/
