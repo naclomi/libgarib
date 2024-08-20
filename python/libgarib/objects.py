@@ -343,15 +343,12 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
             geo_root.flags = linkable.LinkableBytes(data=b"".join(raw_attr))
             setPtr("flags_ptr", geo_root.flags)
         if "uvs" in pack_list or "texture_ids" in pack_list:
-            toTextureIds = np.vectorize(gltf_helper.textureIdFromMaterial)
-            texture_ids = toTextureIds(vertex_cache["material"], file).astype(">I")
-
             if "textures" in pack_list:
                 raw_attr = []
                 for base_idx in range(0, len(vertex_cache["indices"]), 3):
-                    v0 = texture_ids[vertex_cache["indices"][base_idx]]
-                    v1 = texture_ids[vertex_cache["indices"][base_idx+1]]
-                    v2 = texture_ids[vertex_cache["indices"][base_idx+2]]
+                    v0 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx]]
+                    v1 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx+1]]
+                    v2 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx+2]]
                     raw_attr.append(struct.pack(">I", v0))
                     if v1 != v2 or v1 != v0:
                         print("WARNING: Inconsistent texture ids in {:}".format(node.name))
@@ -359,13 +356,7 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
                 setPtr("texture_ids_ptr", geo_root.texture_ids)
 
             if "uvs" in pack_list:
-                # Go from normalized coordinates to pixel coordinates
-                uvs = vertex_cache["TEXCOORD_0"]
-                for idx in range(len(uvs)):
-                    tex = texture_db.byId.get(texture_ids[idx])
-                    if tex is None:
-                        raise Exception("Need dimensions of texture 0x{:08X} to pack mesh node {:}".format(texture_ids[idx], node.name))
-                    uvs[idx] *= (tex.width, tex.height)
+                uvs = vertex_cache["TEXCOORD_0_scaled"].copy()
 
                 # Convert to 11.5 format
                 uvs *= 32
@@ -574,8 +565,11 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         mesh = file.meshes[node.mesh]
         updatePackList(mesh, pack_list)
 
-        scale_factor = 1000
         vertex_cache = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
+        gltf_helper.addDerivedMaterialAttrs(vertex_cache, file, texture_db, "TEXCOORD_0")
+        gltf_helper.optimizeVertexCache(vertex_cache)
+
+        scale_factor = 1000
         vertex_cache["POSITION"] *= scale_factor
         vertex_cache["NORMAL"] *= scale_factor
 

@@ -230,6 +230,38 @@ def hashGLTFMesh(gltf_mesh, file):
     return data_hash
 
 
+def addDerivedMaterialAttrs(vertex_cache, file, texture_db, src_attr):
+    toTextureIds = np.vectorize(textureIdFromMaterial)
+    vertex_cache["texture_ids"] = toTextureIds(vertex_cache["material"], file).astype(">I")
+
+    vert_count = len(vertex_cache[src_attr])
+    dst_attr = "{:}_scaled".format(src_attr)
+    vertex_cache[dst_attr] = np.zeros((vert_count, *vertex_cache[src_attr].shape[1:]))
+    tex_sizes = {}
+    for idx in range(vert_count):
+        material_id = vertex_cache["material"][idx]
+        if material_id not in tex_sizes:
+            tex = texture_db.byId.get(vertex_cache["texture_ids"][idx])
+            if tex is None:
+                raise Exception("Need dimensions of texture 0x{:08X}".format(vertex_cache["texture_ids"][idx]))
+            tex_sizes[material_id] = (tex.width, tex.height)
+        vertex_cache[dst_attr][idx] = vertex_cache[src_attr][idx] * tex_sizes[material_id]
+
+
+def optimizeVertexCache(vertex_cache, cache_size=32):
+    # Build de-duplicated collection of vertices
+    shared = {}
+    for idx, pos in enumerate(vertex_cache["POSITION"]):
+        pos = tuple(pos)
+        aux = tuple(vertex_cache["TEXCOORD_0"][idx])
+        if pos not in shared:
+            shared[pos] = {}
+        if aux not in shared[pos]:
+            shared[pos][aux] = []
+        shared[pos][aux].append(idx)
+    # TODO: insert into indices list sentinel objects that indicate UV changes
+
+
 def gltfMeshToFlattenedVertexCache(gltf_mesh, file):
     # TODO: merge/compress vertices where possible
     vert_count = 0
@@ -684,6 +716,13 @@ def getDataFromAccessor(file, accessor_idx):
         gltf.FLOAT: "f"
     }[accessor.componentType]
 
+    if accessor.normalized is True:
+        elem_divisor = np.iinfo(component_dtype).max
+        final_dtype = "f"
+    else:
+        elem_divisor = 1
+        final_dtype = component_dtype
+
     attr_struct = "<{:}{:}".format(component_count, component_dtype)
     attr_size = struct.calcsize(attr_struct)
     stride = bufferView.byteStride or attr_size
@@ -697,7 +736,7 @@ def getDataFromAccessor(file, accessor_idx):
         mat_shape = (mat_size, mat_size)
         data_shape = (accessor.count, mat_size, mat_size)
 
-    dst_data = np.zeros(data_shape, dtype=component_dtype)
+    dst_data = np.zeros(data_shape, dtype=final_dtype)
 
     cursor = bufferView.byteOffset + accessor.byteOffset
     for idx in range(accessor.count):
@@ -705,6 +744,8 @@ def getDataFromAccessor(file, accessor_idx):
         if component_dimension == 2:
             vals = np.reshape(vals, mat_shape)
         dst_data[idx:idx+1] = vals
+        if accessor.normalized is True:
+            dst_data[idx] /= elem_divisor
         cursor += stride
 
     return dst_data

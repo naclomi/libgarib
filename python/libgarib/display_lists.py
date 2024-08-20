@@ -98,7 +98,7 @@ def buildDLFaceBatch(vertex_cache, cursor, unlit):
     for idx in sorted(unique_indices):
         gbi_v = GbiVertex(
             pos=vertex_cache["POSITION"][idx],
-            uv=vertex_cache["TEXCOORD_0"][idx],
+            uv=vertex_cache["TEXCOORD_0_scaled"][idx],
             rgb=vertex_cache["COLOR_0"][idx][:3],
             a=vertex_cache["COLOR_0"][idx][3],
             n=vertex_cache["NORMAL"][idx]
@@ -334,10 +334,10 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             face_cursor = batch_cursor
             vertices_loaded = False
             while face_cursor < next_batch_cursor:
-                material = materials[vertex_cache["material"][face_cursor]]
+                material = materials[vertex_cache["material"][vertex_cache["indices"][face_cursor]]]
                 can_do_two = face_cursor + 6 <= len(vertex_cache["indices"])
                 if can_do_two:
-                    material_2 = materials[vertex_cache["material"][face_cursor + 3]]
+                    material_2 = materials[vertex_cache["material"][vertex_cache["indices"][face_cursor + 3]]]
                     can_do_two &= (material == material_2)
                 if material != previous_material:
                     if material.texture_id is not None:
