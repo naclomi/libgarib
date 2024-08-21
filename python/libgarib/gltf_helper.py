@@ -38,43 +38,14 @@ class Material(object):
     def mutate(self, **kwargs):
         return replace(self, **kwargs)
 
-class MeshData(object):
-    def __init__(self):
-        self.indices = []
-        self.positions = []
-        self.colors = []
-        self.uvs = []
-        self.norms = []
-        self.flags = []
-
-    def pushU32Color(self, value, quantity=1):
-        color = (
-            ((value & 0xFF000000) >> 24) / 255,
-            ((value & 0x00FF0000) >> 16) / 255,
-            ((value & 0x0000FF00) >> 8) / 255
-        )
-        for _ in range(quantity):
-            self.colors.append(color)
-
-    def pushU32Normal(self, value, quantity=1):
-        norm_byte = struct.unpack(">bbbb", struct.pack(">I",value))[:-1]
-        norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
-        norm_norm = tuple(coord / norm_mag for coord in norm_byte)
-        for _ in range(quantity):
-            self.norms.append(norm_norm)
-
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-class PackedVertexData(object):
+class PackedVertexDataWriter(object):
     def __init__(self, gltf_file):
         self.gltf_file = gltf_file
         self.vertex_struct_format = ""
-        self.vertex_struct_sources = []
+        self.vertex_struct_values = []
         self.gltf_attributes = {}
 
-    def addAttributeToFormat(self, attrName, values, sources, componentType, elementSize, calcExtrema=True):
+    def addAttributeToFormat(self, attrName, values, componentType, elementSize, calcExtrema=True):
         self.gltf_attributes[attrName] = len(self.gltf_file.accessors)
         if calcExtrema:
             extrema = {
@@ -104,21 +75,15 @@ class PackedVertexData(object):
              gltf.UNSIGNED_INT: "I",
             }[componentType]
         )
-        self.vertex_struct_sources += sources
+        self.vertex_struct_values.append(values)
 
-    def pack(self, prims):
+    def pack(self):
         vertex_data = []
-        for idx in range(len(prims.positions)):
+        for idx in range(self.vertex_struct_values[0].shape[0]):
             values = []
-            for path in self.vertex_struct_sources:
-                v = prims
-                for key in path:
-                    if key is ...:
-                        key = idx
-                    v = v.__getitem__(key)
-                values.append(v)
+            for data_series in self.vertex_struct_values:
+                values.extend(data_series[idx])
             vertex_data.append(struct.pack(self.vertex_struct_format, *values))
-
         return b"".join(vertex_data)
 
     def stride(self):
@@ -262,43 +227,111 @@ def optimizeVertexCache(vertex_cache, cache_size=32):
     # TODO: insert into indices list sentinel objects that indicate UV changes
 
 
-def gltfMeshToFlattenedVertexCache(gltf_mesh, file):
-    # TODO: merge/compress vertices where possible
-    vert_count = 0
-    attrs = {
-        "material": np.array([], dtype="I"),
-        "indices": np.array([], dtype="I")
-    }
-    for primitives in gltf_mesh.primitives:
-        p_vert_count = None
+class MeshData(object):
+    class AttrType(enum.Enum):
+        position="POSITION"
+        color="COLOR_0"
+        uv="TEXCOORD_0"
+        uv_scaled="_TEXCOORD_0_scaled"
+        norm="NORMAL"
+        flags="TEXCOORD_1"
+
+    def __init__(self):
+        self.vertex_count = 0
+        self.idx_count = 0
+        self.face_count = 0
+
+        self.attrs = {}
+        self.indices = np.array([])
+
+        self.material = None
+        self.texture = None
+
+    def loadFromGltf(self, primitives, file, texture_db):
+        self.material = gltfMaterialToGloverMaterial(primitives.material, file)
+        if self.material.texture_id is not None:
+            self.texture = texture_db.byId.get(self.material.texture_id)
+            if self.texture is None:
+                raise Exception("Need dimensions of texture 0x{:08X}".format(self.material.texture_id))
+
+        self.attrs = {}
+        
         for attr_name, accessor_idx in vars(primitives.attributes).items():
+            attr_type = self.AttrType(attr_name)
             if not isinstance(accessor_idx, int):
                 continue
-            data = getDataFromAccessor(file, accessor_idx)
-            if attr_name not in attrs:
-                attrs[attr_name] = np.zeros((vert_count, *data.shape[1:]))
-            attrs[attr_name] = np.concatenate((attrs[attr_name], data))
-            if p_vert_count is None:
-                p_vert_count = data.shape[0]
-
-        attrs["material"] = np.concatenate((attrs["material"], np.full(p_vert_count, primitives.material)))
+            self.attrs[attr_type] = getDataFromAccessor(file, accessor_idx)
+            if self.vertex_count == 0:
+                self.vertex_count = self.attrs[attr_type].shape[0]
 
         if primitives.indices is not None:
-            p_indices = getDataFromAccessor(file, primitives.indices)
-            p_indices += vert_count
+            self.indices = getDataFromAccessor(file, primitives.indices)
         else:
-            p_indices = np.arange(start=vert_count, stop=vert_count+p_vert_count, dtype="I")
-        attrs["indices"] = np.concatenate((attrs["indices"], p_indices))
+            self.indices = np.arange(start=0, stop=self.vertex_count, dtype="I")
+        self.idx_count = len(indices)
+        self.face_count = self.idx_count // 3
 
-        vert_count += p_vert_count
-    return attrs
+        self.deriveScaledUVs()
+
+        return self
+
+    def deriveScaledUVs(self, src_attr=AttrType.uv):
+        if isinstance(self.texture, list):
+            raise NotImplementedError("Can't derive scaled UVs across multi-texture mesh data")
+        dst_attr = self.AttrType("{:}_scaled".format(src_attr.name))
+        tex_size = (self.texture.width, self.texture.height)
+        self.attrs[dst_attr] = np.multiply(self.attrs[src_attr], tex_size)
+
+    @classmethod
+    def flatten(cls, data):
+        flattened = cls()
+        total_verts = sum(d.vert_count for d in data)
+        total_indices = sum(d.idx_count for d in data)
+        total_faces = sum(d.face_count for d in data)
+
+        flattened.indices = np.zeros(total_indices, d[0].indices.dtype)
+        flattened.texture = [None] * total_faces
+        flattened.material = [None] * total_faces
+
+        for d in data:
+            for attr_type, attr in d.attrs.items():
+                if attr_type not in flattened.attrs:
+                    flattened.attrs[attr_type] = np.zeros(
+                        (total_verts, attr.shape[1]),
+                        dtype=attr.dtype)
+
+        base_vert_idx = 0
+        base_idx_idx = 0
+        base_face_idx = 0
+        for d in data:
+
+            for attr_type, attr in d.attrs.items():
+                dst_slice = slice(base_vert_idx, base_vert_idx + d.vertex_count)
+                flattened.attrs[attr_type][dst_slice] = attr
+
+            dst_slice = slice(base_idx_idx, base_idx_idx + d.idx_count)
+            flattened.indices[dst_slice] = d.indices + base_idx_idx
+
+            dst_slice = slice(base_face_idx, base_face_idx + d.face_count)
+            flattened.texture[dst_slice] = [d.texture] * d.face_count
+            flattened.material[dst_slice] = [d.material] * d.face_count
+
+            base_vert_idx += d.vertex_count
+            base_idx_idx += d.idx_count
+            base_face_idx += d.face_count
+
+        flattened.vertex_count = base_vert_idx
+        flattened.index_count = base_idx_idx
+        flattened.face_count = base_face_idx
+        return flattened
+
 
 def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
     ###############################################
     # Build actual GLTF structures:
 
-    for material, prims in sorted(primitives.items(), key=lambda p: p[0]):
-        indices_data = b"".join(struct.pack("H", i) for i in prims.indices)
+    for prims in sorted(primitives, key=lambda p: p.material.texture_id):
+        indices_data = prims.indices.astype("=H").tobytes()
         indices_bufferview_handle = len(file.bufferViews)
         file.bufferViews.append(gltf.BufferView(
             buffer=0,
@@ -319,70 +352,28 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
         ))
 
         # Build interleaved vertex data format
-        vertex_struct = PackedVertexData(file)
-        vertex_struct.addAttributeToFormat(
-            attrName="POSITION",
-            values=prims.positions,
-            sources=(
-                ("positions", ..., 0),
-                ("positions", ..., 1),
-                ("positions", ..., 2)
-            ),
-            componentType=gltf.FLOAT,
-            elementSize=gltf.VEC3
-        )
-
-        if len(prims.colors) > 0:
+        vertex_struct = PackedVertexDataWriter(file)
+        
+        for attr_type, attr_data in prims.attrs.keys():
+            if attr_type.value.startswith("_"):
+                # Don't pack internal/derived attributes
+                continue
+            elem_size = {
+                1: gltf.SCALAR,
+                2: gltf.VEC2,
+                3: gltf.VEC3,
+                4: gltf.VEC4,
+            }[attr_data.shape[1]]
+            comp_type =  {
+                "f": gltf.FLOAT,
+                "i": gltf.SIGNED_INT,
+                "u": gltf.UNSIGNED_INT
+            }[attr_data.dtype.kind]
             vertex_struct.addAttributeToFormat(
-                attrName="COLOR_0",
-                values=prims.colors,
-                sources=(
-                    ("colors", ..., 0),
-                    ("colors", ..., 1),
-                    ("colors", ..., 2),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC3
-            )
-
-        if len(prims.uvs) > 0:
-            vertex_struct.addAttributeToFormat(
-                attrName="TEXCOORD_0",
-                values=prims.uvs,
-                sources=(
-                    ("uvs", ..., 0),
-                    ("uvs", ..., 1),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC2
-            )
-
-        if len(prims.norms) > 0:
-            vertex_struct.addAttributeToFormat(
-                attrName="NORMAL",
-                values=prims.norms,
-                sources=(
-                    ("norms", ..., 0),
-                    ("norms", ..., 1),
-                    ("norms", ..., 2),
-                ),
-                componentType=gltf.FLOAT,
-                elementSize=gltf.VEC3
-            )
-
-        if len(prims.flags) > 0:
-            # TODO: this is hard to transfer
-            #       to blender as a custom attribute;
-            #       instead, encode as a color channel?
-            vertex_struct.addAttributeToFormat(
-                attrName="_GLOVER_FLAGS",
-                values=prims.flags,
-                sources=(
-                    ("flags", ...),
-                ),
-                componentType=gltf.UNSIGNED_INT,
-                elementSize=gltf.SCALAR,
-                calcExtrema=False
+                attrName=attr_type.value,
+                values=attr_data,
+                componentType=comp_type,
+                elementSize=elem_size
             )
 
         # Pack binary data
@@ -602,48 +593,39 @@ def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
 
     # Create billboard mesh data
 
-    prims = MeshData()
-    prims.positions = [
+    positions = np.array([
         (0,-.5,.5),
         (0,-.5,-.5),
         (0,.5,.5),
         (0,-.5,-.5),
         (0,.5,-.5),
         (0,.5,.5),
-    ]
-    prims.uvs = [
+    ])
+    uvs = np.array([
         (1,0),
         (0,0),
         (1,1),
         (0,0),
         (0,1),
         (1,1),
-    ]
+    ])
 
-    vertex_struct = PackedVertexData(file)
+
+    vertex_struct = PackedVertexDataWriter(file)
     vertex_struct.addAttributeToFormat(
         attrName="POSITION",
-        values=prims.positions,
-        sources=(
-            ("positions", ..., 0),
-            ("positions", ..., 1),
-            ("positions", ..., 2)
-        ),
+        values=positions,
         componentType=gltf.FLOAT,
         elementSize=gltf.VEC3
     )
     vertex_struct.addAttributeToFormat(
         attrName="TEXCOORD_0",
-        values=prims.uvs,
-        sources=(
-            ("uvs", ..., 0),
-            ("uvs", ..., 1),
-        ),
+        values=uvs,
         componentType=gltf.FLOAT,
         elementSize=gltf.VEC2
     )
 
-    vertex_data = vertex_struct.pack(prims)
+    vertex_data = vertex_struct.pack()
     file.bufferViews.append(gltf.BufferView(
         buffer=0,
         byteOffset=len(data),

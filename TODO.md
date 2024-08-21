@@ -11,7 +11,20 @@
 # objbank-tool
 ## common
 - Refactor pack list so it is less prone to silent errors
-- Try turning an extracted display list into a packed geo object and viewing it in model viewer
+- store extra surface attribute as either a secondary texture or
+  third texture coordinate?
+- new api:
+  - all top-level nodes in a gltf scene are individual objects
+  - instead of pack-list being required, it's display list by default,
+    dynamic if ripple or conveyor belt are enabled, override if
+    pack list specified
+  - level-tool has a mode that consumes a gltf and spits out a
+    boilerplate landscape that lays the objects out relative to 
+    eachother properly
+  - both DL and collision are derived from the same node UNLESS
+    there is a sibling node named `{:}.geo`, in which case
+    the latter is used for geo packing
+      - how does dumping work with this? by default dump both, conrollable by flag?
 
 ## blender plugins
 - New plugin that can auto-create materials from texure banks?

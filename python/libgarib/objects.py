@@ -1110,57 +1110,92 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
-    # Map texture/material to vertex attributes:
-    primitives = {}
+    primitives = []
  
-    tex_warnings = set()
-
+    faces_by_material = {}
     for face_idx in range(geo.num_faces):
         material = gltf_helper.Material()
         if geo.texture_ids is not None:
             material = material.mutate(
                 texture_id=geo.texture_ids[face_idx]
             )
-        prims = primitives.get(material, gltf_helper.MeshData())
-        primitives[material] = prims
-        prims.indices += (len(prims.positions)+x for x in range(3))
-        face = geo.faces[face_idx]
-        for v_idx in (face.v0, face.v1, face.v2):
-            v = geo.vertices[v_idx]
-            prims.positions.append((v.x, v.y, v.z))
-            if geo.vertex_cn is not None:
-                prims.pushU32Color(geo.vertex_cn[v_idx])
+        face_counts[material] = face_counts.get(material, [])
+        face_counts[material].append(face_idx)
 
+    for material, face_list in faces_by_material.items():
+        prims = gltf_helper.MeshData()
+        primitives.append(prims)
+
+        prims.face_count = len(face_list)
+        prims.vertex_count = prims.face_count * 3
+        prims.idx_count = prims.face_count * 3
+
+        prims.material = material
+        if prims.material.texture_id is not None:
+            prims.texture = texture_db.byId.get(prims.material.texture_id)
+            if prims.texture is None:
+                raise Exception("Need dimensions of texture 0x{:08X}".format(self.material.texture_id))
+
+        prims.indices = np.arange(len(face_list)*3, dtype="H")
+
+        prims.attrs[prims.AttrType.position] = np.zeros((prims.vertex_count, 3))
+        if geo.vertex_cn is not None:
+            prims.attrs[prims.AttrType.color] = np.zeros((prims.vertex_count, 3))
         if geo.uvs is not None:
-            tex = texture_db.byId.get(material.texture_id, None)
-            uv = geo.uvs[face_idx]
-            if tex is not None:
-                prims.uvs += ((uv.u1.value / tex.width, uv.v1.value / tex.height),
-                              (uv.u2.value / tex.width, uv.v2.value / tex.height),
-                              (uv.u3.value / tex.width, uv.v3.value / tex.height))
-            else:
-                if material.texture_id not in tex_warnings:
-                    print("WARNING: Couldn't find image dimensions for texture id 0x{:08X}, UVs for mesh '{:}'' will be inaccurate".format(
-                        material.texture_id, geo._parent.name.strip("\0")
-                    ))
-                    tex_warnings.add(material.texture_id)
-                prims.uvs += ((uv.u1.value, uv.v1.value),
-                              (uv.u2.value, uv.v2.value),
-                              (uv.u3.value, uv.v3.value))
-
+            prims.attrs[prims.AttrType.uv] = np.zeros((prims.vertex_count, 2))
         if geo.face_cn is not None:
-            prims.pushU32Normal(geo.face_cn[face_idx], 3)
-
+            prims.attrs[prims.AttrType.norm] = np.zeros((prims.vertex_count, 3))
         if geo.flags is not None:
-            # TODO: what is this data? how can we include it effectively?
-            # (11/13/22) This is more than likely the clamp and mirror flags
-            #   for the texture face. They go unused in-game, because loadF3DEXTexture
-            #   takes those settings directly from the texture file, rather
-            #   than the mesh data. Format from GBI is {clamp bit, mirror bit},
-            #   and because they go unused we can't tell which is S and which is T.
-            #   Disappointing. /shrug
-            flags = geo.flags[face_idx]
-            prims.flags += ((flags,) * 3)
+            prims.attrs[prims.AttrType.flags] = np.zeros((prims.vertex_count, 2))
+
+        attr_cursor = 0
+        for face_idx in face_list:
+            face = geo.faces[face_idx]
+            for loop_it, v_idx in ((0, face.v0), (1, face.v1), (2, face.v2)):
+                v = geo.vertices[v_idx]
+                prims.attrs[prims.AttrType.position][attr_cursor + loop_it] = (
+                    v.x,
+                    v.y,
+                    v.z
+                )
+                if geo.vertex_cn is not None:
+                    raw_color = geo.vertex_cn[v_idx]
+                    prims.attrs[prims.AttrType.color][attr_cursor + loop_it] = (
+                        ((raw_color & 0xFF000000) >> 24) / 255,
+                        ((raw_color & 0x00FF0000) >> 16) / 255,
+                        ((raw_color & 0x0000FF00) >> 8) / 255
+                    )
+
+            if geo.uvs is not None:
+                uv = geo.uvs[face_idx]
+                prims.attrs[prims.AttrType.uv][attr_cursor:attr_cursor+3] = (
+                    (uv.u1.value / prims.texture.width, uv.v1.value / prims.texture.height),
+                    (uv.u2.value / prims.texture.width, uv.v2.value / prims.texture.height),
+                    (uv.u3.value / prims.texture.width, uv.v3.value / prims.texture.height)
+                )
+
+            if geo.face_cn is not None:
+                norm_byte = struct.unpack(">bbbb", struct.pack(">I",value))[:-1]
+                norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
+                norm_norm = tuple(coord / norm_mag for coord in norm_byte)
+                prims.attrs[prims.AttrType.norm][attr_cursor:attr_cursor+3] = (
+                    (norm_norm,) * 3
+                )
+
+            if geo.flags is not None:
+                # TODO: what is this data? how can we include it effectively?
+                # (11/13/22) This is more than likely the clamp and mirror flags
+                #   for the texture face. They go unused in-game, because loadF3DEXTexture
+                #   takes those settings directly from the texture file, rather
+                #   than the mesh data. Format from GBI is {clamp bit, mirror bit},
+                #   and because they go unused we can't tell which is S and which is T.
+                #   Disappointing. /shrug
+                flags = geo.flags[face_idx]
+                prims.attrs[prims.AttrType.flags][attr_cursor:attr_cursor+3] = (
+                    (flags,0) * 3
+                )
+
+            attr_cursor += 3
 
     return primitives
 
@@ -1242,7 +1277,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     elif mesh.geometry.num_faces > 0:
         primitives = mesh_geo_to_prims(mesh.geometry, render_mode, texture_db)
     else:
-        primitives = {}
+        primitives = []
 
     name = mesh.name.strip("\0")
 
