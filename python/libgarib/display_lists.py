@@ -384,7 +384,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
 ################################
 # Dumping
 
-def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
+def f3dex_to_prims(display_list, bank, lighting, texture_db):
     raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list)
 
     def execute_dl(tri_callback):
@@ -465,6 +465,8 @@ def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
         prims = gltf_helper.MeshData()
         primitives[material] = prims
         prims.face_count = face_count
+        prims.material = material
+        prims.texture = texture_db.byId[material.texture_id]
         # TODO: don't dupe vertices if you don't have to
         prims.vertex_count = face_count * 3
         prims.index_count = face_count * 3
@@ -500,7 +502,7 @@ def f3dex_to_prims(display_list, bank, lighting, texture_sizes):
 
     execute_dl(build_prims)
 
-    return primitives
+    return list(primitives.values)
 
 
 def dump_f3dex_dl(display_list):
