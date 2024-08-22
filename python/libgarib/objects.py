@@ -1119,8 +1119,8 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
             material = material.mutate(
                 texture_id=geo.texture_ids[face_idx]
             )
-        face_counts[material] = face_counts.get(material, [])
-        face_counts[material].append(face_idx)
+        faces_by_material[material] = faces_by_material.get(material, [])
+        faces_by_material[material].append(face_idx)
 
     for material, face_list in faces_by_material.items():
         prims = gltf_helper.MeshData()
@@ -1134,7 +1134,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
         if prims.material.texture_id is not None:
             prims.texture = texture_db.byId.get(prims.material.texture_id)
             if prims.texture is None:
-                raise Exception("Need dimensions of texture 0x{:08X}".format(self.material.texture_id))
+                raise Exception("Need dimensions of texture 0x{:08X}".format(material.texture_id))
 
         prims.indices = np.arange(len(face_list)*3, dtype="H")
 
@@ -1175,11 +1175,14 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
                 )
 
             if geo.face_cn is not None:
-                norm_byte = struct.unpack(">bbbb", struct.pack(">I",value))[:-1]
+                face_cn = geo.face_cn[face_idx]
+                norm_byte = struct.unpack(">bbbb", struct.pack(">I",face_cn))[:-1]
                 norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
                 norm_norm = tuple(coord / norm_mag for coord in norm_byte)
                 prims.attrs[prims.AttrType.norm][attr_cursor:attr_cursor+3] = (
-                    (norm_norm,) * 3
+                    norm_norm,
+                    norm_norm,
+                    norm_norm,
                 )
 
             if geo.flags is not None:
@@ -1192,7 +1195,9 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
                 #   Disappointing. /shrug
                 flags = geo.flags[face_idx]
                 prims.attrs[prims.AttrType.flags][attr_cursor:attr_cursor+3] = (
-                    (flags,0) * 3
+                    (flags,0),
+                    (flags,0),
+                    (flags,0)
                 )
 
             attr_cursor += 3

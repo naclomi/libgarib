@@ -3,6 +3,8 @@ import json
 import math
 import struct
 
+import numpy as np
+
 from . import gltf_helper
 from . import linkable
 
@@ -502,7 +504,7 @@ def f3dex_to_prims(display_list, bank, lighting, texture_db):
 
     execute_dl(build_prims)
 
-    return list(primitives.values)
+    return list(primitives.values())
 
 
 def dump_f3dex_dl(display_list):

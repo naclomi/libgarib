@@ -1,12 +1,12 @@
 import collections
 from dataclasses import dataclass, replace
+import enum
 import hashlib
 import json
 import os
 import re
 import math
 import struct
-
 from . import animation
 from .hash import canonicalize_reference
 
@@ -347,14 +347,14 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             componentType=gltf.UNSIGNED_SHORT,
             count=len(prims.indices),
             type=gltf.SCALAR,
-            max=[max(prims.indices)],
-            min=[min(prims.indices)],
+            max=[max(prims.indices).tolist()],
+            min=[min(prims.indices).tolist()],
         ))
 
         # Build interleaved vertex data format
         vertex_struct = PackedVertexDataWriter(file)
-        
-        for attr_type, attr_data in prims.attrs.keys():
+       
+        for attr_type, attr_data in prims.attrs.items():
             if attr_type.value.startswith("_"):
                 # Don't pack internal/derived attributes
                 continue
@@ -366,7 +366,6 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             }[attr_data.shape[1]]
             comp_type =  {
                 "f": gltf.FLOAT,
-                "i": gltf.SIGNED_INT,
                 "u": gltf.UNSIGNED_INT
             }[attr_data.dtype.kind]
             vertex_struct.addAttributeToFormat(
@@ -377,7 +376,7 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             )
 
         # Pack binary data
-        vertex_data = vertex_struct.pack(prims)
+        vertex_data = vertex_struct.pack()
         file.bufferViews.append(gltf.BufferView(
             buffer=0,
             byteOffset=len(data),
@@ -411,9 +410,9 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
                 "alphaCutoff": None
             }
 
-        if material.texture_id is not None:
+        if prims.material.texture_id is not None:
             file.materials.append(gltf.Material(
-                name="0x{:08X}".format(material.texture_id),
+                name="0x{:08X}".format(prims.material.texture_id),
                 pbrMetallicRoughness = gltf.PbrMetallicRoughness(
                     baseColorTexture=gltf.TextureInfo(
                         index=len(file.textures)
@@ -422,12 +421,12 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
                 **blend_mode
             ))
             file.textures.append(gltf.Texture(
-                sampler=findSampler(file, material),
+                sampler=findSampler(file, prims.material),
                 source=len(file.images)
             ))
 
             file.images.append(gltf.Image(
-                uri=idToTexturePath(material.texture_id),
+                uri=idToTexturePath(prims.material.texture_id),
             ))
         else:
             file.materials.append(gltf.Material(
