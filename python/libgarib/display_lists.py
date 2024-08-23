@@ -56,7 +56,7 @@ def relocatableDisplayListToLinkable(raw_mesh_dl):
     relocatable = linkable.LinkableBytes(data=raw_dl, pointers=pointers)
     return LinkableDisplayList([relocatable]), start_offset
 
-def writeCullDL(linkable_dl, cmds, vertex_cache):
+def writeCullDL(linkable_dl, cmds, prims):
     # TODO: gsSPCullDisplayList with a cube based on the min/max values
     # of the position accessor, **scaled appropriately**
     cmds.data += F3DEX["G_CLEARGEOMETRYMODE"].pack(
@@ -79,8 +79,8 @@ def buildDLFaceBatch(vertex_cache, cursor, unlit):
     # hit 32.
     batch_indices = []
     unique_indices = set()
-    while cursor < len(vertex_cache["indices"]):
-        next_index = vertex_cache["indices"][cursor]
+    while cursor < vertex_cache.idx_count:
+        next_index = vertex_cache.indices[cursor]
         if next_index not in unique_indices:
             if len(unique_indices) >= 32:
                 break
@@ -99,11 +99,11 @@ def buildDLFaceBatch(vertex_cache, cursor, unlit):
     gbi_vertices = []
     for idx in sorted(unique_indices):
         gbi_v = GbiVertex(
-            pos=vertex_cache["POSITION"][idx],
-            uv=vertex_cache["TEXCOORD_0_scaled"][idx],
-            rgb=vertex_cache["COLOR_0"][idx][:3],
-            a=vertex_cache["COLOR_0"][idx][3],
-            n=vertex_cache["NORMAL"][idx]
+            pos=vertex_cache.attrs[vertex_cache.AttrType.position][idx],
+            uv=vertex_cache.attrs[vertex_cache.AttrType.uv_scaled][idx],
+            rgb=vertex_cache.attrs[vertex_cache.AttrType.color][idx][:3],
+            a=vertex_cache.attrs[vertex_cache.AttrType.color][idx][3],
+            n=vertex_cache.attrs[vertex_cache.AttrType.norm][idx]
         )
         batch_mapping[idx] = len(gbi_vertices)
         gbi_vertices.append(gbi_v)
@@ -324,7 +324,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
 
         batch_cursor = 0
         previous_material = gltf_helper.Material()
-        while batch_cursor < len(vertex_cache["indices"]):
+        while batch_cursor < vertex_cache.idx_count:
             next_batch_cursor, vertex_data_block, batch_mapping = buildDLFaceBatch(
                 vertex_cache, batch_cursor, render_mode.unlit)
             linkable_dl.append(vertex_data_block)
@@ -336,10 +336,10 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             face_cursor = batch_cursor
             vertices_loaded = False
             while face_cursor < next_batch_cursor:
-                material = materials[vertex_cache["material"][vertex_cache["indices"][face_cursor]]]
-                can_do_two = face_cursor + 6 <= len(vertex_cache["indices"])
+                material = vertex_cache.material[face_cursor//3]
+                can_do_two = face_cursor + 6 <= vertex_cache.idx_count
                 if can_do_two:
-                    material_2 = materials[vertex_cache["material"][vertex_cache["indices"][face_cursor + 3]]]
+                    material_2 = vertex_cache.material[face_cursor//3 + 1]
                     can_do_two &= (material == material_2)
                 if material != previous_material:
                     if material.texture_id is not None:
@@ -357,19 +357,19 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                     vertices_loaded = True
                 if can_do_two:
                     cmds.data += F3DEX["G_TRI2"].pack(
-                        v00=batch_mapping[vertex_cache["indices"][face_cursor]],
-                        v01=batch_mapping[vertex_cache["indices"][face_cursor+1]],
-                        v02=batch_mapping[vertex_cache["indices"][face_cursor+2]],
-                        v10=batch_mapping[vertex_cache["indices"][face_cursor+3]],
-                        v11=batch_mapping[vertex_cache["indices"][face_cursor+4]],
-                        v12=batch_mapping[vertex_cache["indices"][face_cursor+5]]
+                        v00=batch_mapping[vertex_cache.indices[face_cursor]],
+                        v01=batch_mapping[vertex_cache.indices[face_cursor+1]],
+                        v02=batch_mapping[vertex_cache.indices[face_cursor+2]],
+                        v10=batch_mapping[vertex_cache.indices[face_cursor+3]],
+                        v11=batch_mapping[vertex_cache.indices[face_cursor+4]],
+                        v12=batch_mapping[vertex_cache.indices[face_cursor+5]]
                     )
                     face_cursor += 6
                 else:
                     cmds.data += F3DEX["G_TRI1"].pack(
-                        v0=batch_mapping[vertex_cache["indices"][face_cursor]],
-                        v1=batch_mapping[vertex_cache["indices"][face_cursor+1]],
-                        v2=batch_mapping[vertex_cache["indices"][face_cursor+2]],
+                        v0=batch_mapping[vertex_cache.indices[face_cursor]],
+                        v1=batch_mapping[vertex_cache.indices[face_cursor+1]],
+                        v2=batch_mapping[vertex_cache.indices[face_cursor+2]],
                     )
                     face_cursor += 3
 

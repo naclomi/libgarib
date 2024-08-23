@@ -33,6 +33,7 @@
   - See: https://docs.blender.org/api/current/info_quickstart.html#example-panel
 
 ## dumping
+- only split vertices when their uvs/materials differ
 - make sure metadata is placed consistently in heirarchy
 - animation: instead of just saving playback_time as a property,
              scale time timeline with it (it's only used to determine u16

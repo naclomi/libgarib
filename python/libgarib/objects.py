@@ -227,15 +227,15 @@ def packSprite(sprite_idx, file, texture_db):
     sprite_node = file.nodes[sprite_idx]
     mesh = file.meshes[sprite_node.mesh]
 
-    attrs = gltf_helper.gltfMeshToFlattenedVertexCache(sprite_node.mesh, file)
+    prims = gltf_helper.MeshData().loadFromGltf(mesh.primitives[0], file, texture_db)
     # TODO: do more than this half-assed validation:
-    if len(mesh.primitives) != 1 or len(attrs["indices"]) != 6:
+    if len(mesh.primitives) != 1 or len(prims.indices) != 6:
         raise gltf_helper.GLTFStructureException("Sprite mesh must be a 2-polygon square")
 
     # TODO: also take xyz/scale from geo + scale factor
 
     return objbank_writer.glover_objbank__sprite.build({
-        "texture_id": gltf_helper.textureIdFromMaterial(attrs["material"][0], file), # / Int32ub,
+        "texture_id": prims.material.texture_id, # / Int32ub,
         "runtime_data_ptr": 0,
         "x": sprite_node.translation[0],
         "y": sprite_node.translation[1],
@@ -265,8 +265,8 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
 
     if should_pack_geo(pack_list):
         raw_geo_root = objbank_writer.glover_objbank__geometry.build({
-            "num_faces": len(vertex_cache["indices"])//3,
-            "num_vertices": len(vertex_cache["POSITION"]),
+            "num_faces": vertex_cache.face_count,
+            "num_vertices": vertex_cache.vertex_count,
             "vertices_ptr": 0,
             "faces_ptr": 0,
             "face_cn_ptr": 0,
@@ -296,24 +296,25 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
             ))
 
         if "faces" in pack_list:
-            geo_root.faces = linkable.LinkableBytes(data=vertex_cache["indices"].astype(">H").tobytes())
+            geo_root.faces = linkable.LinkableBytes(data=vertex_cache.indices.astype(">H").tobytes())
             setPtr("faces_ptr", geo_root.faces)
         if "verts" in pack_list:
-            geo_root.verts = linkable.LinkableBytes(data=vertex_cache["POSITION"].astype(">f").tobytes())
+            geo_root.verts = linkable.LinkableBytes(data=vertex_cache.attrs[vertex_cache.AttrType.position].astype(">f").tobytes())
             setPtr("vertices_ptr", geo_root.verts)
         if "colors" in pack_list:
-            ubyte_values = (vertex_cache["COLOR_0"]*255).astype("B")
+            ubyte_values = (vertex_cache.attrs[vertex_cache.AttrType.color]*255).astype("B")
             raw_colors = b"".join(struct.pack("4B", *color[:3], 0) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
         if "norms" in pack_list:
             # Have to recalculate face norms
             raw_norms = []
-            for base_idx in range(0, len(vertex_cache["indices"]), 3):
+            positions = vertex_cache.attrs[vertex_cache.AttrType.position]
+            for base_idx in range(0, vertex_cache.idx_count, 3):
                 # Calculate ortho vector
-                v0 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx]]
-                v1 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx+1]]
-                v2 = vertex_cache["POSITION"][vertex_cache["indices"][base_idx+2]]
+                v0 = positions[vertex_cache.indices[base_idx]]
+                v1 = positions[vertex_cache.indices[base_idx+1]]
+                v2 = positions[vertex_cache.indices[base_idx+2]]
                 n = np.cross(v1-v0, v2-v0)
 
                 # Normalize
@@ -321,7 +322,7 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
                 n /= n_mag
 
                 # Correct orientation
-                v0n = vertex_cache["NORMAL"][vertex_cache["indices"][base_idx]]
+                v0n = vertex_cache.attrs[vertex_cache.AttrType.norm][vertex_cache.indices[base_idx]]
                 if np.dot(n, v0n) < 0:
                     n *= -1
 
@@ -333,10 +334,11 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
             setPtr("face_cn_ptr", geo_root.face_cn)   
         if "flags" in pack_list:
             raw_attr = []
-            for base_idx in range(0, len(vertex_cache["indices"]), 3):
-                v0 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx]]
-                v1 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx+1]]
-                v2 = vertex_cache["_GLOVER_FLAGS"][vertex_cache["indices"][base_idx+2]]
+            flags = vertex_cache.attrs[vertex_cache.AttrType.flags]
+            for base_idx in range(0, vertex_cache.idx_count, 3):
+                v0 = flags[vertex_cache.indices[base_idx]]
+                v1 = flags[vertex_cache.indices[base_idx+1]]
+                v2 = flags[vertex_cache.indices[base_idx+2]]
                 raw_attr.append(struct.pack("B", v0))
                 if v1 != v2 or v1 != v0:
                     print("WARNING: Inconsistent vertex flags in {:}".format(node.name))
@@ -345,18 +347,14 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
         if "uvs" in pack_list or "texture_ids" in pack_list:
             if "textures" in pack_list:
                 raw_attr = []
-                for base_idx in range(0, len(vertex_cache["indices"]), 3):
-                    v0 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx]]
-                    v1 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx+1]]
-                    v2 = vertex_cache["texture_ids"][vertex_cache["indices"][base_idx+2]]
-                    raw_attr.append(struct.pack(">I", v0))
-                    if v1 != v2 or v1 != v0:
-                        print("WARNING: Inconsistent texture ids in {:}".format(node.name))
+                for face_idx in range(vertex_cache.face_count):
+                    t = vertex_cache.material[face_idx].texture_id
+                    raw_attr.append(struct.pack(">I", t))
                 geo_root.texture_ids = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("texture_ids_ptr", geo_root.texture_ids)
 
             if "uvs" in pack_list:
-                uvs = vertex_cache["TEXCOORD_0_scaled"].copy()
+                uvs = vertex_cache.attrs[vertex_cache.AttrType.uv_scaled].copy()
 
                 # Convert to 11.5 format
                 uvs *= 32
@@ -364,10 +362,10 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
 
                 # Per-vertex -> per-face
                 raw_attr = []
-                for base_idx in range(0, len(vertex_cache["indices"]), 3):
-                    v0 = uvs[vertex_cache["indices"][base_idx]]
-                    v1 = uvs[vertex_cache["indices"][base_idx+1]]
-                    v2 = uvs[vertex_cache["indices"][base_idx+2]]
+                for base_idx in range(0, vertex_cache.idx_count, 3):
+                    v0 = uvs[vertex_cache.indices[base_idx]]
+                    v1 = uvs[vertex_cache.indices[base_idx+1]]
+                    v2 = uvs[vertex_cache.indices[base_idx+2]]
                     raw_attr.append(struct.pack(">6h", *v0, *v1, *v2))
                 geo_root.uvs = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("uvs_ptr", geo_root.uvs)
@@ -565,13 +563,13 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         mesh = file.meshes[node.mesh]
         updatePackList(mesh, pack_list)
 
-        vertex_cache = gltf_helper.gltfMeshToFlattenedVertexCache(mesh, file)
-        gltf_helper.addDerivedMaterialAttrs(vertex_cache, file, texture_db, "TEXCOORD_0")
-        gltf_helper.optimizeVertexCache(vertex_cache)
+        prims = [gltf_helper.MeshData().loadFromGltf(p, file, texture_db) for p in mesh.primitives]
+        for prim in prims:
+            scale_factor = 1000
+            prim.attrs[prim.AttrType.position] *= scale_factor
+            prim.attrs[prim.AttrType.norm] *= scale_factor
 
-        scale_factor = 1000
-        vertex_cache["POSITION"] *= scale_factor
-        vertex_cache["NORMAL"] *= scale_factor
+        vertex_cache = gltf_helper.MeshData.flatten(prims)
 
         geo_root = packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list)
         pointers.append(linkable.LinkablePointer(

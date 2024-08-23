@@ -195,24 +195,6 @@ def hashGLTFMesh(gltf_mesh, file):
     return data_hash
 
 
-def addDerivedMaterialAttrs(vertex_cache, file, texture_db, src_attr):
-    toTextureIds = np.vectorize(textureIdFromMaterial)
-    vertex_cache["texture_ids"] = toTextureIds(vertex_cache["material"], file).astype(">I")
-
-    vert_count = len(vertex_cache[src_attr])
-    dst_attr = "{:}_scaled".format(src_attr)
-    vertex_cache[dst_attr] = np.zeros((vert_count, *vertex_cache[src_attr].shape[1:]))
-    tex_sizes = {}
-    for idx in range(vert_count):
-        material_id = vertex_cache["material"][idx]
-        if material_id not in tex_sizes:
-            tex = texture_db.byId.get(vertex_cache["texture_ids"][idx])
-            if tex is None:
-                raise Exception("Need dimensions of texture 0x{:08X}".format(vertex_cache["texture_ids"][idx]))
-            tex_sizes[material_id] = (tex.width, tex.height)
-        vertex_cache[dst_attr][idx] = vertex_cache[src_attr][idx] * tex_sizes[material_id]
-
-
 def optimizeVertexCache(vertex_cache, cache_size=32):
     # Build de-duplicated collection of vertices
     shared = {}
@@ -257,7 +239,11 @@ class MeshData(object):
         self.attrs = {}
         
         for attr_name, accessor_idx in vars(primitives.attributes).items():
-            attr_type = self.AttrType(attr_name)
+            try:
+                attr_type = self.AttrType(attr_name)
+            except ValueError:
+                print("Discarding vertex attribute {:}".format(attr_name))
+                continue
             if not isinstance(accessor_idx, int):
                 continue
             self.attrs[attr_type] = getDataFromAccessor(file, accessor_idx)
@@ -268,7 +254,7 @@ class MeshData(object):
             self.indices = getDataFromAccessor(file, primitives.indices)
         else:
             self.indices = np.arange(start=0, stop=self.vertex_count, dtype="I")
-        self.idx_count = len(indices)
+        self.idx_count = len(self.indices)
         self.face_count = self.idx_count // 3
 
         self.deriveScaledUVs()
@@ -278,18 +264,18 @@ class MeshData(object):
     def deriveScaledUVs(self, src_attr=AttrType.uv):
         if isinstance(self.texture, list):
             raise NotImplementedError("Can't derive scaled UVs across multi-texture mesh data")
-        dst_attr = self.AttrType("{:}_scaled".format(src_attr.name))
+        dst_attr = self.AttrType("_{:}_scaled".format(src_attr.value))
         tex_size = (self.texture.width, self.texture.height)
         self.attrs[dst_attr] = np.multiply(self.attrs[src_attr], tex_size)
 
     @classmethod
     def flatten(cls, data):
         flattened = cls()
-        total_verts = sum(d.vert_count for d in data)
+        total_verts = sum(d.vertex_count for d in data)
         total_indices = sum(d.idx_count for d in data)
         total_faces = sum(d.face_count for d in data)
 
-        flattened.indices = np.zeros(total_indices, d[0].indices.dtype)
+        flattened.indices = np.zeros(total_indices, data[0].indices.dtype)
         flattened.texture = [None] * total_faces
         flattened.material = [None] * total_faces
 
@@ -321,7 +307,7 @@ class MeshData(object):
             base_face_idx += d.face_count
 
         flattened.vertex_count = base_vert_idx
-        flattened.index_count = base_idx_idx
+        flattened.idx_count = base_idx_idx
         flattened.face_count = base_face_idx
         return flattened
 
