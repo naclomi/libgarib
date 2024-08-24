@@ -195,20 +195,6 @@ def hashGLTFMesh(gltf_mesh, file):
     return data_hash
 
 
-def optimizeVertexCache(vertex_cache, cache_size=32):
-    # Build de-duplicated collection of vertices
-    shared = {}
-    for idx, pos in enumerate(vertex_cache["POSITION"]):
-        pos = tuple(pos)
-        aux = tuple(vertex_cache["TEXCOORD_0"][idx])
-        if pos not in shared:
-            shared[pos] = {}
-        if aux not in shared[pos]:
-            shared[pos][aux] = []
-        shared[pos][aux].append(idx)
-    # TODO: insert into indices list sentinel objects that indicate UV changes
-
-
 class MeshData(object):
     class AttrType(enum.Enum):
         position="POSITION"
@@ -217,6 +203,15 @@ class MeshData(object):
         uv_scaled="_TEXCOORD_0_scaled"
         norm="NORMAL"
         flags="TEXCOORD_1"
+
+    ATTR_SIZES = {
+        AttrType.position: 3,
+        AttrType.color: 4,
+        AttrType.uv: 2,
+        AttrType.uv_scaled: 2,
+        AttrType.norm: 3,
+        AttrType.flags: 2
+    }
 
     def __init__(self):
         self.vertex_count = 0
@@ -228,6 +223,66 @@ class MeshData(object):
 
         self.material = None
         self.texture = None
+
+
+    def _get_attr(self, attr_type):
+        if attr_type not in self.attrs:
+            self.attrs[attr_type] = np.zeros((self.vertex_count, self.ATTR_SIZES[attr_type]))
+        return self.attrs[attr_type]
+    def _set_attr(self, attr_type, value):
+        self.attrs[attr_type] = value
+
+    @property
+    def position(self):
+        return self._get_attr(self.AttrType.position)
+    @position.setter
+    def position(self, value):
+        return self._set_attr(self.AttrType.position, value)
+    @property
+    def color(self):
+        return self._get_attr(self.AttrType.color)
+    @color.setter
+    def color(self, value):
+        return self._set_attr(self.AttrType.color, value)
+    @property
+    def uv(self):
+        return self._get_attr(self.AttrType.uv)
+    @uv.setter
+    def uv(self, value):
+        return self._set_attr(self.AttrType.uv, value)
+    @property
+    def uv_scaled(self):
+        return self._get_attr(self.AttrType.uv_scaled)
+    @uv_scaled.setter
+    def uv_scaled(self, value):
+        return self._set_attr(self.AttrType.uv_scaled, value)
+    @property
+    def norm(self):
+        return self._get_attr(self.AttrType.norm)
+    @norm.setter
+    def norm(self, value):
+        return self._set_attr(self.AttrType.norm, value)
+    @property
+    def flags(self):
+        return self._get_attr(self.AttrType.flags)
+    @flags.setter
+    def flags(self, value):
+        return self._set_attr(self.AttrType.flags, value)
+
+
+    def optimize(self, cache_size=32):
+        # Build de-duplicated collection of vertices
+        shared = {}
+        for idx, pos in enumerate(self.position):
+            pos = tuple(pos)
+            aux = tuple(self.uv[idx])
+            if pos not in shared:
+                shared[pos] = {}
+            if aux not in shared[pos]:
+                shared[pos][aux] = []
+            shared[pos][aux].append(idx)
+        # TODO: insert into indices list sentinel objects that indicate UV changes
+
 
     def loadFromGltf(self, primitives, file, texture_db):
         self.material = gltfMaterialToGloverMaterial(primitives.material, file)

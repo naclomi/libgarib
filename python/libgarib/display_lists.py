@@ -99,11 +99,11 @@ def buildDLFaceBatch(vertex_cache, cursor, unlit):
     gbi_vertices = []
     for idx in sorted(unique_indices):
         gbi_v = GbiVertex(
-            pos=vertex_cache.attrs[vertex_cache.AttrType.position][idx],
-            uv=vertex_cache.attrs[vertex_cache.AttrType.uv_scaled][idx],
-            rgb=vertex_cache.attrs[vertex_cache.AttrType.color][idx][:3],
-            a=vertex_cache.attrs[vertex_cache.AttrType.color][idx][3],
-            n=vertex_cache.attrs[vertex_cache.AttrType.norm][idx]
+            pos=vertex_cache.position[idx],
+            uv=vertex_cache.uv_scaled[idx],
+            rgb=vertex_cache.color[idx][:3],
+            a=vertex_cache.color[idx][3],
+            n=vertex_cache.norm[idx]
         )
         batch_mapping[idx] = len(gbi_vertices)
         gbi_vertices.append(gbi_v)
@@ -473,12 +473,6 @@ def f3dex_to_prims(display_list, bank, lighting, texture_db):
         prims.vertex_count = face_count * 3
         prims.index_count = face_count * 3
         prims.indices = np.zeros(prims.vertex_count)
-        prims.attrs[prims.AttrType.position] = np.zeros((prims.vertex_count, 3))
-        prims.attrs[prims.AttrType.uv] = np.zeros((prims.vertex_count, 2))
-        if lighting is True:
-            prims.attrs[prims.AttrType.norm] = np.zeros((prims.vertex_count, 3))
-        else:
-            prims.attrs[prims.AttrType.color] = np.zeros((prims.vertex_count, 3))
 
     prim_cursor = {k:0 for k in primitives.keys()}
     def build_prims(env):
@@ -492,13 +486,13 @@ def f3dex_to_prims(display_list, bank, lighting, texture_db):
         for v_idx in idx_list:
             v = env["vertex_buffer"][v_idx]
             prims.indices[cursor] = cursor
-            prims.attrs[prims.AttrType.position][cursor] = (v.x, v.y, v.z)
-            prims.attrs[prims.AttrType.uv][cursor] = (v.u/env["texture_size"][0], v.v/env["texture_size"][1])
+            prims.position[cursor] = (v.x, v.y, v.z)
+            prims.uv[cursor] = (v.u/env["texture_size"][0], v.v/env["texture_size"][1])
             if lighting is True:
                 norm_mag = math.sqrt(v.nx**2 + v.ny**2 + v.nz**2)
-                prims.attrs[prims.AttrType.norm][cursor] = (v.nx/norm_mag, v.ny/norm_mag, v.nz/norm_mag)
+                prims.norm[cursor] = (v.nx/norm_mag, v.ny/norm_mag, v.nz/norm_mag)
             else:
-                prims.attrs[prims.AttrType.color][cursor] = (v.r, v.g, v.b)
+                prims.color[cursor] = (v.r, v.g, v.b)
             cursor += 1
         prim_cursor[env["material"]] = cursor
 

@@ -299,17 +299,17 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
             geo_root.faces = linkable.LinkableBytes(data=vertex_cache.indices.astype(">H").tobytes())
             setPtr("faces_ptr", geo_root.faces)
         if "verts" in pack_list:
-            geo_root.verts = linkable.LinkableBytes(data=vertex_cache.attrs[vertex_cache.AttrType.position].astype(">f").tobytes())
+            geo_root.verts = linkable.LinkableBytes(data=vertex_cache.position.astype(">f").tobytes())
             setPtr("vertices_ptr", geo_root.verts)
         if "colors" in pack_list:
-            ubyte_values = (vertex_cache.attrs[vertex_cache.AttrType.color]*255).astype("B")
+            ubyte_values = (vertex_cache.color*255).astype("B")
             raw_colors = b"".join(struct.pack("4B", *color[:3], 0) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
         if "norms" in pack_list:
             # Have to recalculate face norms
             raw_norms = []
-            positions = vertex_cache.attrs[vertex_cache.AttrType.position]
+            positions = vertex_cache.position
             for base_idx in range(0, vertex_cache.idx_count, 3):
                 # Calculate ortho vector
                 v0 = positions[vertex_cache.indices[base_idx]]
@@ -322,7 +322,7 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
                 n /= n_mag
 
                 # Correct orientation
-                v0n = vertex_cache.attrs[vertex_cache.AttrType.norm][vertex_cache.indices[base_idx]]
+                v0n = vertex_cache.norm[vertex_cache.indices[base_idx]]
                 if np.dot(n, v0n) < 0:
                     n *= -1
 
@@ -334,7 +334,7 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
             setPtr("face_cn_ptr", geo_root.face_cn)   
         if "flags" in pack_list:
             raw_attr = []
-            flags = vertex_cache.attrs[vertex_cache.AttrType.flags]
+            flags = vertex_cache.flags
             for base_idx in range(0, vertex_cache.idx_count, 3):
                 v0 = flags[vertex_cache.indices[base_idx]]
                 v1 = flags[vertex_cache.indices[base_idx+1]]
@@ -354,7 +354,7 @@ def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):
                 setPtr("texture_ids_ptr", geo_root.texture_ids)
 
             if "uvs" in pack_list:
-                uvs = vertex_cache.attrs[vertex_cache.AttrType.uv_scaled].copy()
+                uvs = vertex_cache.uv_scaled.copy()
 
                 # Convert to 11.5 format
                 uvs *= 32
@@ -566,8 +566,8 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         prims = [gltf_helper.MeshData().loadFromGltf(p, file, texture_db) for p in mesh.primitives]
         for prim in prims:
             scale_factor = 1000
-            prim.attrs[prim.AttrType.position] *= scale_factor
-            prim.attrs[prim.AttrType.norm] *= scale_factor
+            prim.position *= scale_factor
+            prim.norm *= scale_factor
 
         vertex_cache = gltf_helper.MeshData.flatten(prims)
 
@@ -1136,29 +1136,19 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
 
         prims.indices = np.arange(len(face_list)*3, dtype="H")
 
-        prims.attrs[prims.AttrType.position] = np.zeros((prims.vertex_count, 3))
-        if geo.vertex_cn is not None:
-            prims.attrs[prims.AttrType.color] = np.zeros((prims.vertex_count, 3))
-        if geo.uvs is not None:
-            prims.attrs[prims.AttrType.uv] = np.zeros((prims.vertex_count, 2))
-        if geo.face_cn is not None:
-            prims.attrs[prims.AttrType.norm] = np.zeros((prims.vertex_count, 3))
-        if geo.flags is not None:
-            prims.attrs[prims.AttrType.flags] = np.zeros((prims.vertex_count, 2))
-
         attr_cursor = 0
         for face_idx in face_list:
             face = geo.faces[face_idx]
             for loop_it, v_idx in ((0, face.v0), (1, face.v1), (2, face.v2)):
                 v = geo.vertices[v_idx]
-                prims.attrs[prims.AttrType.position][attr_cursor + loop_it] = (
+                prims.position[attr_cursor + loop_it] = (
                     v.x,
                     v.y,
                     v.z
                 )
                 if geo.vertex_cn is not None:
                     raw_color = geo.vertex_cn[v_idx]
-                    prims.attrs[prims.AttrType.color][attr_cursor + loop_it] = (
+                    prims.color[attr_cursor + loop_it] = (
                         ((raw_color & 0xFF000000) >> 24) / 255,
                         ((raw_color & 0x00FF0000) >> 16) / 255,
                         ((raw_color & 0x0000FF00) >> 8) / 255
@@ -1166,18 +1156,20 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
 
             if geo.uvs is not None:
                 uv = geo.uvs[face_idx]
-                prims.attrs[prims.AttrType.uv][attr_cursor:attr_cursor+3] = (
-                    (uv.u1.value / prims.texture.width, uv.v1.value / prims.texture.height),
-                    (uv.u2.value / prims.texture.width, uv.v2.value / prims.texture.height),
-                    (uv.u3.value / prims.texture.width, uv.v3.value / prims.texture.height)
+                prims.uv_scaled[attr_cursor:attr_cursor+3] = (
+                    (uv.u1.value, uv.v1.value),
+                    (uv.u2.value, uv.v2.value),
+                    (uv.u3.value, uv.v3.value)
                 )
+                prims.uv[attr_cursor:attr_cursor+3] = prims.uv[attr_cursor:attr_cursor+3]
+                prims.uv[attr_cursor:attr_cursor+3] /= (prims.texture.width, prims.texture.height)
 
             if geo.face_cn is not None:
                 face_cn = geo.face_cn[face_idx]
                 norm_byte = struct.unpack(">bbbb", struct.pack(">I",face_cn))[:-1]
                 norm_mag = math.sqrt(sum(coord ** 2 for coord in norm_byte))
                 norm_norm = tuple(coord / norm_mag for coord in norm_byte)
-                prims.attrs[prims.AttrType.norm][attr_cursor:attr_cursor+3] = (
+                prims.norm[attr_cursor:attr_cursor+3] = (
                     norm_norm,
                     norm_norm,
                     norm_norm,
@@ -1192,7 +1184,7 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
                 #   and because they go unused we can't tell which is S and which is T.
                 #   Disappointing. /shrug
                 flags = geo.flags[face_idx]
-                prims.attrs[prims.AttrType.flags][attr_cursor:attr_cursor+3] = (
+                prims.flags[attr_cursor:attr_cursor+3] = (
                     (flags,0),
                     (flags,0),
                     (flags,0)
