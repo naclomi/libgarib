@@ -271,15 +271,19 @@ class MeshData(object):
         return self._set_attr(self.AttrType.flags, value)
 
 
-    def duplicates(self):
+    def duplicates(self, indices=None):
         """
         Group vertices in attribute data based on shared positions
-        and UVs. Returns the nested structure:
+        and UVs. Takes as input a list of indices of vertices to
+        search for duplicates. If input is None, searches all of them.
+        Returns the nested structure:
         {shared_position: {shared_uv: [vert_idx, ...], ...}, ...}
         """
+        if indices is None:
+            indices = range(self.vertex_count)
         shared = {}
-        for idx, pos in enumerate(self.position):
-            pos = tuple(pos)
+        for idx in indices:
+            pos = tuple(self.position[idx])
             aux = tuple(self.uv[idx])
             if pos not in shared:
                 shared[pos] = {}
@@ -289,7 +293,10 @@ class MeshData(object):
         return shared
 
     def deduplicate(self):
-        # Build de-duplicated collection of vertices
+        """
+        Remove duplicate vertices from vertex data. Vertices must
+        share positions AND UVs to be considered duplicates.
+        """ 
         shared = self.duplicates()
         self.vertex_count = sum(len(lists) for lists in shared.values())
         old_attrs = self.attrs
