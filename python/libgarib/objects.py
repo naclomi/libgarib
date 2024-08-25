@@ -564,6 +564,10 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         updatePackList(mesh, pack_list)
 
         prims = [gltf_helper.MeshData().loadFromGltf(p, file, texture_db) for p in mesh.primitives]
+
+        for prim in prims:
+            prim.optimize()
+
         for prim in prims:
             scale_factor = 1000
             prim.position *= scale_factor

@@ -337,7 +337,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
             vertices_loaded = False
             while face_cursor < next_batch_cursor:
                 material = vertex_cache.material[face_cursor//3]
-                can_do_two = face_cursor + 6 <= vertex_cache.idx_count
+                can_do_two = face_cursor + 6 <= next_batch_cursor
                 if can_do_two:
                     material_2 = vertex_cache.material[face_cursor//3 + 1]
                     can_do_two &= (material == material_2)

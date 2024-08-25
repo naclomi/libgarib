@@ -9,6 +9,7 @@ import math
 import struct
 from . import animation
 from .hash import canonicalize_reference
+from . import vertex_cache_optimizer
 
 import numpy as np
 import pygltflib as gltf
@@ -270,8 +271,12 @@ class MeshData(object):
         return self._set_attr(self.AttrType.flags, value)
 
 
-    def optimize(self, cache_size=32):
-        # Build de-duplicated collection of vertices
+    def duplicates(self):
+        """
+        Group vertices in attribute data based on shared positions
+        and UVs. Returns the nested structure:
+        {shared_position: {shared_uv: [vert_idx, ...], ...}, ...}
+        """
         shared = {}
         for idx, pos in enumerate(self.position):
             pos = tuple(pos)
@@ -281,8 +286,38 @@ class MeshData(object):
             if aux not in shared[pos]:
                 shared[pos][aux] = []
             shared[pos][aux].append(idx)
-        # TODO: insert into indices list sentinel objects that indicate UV changes
+        return shared
 
+    def deduplicate(self):
+        # Build de-duplicated collection of vertices
+        shared = self.duplicates()
+        self.vertex_count = sum(len(lists) for lists in shared.values())
+        old_attrs = self.attrs
+        self.attrs = {}
+        for attr_type in old_attrs:
+            self.attrs[attr_type] = np.zeros((self.vertex_count, self.ATTR_SIZES[attr_type]))
+        old_indices = self.indices
+        self.indices = self.indices.copy()
+        dedup_mapping = {}
+        attr_wr_cursor = 0
+        for idx_idx, idx in enumerate(old_indices):
+            pos = old_attrs[self.AttrType.position][idx]
+            uv = old_attrs[self.AttrType.uv][idx]
+            v_key = (tuple(pos), tuple(uv))
+            if v_key not in dedup_mapping:
+                for attr_type in old_attrs:
+                    self.attrs[attr_type][attr_wr_cursor] = old_attrs[attr_type][idx]
+                dedup_mapping[v_key] = attr_wr_cursor
+                attr_wr_cursor += 1
+            self.indices[idx_idx] = dedup_mapping[v_key]
+
+        print("De-duplicated mesh from {:} to {:} vertices".format(
+            len(old_attrs[self.AttrType.position]),
+            len(self.attrs[self.AttrType.position])))
+
+    def optimize(self, cache_size=32):
+        self.deduplicate()
+        vertex_cache_optimizer.optimize(self, cache_size)
 
     def loadFromGltf(self, primitives, file, texture_db):
         self.material = gltfMaterialToGloverMaterial(primitives.material, file)
