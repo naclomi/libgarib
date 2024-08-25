@@ -386,7 +386,7 @@ class MeshData(object):
                 flattened.attrs[attr_type][dst_slice] = attr
 
             dst_slice = slice(base_idx_idx, base_idx_idx + d.idx_count)
-            flattened.indices[dst_slice] = d.indices + base_idx_idx
+            flattened.indices[dst_slice] = d.indices + base_vert_idx
 
             dst_slice = slice(base_face_idx, base_face_idx + d.face_count)
             flattened.texture[dst_slice] = [d.texture] * d.face_count
