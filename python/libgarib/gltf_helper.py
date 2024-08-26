@@ -221,6 +221,8 @@ class MeshData(object):
 
         self.attrs = {}
         self.indices = np.array([])
+        self.variants = None
+
 
         self.material = None
         self.texture = None
@@ -292,11 +294,20 @@ class MeshData(object):
             shared[pos][aux].append(idx)
         return shared
 
-    def deduplicate(self):
+    def deduplicate(self, merge_variants):
         """
-        Remove duplicate vertices from vertex data. Vertices must
-        share positions AND UVs to be considered duplicates.
+        Remove duplicate vertices from vertex data.
+
+        If merge_variants is False, vertices must share positions
+        AND UVs to be considered duplicates.
+
+        If merge_variants is True, all vertices sharing the same position
+        will be merged and the variant attributes will be placed in the
+        variants dictionary. Mesh indices will be modified such that
+        the two LSBs of each index point to a variant in that dictionary
         """ 
+        if merge_variants is True:
+            self.variants = {}
         shared = self.duplicates()
         self.vertex_count = sum(len(lists) for lists in shared.values())
         old_attrs = self.attrs
@@ -308,22 +319,50 @@ class MeshData(object):
         dedup_mapping = {}
         attr_wr_cursor = 0
         for idx_idx, idx in enumerate(old_indices):
-            pos = old_attrs[self.AttrType.position][idx]
-            uv = old_attrs[self.AttrType.uv][idx]
-            v_key = (tuple(pos), tuple(uv))
-            if v_key not in dedup_mapping:
-                for attr_type in old_attrs:
-                    self.attrs[attr_type][attr_wr_cursor] = old_attrs[attr_type][idx]
-                dedup_mapping[v_key] = attr_wr_cursor
-                attr_wr_cursor += 1
-            self.indices[idx_idx] = dedup_mapping[v_key]
+            pos = tuple(old_attrs[self.AttrType.position][idx])
+            uv = tuple(old_attrs[self.AttrType.uv][idx])
+            if merge_variants is True:
+                v_key = pos
+                if v_key not in dedup_mapping:
+                    for attr_type in old_attrs:
+                        self.attrs[attr_type][attr_wr_cursor] = old_attrs[attr_type][idx]
+                    dedup_mapping[v_key] = attr_wr_cursor << 2
+                    attr_wr_cursor += 1
+                
+                new_idx = dedup_mapping[v_key]
+                if len(shared[pos]) > 1:
+                    if new_idx not in self.variants:
+                        self.variants[new_idx] = []
+                    for variant_idx, variant in enumerate(self.variants[new_idx]):
+                        if variant[self.AttrType.uv] == uv:
+                            break
+                    else:
+                        if len(self.variants[new_idx]) > 4:
+                            raise Exception("Too many vertex variants")
+                        variant_idx = len(self.variants[new_idx])
+                        self.variants[new_idx].append({
+                            attr_type: old_attrs[attr_type][idx]
+                                for attr_type in old_attrs
+                                    if attr_type != self.AttrType.position
+                        })
+                    new_idx |= (variant_idx & 0x3)
+            else:
+                v_key = (pos, uv)
+                if v_key not in dedup_mapping:
+                    for attr_type in old_attrs:
+                        self.attrs[attr_type][attr_wr_cursor] = old_attrs[attr_type][idx]
+                    dedup_mapping[v_key] = attr_wr_cursor
+                    attr_wr_cursor += 1
+                new_idx = dedup_mapping[v_key]
+            self.indices[idx_idx] = new_idx
+                    
 
         print("De-duplicated mesh from {:} to {:} vertices".format(
             len(old_attrs[self.AttrType.position]),
             len(self.attrs[self.AttrType.position])))
 
     def optimize(self, cache_size=32):
-        self.deduplicate()
+        self.deduplicate(merge_variants=True)
         vertex_cache_optimizer.optimize(self, cache_size)
 
     def loadFromGltf(self, primitives, file, texture_db):

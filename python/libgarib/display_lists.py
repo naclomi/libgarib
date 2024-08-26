@@ -81,6 +81,8 @@ def buildDLFaceBatch(vertex_cache, cursor, unlit):
     unique_indices = set()
     while cursor < vertex_cache.idx_count:
         next_index = vertex_cache.indices[cursor]
+        if vertex_cache.variants is not None:
+            next_index >>= 2
         if next_index not in unique_indices:
             if len(unique_indices) >= 32:
                 break
@@ -288,6 +290,36 @@ def writeVtxLoad(dl_cmds, vertex_data_block):
         target=vertex_data_block
     ))
 
+def prepare_variants(dl_cmds, tri_indices, vertex_cache, current_variants):
+    # Check if vertices are already in the cache but need to be modified.
+    # If so, write the appropriate dlist commands
+    for full_idx in tri_indices:
+        cache_idx = full_idx >> 2
+        variant_idx = full_idx & 0x3
+        if current_variants[cache_idx] != variant_idx:
+            # TODO: how do we go from cache_idx to the data block idx, so
+            #       we can do the proper lookup in vertex_cache??
+            old = vertex_cache.variants[...][current_variants[cache_idx]] # TODO
+            new = vertex_cache.variants[...][variant_idx] # TODO
+
+            if (old[gltf_helper.MeshData.AttrType.uv] != 
+                new[gltf_helper.MeshData.AttrType.uv]):
+                dl_cmds.data += F3DEX["G_MODIFYVTX"].pack(
+                    where="G_MWO_POINT_ST",
+                    vtx=cache_idx,
+                    val=new[gltf_helper.MeshData.AttrType.uv]
+                )
+
+            if (old[gltf_helper.MeshData.AttrType.color] !=
+                new[gltf_helper.MeshData.AttrType.color]):
+                dl_cmds.data += F3DEX["G_MODIFYVTX"].pack(
+                    where="G_MWO_POINT_RGBA",
+                    vtx=cache_idx,
+                    val=new[gltf_helper.MeshData.AttrType.color]
+                )
+
+            current_variants[cache_idx] = variant_idx
+    return tri_indices >> 2
 
 def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_cache):
     node = file.nodes[node_idx]
@@ -329,6 +361,9 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                 vertex_cache, batch_cursor, render_mode.unlit)
             linkable_dl.append(vertex_data_block)
 
+            if vertex_cache.variants is not None:
+                current_variants = {cache_idx: 0 for cache_idx in range(len(batch_mapping))}
+
             # Write the display list commands, starting with loading
             # the vertex batch into the RDP and then the triangle
             # commands themselves, interleaved with texture loads
@@ -341,6 +376,19 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                 if can_do_two:
                     material_2 = vertex_cache.material[face_cursor//3 + 1]
                     can_do_two &= (material == material_2)
+                    if vertex_cache.variants is not None:
+                        # Check that all indices use the same variants
+                        tri_indices = vertex_cache.indices[face_cursor:face_cursor+6]
+                        tri_variants = tri_indices.copy() & 0x3
+                        tri_indices >>= 2
+                        variant_compat = {}
+                        for sub_idx in range(6):
+                            if tri_indices[sub_idx] in variant_compat:
+                                if variant_compat[tri_indices[sub_idx]] != tri_variants[sub_idx]:
+                                    can_do_two = False
+                                    break
+                            else:
+                                variant_compat[tri_indices[sub_idx]] = tri_variants[sub_idx]
                 if material != previous_material:
                     if material.texture_id is not None:
                         texture = texture_db.byId[material.texture_id]
@@ -356,20 +404,26 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                     writeVtxLoad(cmds, vertex_data_block)
                     vertices_loaded = True
                 if can_do_two:
+                    tri_indices = vertex_cache.indices[face_cursor:face_cursor+6]
+                    if vertex_cache.variants is not None:
+                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, current_variants)
                     cmds.data += F3DEX["G_TRI2"].pack(
-                        v00=batch_mapping[vertex_cache.indices[face_cursor]],
-                        v01=batch_mapping[vertex_cache.indices[face_cursor+1]],
-                        v02=batch_mapping[vertex_cache.indices[face_cursor+2]],
-                        v10=batch_mapping[vertex_cache.indices[face_cursor+3]],
-                        v11=batch_mapping[vertex_cache.indices[face_cursor+4]],
-                        v12=batch_mapping[vertex_cache.indices[face_cursor+5]]
+                        v00=batch_mapping[tri_indices[0]],
+                        v01=batch_mapping[tri_indices[1]],
+                        v02=batch_mapping[tri_indices[2]],
+                        v10=batch_mapping[tri_indices[3]],
+                        v11=batch_mapping[tri_indices[4]],
+                        v12=batch_mapping[tri_indices[5]]
                     )
                     face_cursor += 6
                 else:
+                    tri_indices = vertex_cache.indices[face_cursor:face_cursor+3]
+                    if vertex_cache.variants is not None:
+                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, current_variants)
                     cmds.data += F3DEX["G_TRI1"].pack(
-                        v0=batch_mapping[vertex_cache.indices[face_cursor]],
-                        v1=batch_mapping[vertex_cache.indices[face_cursor+1]],
-                        v2=batch_mapping[vertex_cache.indices[face_cursor+2]],
+                        v0=batch_mapping[tri_indices[0]],
+                        v1=batch_mapping[tri_indices[1]],
+                        v2=batch_mapping[tri_indices[2]],
                     )
                     face_cursor += 3
 
