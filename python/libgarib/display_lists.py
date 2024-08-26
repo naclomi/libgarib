@@ -294,13 +294,12 @@ def prepare_variants(dl_cmds, tri_indices, vertex_cache, current_variants):
     # Check if vertices are already in the cache but need to be modified.
     # If so, write the appropriate dlist commands
     for full_idx in tri_indices:
+        all_variants = full_idx & 0xfffffffc
         cache_idx = full_idx >> 2
         variant_idx = full_idx & 0x3
         if current_variants[cache_idx] != variant_idx:
-            # TODO: how do we go from cache_idx to the data block idx, so
-            #       we can do the proper lookup in vertex_cache??
-            old = vertex_cache.variants[...][current_variants[cache_idx]] # TODO
-            new = vertex_cache.variants[...][variant_idx] # TODO
+            old = vertex_cache.variants[all_variants][current_variants[cache_idx]]
+            new = vertex_cache.variants[all_variants][variant_idx]
 
             if (old[gltf_helper.MeshData.AttrType.uv] != 
                 new[gltf_helper.MeshData.AttrType.uv]):

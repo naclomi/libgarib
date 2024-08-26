@@ -334,7 +334,7 @@ class MeshData(object):
                     if new_idx not in self.variants:
                         self.variants[new_idx] = []
                     for variant_idx, variant in enumerate(self.variants[new_idx]):
-                        if variant[self.AttrType.uv] == uv:
+                        if tuple(variant[self.AttrType.uv]) == uv:
                             break
                     else:
                         if len(self.variants[new_idx]) > 4:

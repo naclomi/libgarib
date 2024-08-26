@@ -30,13 +30,9 @@ def get_vtx_score(num_active_tris, cache_position):
     return score
 
 def optimize(prims, cache_size):
+    # TODO: make compatible with variant-indexing
     tri_indices = [[] for v in range(prims.vertex_count)]
     for idx_idx, idx in enumerate(prims.indices):
-        # TODO: this will not count verts with different UVs
-        #       as the same, even though it should (possibly
-        #       even across different materials)
-        #
-        #       try using vert position instead of index?
         tri_indices[idx].append(idx_idx//3)
 
     last_score = [0] * prims.vertex_count
@@ -112,6 +108,4 @@ def optimize(prims, cache_size):
                     break
                 scan_cursor += 1
 
-
     prims.indices = new_indices
-    # # TODO: insert into indices list sentinel objects that indicate UV changes
