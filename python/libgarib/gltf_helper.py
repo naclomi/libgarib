@@ -1,4 +1,5 @@
 import collections
+import copy
 from dataclasses import dataclass, replace
 import enum
 import hashlib
@@ -294,6 +295,25 @@ class MeshData(object):
             shared[pos][aux].append(idx)
         return shared
 
+    def remove_degenerate_triangles(self):
+        if isinstance(self.material, list):
+            # TODO: handle multi-material
+            raise NotImplementedError()
+        new_indices = []
+        for idx in range(0, self.idx_count, 3):
+            indices = self.indices[idx:idx+3]
+            if self.variants is not None:
+                indices >>= 2
+            if (indices[0] == indices[1] or indices[0] == indices[2] or
+                indices[1] == indices[2]):
+                continue
+            new_indices.append(self.indices[idx])
+            new_indices.append(self.indices[idx+1])
+            new_indices.append(self.indices[idx+2])
+        self.indices = np.array(new_indices, dtype=self.indices.dtype)
+        self.idx_count = len(new_indices)
+        self.face_count = self.idx_count // 3
+
     def deduplicate(self, merge_variants):
         """
         Remove duplicate vertices from vertex data.
@@ -363,6 +383,7 @@ class MeshData(object):
 
     def optimize(self, cache_size=32):
         self.deduplicate(merge_variants=True)
+        self.remove_degenerate_triangles()
         vertex_cache_optimizer.optimize(self, cache_size)
 
     def loadFromGltf(self, primitives, file, texture_db):
@@ -415,6 +436,9 @@ class MeshData(object):
         flattened.texture = [None] * total_faces
         flattened.material = [None] * total_faces
 
+        if any(d.variants is not None for d in data):
+            flattened.variants = {}
+
         for d in data:
             for attr_type, attr in d.attrs.items():
                 if attr_type not in flattened.attrs:
@@ -432,7 +456,15 @@ class MeshData(object):
                 flattened.attrs[attr_type][dst_slice] = attr
 
             dst_slice = slice(base_idx_idx, base_idx_idx + d.idx_count)
-            flattened.indices[dst_slice] = d.indices + base_vert_idx
+            if flattened.variants is not None:
+                if d.variants is not None:
+                    flattened.indices[dst_slice] = d.indices + (base_vert_idx << 2)
+                    for old_v_idx, old_v_data in d.variants.items():
+                        flattened.variants[old_v_idx + (base_vert_idx << 2)] = copy.deepcopy(old_v_data)
+                else:
+                    flattened.indices[dst_slice] = (d.indices << 2) + (base_vert_idx << 2)
+            else:
+                flattened.indices[dst_slice] = d.indices + base_vert_idx
 
             dst_slice = slice(base_face_idx, base_face_idx + d.face_count)
             flattened.texture[dst_slice] = [d.texture] * d.face_count

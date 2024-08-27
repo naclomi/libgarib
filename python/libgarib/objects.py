@@ -257,7 +257,7 @@ def updatePackList(obj, pack_list):
     except:
         pass
 
-def packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list):    
+def packGeo(node_idx, bank, file, vertex_cache, pack_list):    
     # TODO: make compatible with variant-indexing in vertex cache
 
     node = file.nodes[node_idx]
@@ -577,7 +577,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
         vertex_cache = gltf_helper.MeshData.flatten(prims)
 
-        geo_root = packGeo(node_idx, bank, file, texture_db, vertex_cache, pack_list)
+        geo_root = packGeo(node_idx, bank, file, vertex_cache, pack_list)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
             dtype = ">I",

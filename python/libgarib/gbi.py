@@ -22,6 +22,16 @@ def signed(num, bits):
     }[bits]
     return struct.unpack(signed_type, struct.pack(unsigned_type, num))[0]
 
+def pack_uv(uv):
+    return struct.pack(">hh", int(uv[0] * (2**5)), int(uv[1] * (2**5)))
+
+def pack_color(color):
+    if len(color) > 3:
+        a = color[3]
+    else:
+        a = 1
+    return struct.pack(">bbbB", int(color[0] * 255), int(color[1] * 255), int(color[2] * 255), int(a * 255))
+
 
 class Vertex(object):
     LENGTH = 16

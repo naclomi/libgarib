@@ -8,7 +8,7 @@ import numpy as np
 from . import gltf_helper
 from . import linkable
 
-from .gbi import F3DEX, Vertex as GbiVertex
+from .gbi import F3DEX, Vertex as GbiVertex, pack_uv, pack_color
 from .parsers.glover_texbank import GloverTexbank
 
 
@@ -298,23 +298,24 @@ def prepare_variants(dl_cmds, tri_indices, vertex_cache, current_variants):
         cache_idx = full_idx >> 2
         variant_idx = full_idx & 0x3
         if current_variants[cache_idx] != variant_idx:
+            print(all_variants, variant_idx, vertex_cache.variants.keys())
             old = vertex_cache.variants[all_variants][current_variants[cache_idx]]
             new = vertex_cache.variants[all_variants][variant_idx]
 
-            if (old[gltf_helper.MeshData.AttrType.uv] != 
-                new[gltf_helper.MeshData.AttrType.uv]):
+            if (tuple(old[gltf_helper.MeshData.AttrType.uv]) != 
+                tuple(new[gltf_helper.MeshData.AttrType.uv])):
                 dl_cmds.data += F3DEX["G_MODIFYVTX"].pack(
                     where="G_MWO_POINT_ST",
                     vtx=cache_idx,
-                    val=new[gltf_helper.MeshData.AttrType.uv]
+                    val=pack_uv(new[gltf_helper.MeshData.AttrType.uv])
                 )
 
-            if (old[gltf_helper.MeshData.AttrType.color] !=
-                new[gltf_helper.MeshData.AttrType.color]):
+            if (tuple(old[gltf_helper.MeshData.AttrType.color]) !=
+                tuple(new[gltf_helper.MeshData.AttrType.color])):
                 dl_cmds.data += F3DEX["G_MODIFYVTX"].pack(
                     where="G_MWO_POINT_RGBA",
                     vtx=cache_idx,
-                    val=new[gltf_helper.MeshData.AttrType.color]
+                    val=pack_color(new[gltf_helper.MeshData.AttrType.color])
                 )
 
             current_variants[cache_idx] = variant_idx

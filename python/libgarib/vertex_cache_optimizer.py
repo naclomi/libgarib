@@ -33,7 +33,7 @@ def optimize(prims, cache_size):
     # TODO: make compatible with variant-indexing
     tri_indices = [[] for v in range(prims.vertex_count)]
     for idx_idx, idx in enumerate(prims.indices):
-        tri_indices[idx].append(idx_idx//3)
+        tri_indices[idx >> 2].append(idx_idx//3)
 
     last_score = [0] * prims.vertex_count
     cache_tag = [0] * prims.vertex_count
@@ -63,6 +63,7 @@ def optimize(prims, cache_size):
 
         face_verts = prims.indices[best_triangle*3:(best_triangle*3)+3]
         new_indices[new_indices_cursor:new_indices_cursor+3] = face_verts
+        face_verts >>= 2
         new_indices_cursor += 3
 
         for face_v_idx, v_idx in enumerate(face_verts):
