@@ -297,8 +297,13 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
                 target = dst
             ))
 
+        if vertex_cache.variants is not None:
+            indices = vertex_cache.indices.copy() >> 2
+        else:
+            indices = vertex_cache.indices
+
         if "faces" in pack_list:
-            geo_root.faces = linkable.LinkableBytes(data=vertex_cache.indices.astype(">H").tobytes())
+            geo_root.faces = linkable.LinkableBytes(data=indices.astype(">H").tobytes())
             setPtr("faces_ptr", geo_root.faces)
         if "verts" in pack_list:
             geo_root.verts = linkable.LinkableBytes(data=vertex_cache.position.astype(">f").tobytes())
@@ -314,9 +319,9 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
             positions = vertex_cache.position
             for base_idx in range(0, vertex_cache.idx_count, 3):
                 # Calculate ortho vector
-                v0 = positions[vertex_cache.indices[base_idx]]
-                v1 = positions[vertex_cache.indices[base_idx+1]]
-                v2 = positions[vertex_cache.indices[base_idx+2]]
+                v0 = positions[indices[base_idx]]
+                v1 = positions[indices[base_idx+1]]
+                v2 = positions[indices[base_idx+2]]
                 n = np.cross(v1-v0, v2-v0)
 
                 # Normalize
@@ -324,7 +329,7 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
                 n /= n_mag
 
                 # Correct orientation
-                v0n = vertex_cache.norm[vertex_cache.indices[base_idx]]
+                v0n = vertex_cache.norm[indices[base_idx]]
                 if np.dot(n, v0n) < 0:
                     n *= -1
 
@@ -338,9 +343,9 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
             raw_attr = []
             flags = vertex_cache.flags
             for base_idx in range(0, vertex_cache.idx_count, 3):
-                v0 = flags[vertex_cache.indices[base_idx]]
-                v1 = flags[vertex_cache.indices[base_idx+1]]
-                v2 = flags[vertex_cache.indices[base_idx+2]]
+                v0 = flags[indices[base_idx]]
+                v1 = flags[indices[base_idx+1]]
+                v2 = flags[indices[base_idx+2]]
                 raw_attr.append(struct.pack("B", v0))
                 if v1 != v2 or v1 != v0:
                     print("WARNING: Inconsistent vertex flags in {:}".format(node.name))
@@ -365,9 +370,9 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
                 # Per-vertex -> per-face
                 raw_attr = []
                 for base_idx in range(0, vertex_cache.idx_count, 3):
-                    v0 = uvs[vertex_cache.indices[base_idx]]
-                    v1 = uvs[vertex_cache.indices[base_idx+1]]
-                    v2 = uvs[vertex_cache.indices[base_idx+2]]
+                    v0 = uvs[indices[base_idx]]
+                    v1 = uvs[indices[base_idx+1]]
+                    v2 = uvs[indices[base_idx+2]]
                     raw_attr.append(struct.pack(">6h", *v0, *v1, *v2))
                 geo_root.uvs = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("uvs_ptr", geo_root.uvs)
@@ -561,7 +566,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
 
     if node.mesh is not None:
         # Pack geo
-        # TODO: parameterize scale factor
         mesh = file.meshes[node.mesh]
         updatePackList(mesh, pack_list)
 
@@ -570,6 +574,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         for prim in prims:
             prim.optimize()
 
+        # TODO: parameterize scale factor
         for prim in prims:
             scale_factor = 1000
             prim.position *= scale_factor

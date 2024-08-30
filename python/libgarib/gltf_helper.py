@@ -301,7 +301,7 @@ class MeshData(object):
             raise NotImplementedError()
         new_indices = []
         for idx in range(0, self.idx_count, 3):
-            indices = self.indices[idx:idx+3]
+            indices = self.indices[idx:idx+3].copy()
             if self.variants is not None:
                 indices >>= 2
             if (indices[0] == indices[1] or indices[0] == indices[2] or
@@ -450,7 +450,6 @@ class MeshData(object):
         base_idx_idx = 0
         base_face_idx = 0
         for d in data:
-
             for attr_type, attr in d.attrs.items():
                 dst_slice = slice(base_vert_idx, base_vert_idx + d.vertex_count)
                 flattened.attrs[attr_type][dst_slice] = attr

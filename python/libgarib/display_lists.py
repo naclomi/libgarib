@@ -290,17 +290,24 @@ def writeVtxLoad(dl_cmds, vertex_data_block):
         target=vertex_data_block
     ))
 
-def prepare_variants(dl_cmds, tri_indices, vertex_cache, current_variants):
+def prepare_variants(dl_cmds, tri_indices, vertex_cache, batch_mapping, current_variants):
     # Check if vertices are already in the cache but need to be modified.
     # If so, write the appropriate dlist commands
     for full_idx in tri_indices:
         all_variants = full_idx & 0xfffffffc
-        cache_idx = full_idx >> 2
+        cache_idx = batch_mapping[full_idx >> 2]
         variant_idx = full_idx & 0x3
         if current_variants[cache_idx] != variant_idx:
-            print(all_variants, variant_idx, vertex_cache.variants.keys())
             old = vertex_cache.variants[all_variants][current_variants[cache_idx]]
             new = vertex_cache.variants[all_variants][variant_idx]
+
+            # TODO: do we need to worry about this?
+            #
+            # The s, t coordinates specified by this macro are not scaled by the
+            # texture scale value set by gSPTexture. These coordinates must be
+            # pre-scaled before they are transferred. For example, to use 1/2
+            # (0x8000) as the texture scale, use a value that is one half of
+            # the value used by gSPVertex.
 
             if (tuple(old[gltf_helper.MeshData.AttrType.uv]) != 
                 tuple(new[gltf_helper.MeshData.AttrType.uv])):
@@ -319,12 +326,11 @@ def prepare_variants(dl_cmds, tri_indices, vertex_cache, current_variants):
                 )
 
             current_variants[cache_idx] = variant_idx
-    return tri_indices >> 2
+    return tri_indices.copy() >> 2
 
 def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_cache):
     node = file.nodes[node_idx]
     mesh = file.meshes[node.mesh]
-
     rebuild_dl = True
     if "display_list" in mesh.extras:
         if "data_hash" in mesh.extras:
@@ -378,7 +384,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                     can_do_two &= (material == material_2)
                     if vertex_cache.variants is not None:
                         # Check that all indices use the same variants
-                        tri_indices = vertex_cache.indices[face_cursor:face_cursor+6]
+                        tri_indices = vertex_cache.indices[face_cursor:face_cursor+6].copy()
                         tri_variants = tri_indices.copy() & 0x3
                         tri_indices >>= 2
                         variant_compat = {}
@@ -406,7 +412,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                 if can_do_two:
                     tri_indices = vertex_cache.indices[face_cursor:face_cursor+6]
                     if vertex_cache.variants is not None:
-                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, current_variants)
+                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, batch_mapping, current_variants)
                     cmds.data += F3DEX["G_TRI2"].pack(
                         v00=batch_mapping[tri_indices[0]],
                         v01=batch_mapping[tri_indices[1]],
@@ -419,7 +425,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                 else:
                     tri_indices = vertex_cache.indices[face_cursor:face_cursor+3]
                     if vertex_cache.variants is not None:
-                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, current_variants)
+                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, batch_mapping, current_variants)
                     cmds.data += F3DEX["G_TRI1"].pack(
                         v0=batch_mapping[tri_indices[0]],
                         v1=batch_mapping[tri_indices[1]],
