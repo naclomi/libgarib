@@ -30,7 +30,6 @@ def get_vtx_score(num_active_tris, cache_position):
     return score
 
 def optimize(prims, cache_size):
-    # TODO: make compatible with variant-indexing
     tri_indices = [[] for v in range(prims.vertex_count)]
     for idx_idx, idx in enumerate(prims.indices):
         tri_indices[idx >> 2].append(idx_idx//3)

@@ -258,8 +258,6 @@ def updatePackList(obj, pack_list):
         pass
 
 def packGeo(node_idx, bank, file, vertex_cache, pack_list):    
-    # TODO: make compatible with variant-indexing in vertex cache
-
     node = file.nodes[node_idx]
 
     geo_root = LinkableGeometry()

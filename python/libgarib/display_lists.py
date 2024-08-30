@@ -367,8 +367,10 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                 vertex_cache, batch_cursor, render_mode.unlit)
             linkable_dl.append(vertex_data_block)
 
+
             if vertex_cache.variants is not None:
                 current_variants = {cache_idx: 0 for cache_idx in range(len(batch_mapping))}
+                # TODO: reorder batch faces to minimize variant switching
 
             # Write the display list commands, starting with loading
             # the vertex batch into the RDP and then the triangle
