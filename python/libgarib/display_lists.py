@@ -328,6 +328,70 @@ def prepare_variants(dl_cmds, tri_indices, vertex_cache, batch_mapping, current_
             current_variants[cache_idx] = variant_idx
     return tri_indices.copy() >> 2
 
+def iterate_batch_faces(batch_faces, variant_indexing, materials):
+    cursor = 0
+    while cursor < len(batch_faces):
+        face = batch_faces[cursor]
+        material = materials[face[3]]
+        try:
+            next_face = batch_faces[cursor + 1]
+            next_material = materials[next_face[3]]
+        except IndexError:
+            next_face = None
+            next_material = None
+
+        can_do_two = (next_face is not None and
+                      material == next_material)
+        if can_do_two and variant_indexing:
+            # Check that all indices use the same variants
+            tri_indices = np.concatenate((face[:3], next_face[:3]))
+            tri_variants = tri_indices & 0x3
+            tri_indices >>= 2
+            variant_compat = {}
+            for sub_idx in range(6):
+                if tri_indices[sub_idx] in variant_compat:
+                    if variant_compat[tri_indices[sub_idx]] != tri_variants[sub_idx]:
+                        can_do_two = False
+                        break
+                else:
+                    variant_compat[tri_indices[sub_idx]] = tri_variants[sub_idx]
+
+        if can_do_two:
+            cursor += 2
+            yield face, next_face
+        else:
+            cursor += 1
+            yield face, None
+
+def sort_faces_by_variant(faces, batch_mapping, materials, loaded_material):
+    # Reorder batch faces to minimize variant switching by
+    # sorting based on this key:
+    # (!material_is_loaded, material_idx, cache[0]_variant, cache[1]_variant, cache[2]_variant, ..., original_batch_idx)
+    # Allowing for variants to be "-1" for "don't care"
+    # Note that material_is_loaded is inverted so that if the material is loaded,
+    # the top element of the key is 0 and so comes first in the order
+    # Also note that variant 0 always comes first in this ordering,
+    # so gsSPModifyVertex doesn't need to run right after a vertex is loaded
+
+    # TODO: not _totally_ sure this is working, it seems like there are
+    #       more MODIFYs than needed
+    sort_key = []
+    for original_idx, face in enumerate(faces):
+        variants = [-1] * 32
+        for v_idx in face[:3]:
+            cache_idx = batch_mapping[v_idx >> 2]
+            variants[cache_idx] = v_idx & 0x3
+        material = materials[face[3]]
+        sort_key.append((
+            material != loaded_material,
+            material,
+            *variants,
+            original_idx
+        ))
+    order = sorted(range(len(faces)), key=lambda i: sort_key[i])
+    return faces[order]
+
+
 def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_cache):
     node = file.nodes[node_idx]
     mesh = file.meshes[node.mesh]
@@ -361,71 +425,63 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
         )
 
         batch_cursor = 0
-        previous_material = gltf_helper.Material()
+        loaded_material = gltf_helper.Material()
+
         while batch_cursor < vertex_cache.idx_count:
             next_batch_cursor, vertex_data_block, batch_mapping = buildDLFaceBatch(
                 vertex_cache, batch_cursor, render_mode.unlit)
             linkable_dl.append(vertex_data_block)
 
+            batch_faces = np.ndarray(((next_batch_cursor - batch_cursor)//3, 4), dtype="H")
+            batch_faces_cursor = 0
+            for batch_cursor in range(batch_cursor, next_batch_cursor, 3):
+                batch_faces[batch_faces_cursor][:3] = vertex_cache.indices[batch_cursor:batch_cursor+3]
+                batch_faces[batch_faces_cursor][3] = batch_cursor//3
+                batch_faces_cursor += 1
+            batch_cursor = next_batch_cursor
+
 
             if vertex_cache.variants is not None:
                 current_variants = {cache_idx: 0 for cache_idx in range(len(batch_mapping))}
-                # TODO: reorder batch faces to minimize variant switching
+                batch_faces = sort_faces_by_variant(batch_faces, batch_mapping, vertex_cache.material, loaded_material)
 
             # Write the display list commands, starting with loading
             # the vertex batch into the RDP and then the triangle
             # commands themselves, interleaved with texture loads
             # as appropriate
-            face_cursor = batch_cursor
             vertices_loaded = False
-            while face_cursor < next_batch_cursor:
-                material = vertex_cache.material[face_cursor//3]
-                can_do_two = face_cursor + 6 <= next_batch_cursor
-                if can_do_two:
-                    material_2 = vertex_cache.material[face_cursor//3 + 1]
-                    can_do_two &= (material == material_2)
-                    if vertex_cache.variants is not None:
-                        # Check that all indices use the same variants
-                        tri_indices = vertex_cache.indices[face_cursor:face_cursor+6].copy()
-                        tri_variants = tri_indices.copy() & 0x3
-                        tri_indices >>= 2
-                        variant_compat = {}
-                        for sub_idx in range(6):
-                            if tri_indices[sub_idx] in variant_compat:
-                                if variant_compat[tri_indices[sub_idx]] != tri_variants[sub_idx]:
-                                    can_do_two = False
-                                    break
-                            else:
-                                variant_compat[tri_indices[sub_idx]] = tri_variants[sub_idx]
-                if material != previous_material:
+            for face1, face2 in iterate_batch_faces(batch_faces, vertex_cache.variants is not None, vertex_cache.material):
+                material = vertex_cache.material[face1[3]]
+                if material != loaded_material:
                     if material.texture_id is not None:
                         texture = texture_db.byId[material.texture_id]
-                        if material.texture_id != previous_material.texture_id:
+                        if material.texture_id != loaded_material.texture_id:
                             writeTextureLoad(cmds, material, texture)
                             writeVtxLoad(cmds, vertex_data_block)
                             vertices_loaded = True
                         writeTileSettings(cmds, material, texture)
                     else:
                         raise NotImplementedError("Non-textured faces")
-                    previous_material = material
+                    loaded_material = material
                 if not vertices_loaded:
                     writeVtxLoad(cmds, vertex_data_block)
                     vertices_loaded = True
-                if can_do_two:
-                    tri_indices = vertex_cache.indices[face_cursor:face_cursor+6]
+                if face2 is not None:
+                    tri_indices_1 = face1[:3]
+                    tri_indices_2 = face2[:3]
                     if vertex_cache.variants is not None:
-                        tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, batch_mapping, current_variants)
+                        tri_indices_1 = prepare_variants(cmds, tri_indices_1, vertex_cache, batch_mapping, current_variants)
+                        tri_indices_2 = prepare_variants(cmds, tri_indices_2, vertex_cache, batch_mapping, current_variants)
                     cmds.data += F3DEX["G_TRI2"].pack(
-                        v00=batch_mapping[tri_indices[0]],
-                        v01=batch_mapping[tri_indices[1]],
-                        v02=batch_mapping[tri_indices[2]],
-                        v10=batch_mapping[tri_indices[3]],
-                        v11=batch_mapping[tri_indices[4]],
-                        v12=batch_mapping[tri_indices[5]]
+                        v00=batch_mapping[tri_indices_1[0]],
+                        v01=batch_mapping[tri_indices_1[1]],
+                        v02=batch_mapping[tri_indices_1[2]],
+                        v10=batch_mapping[tri_indices_2[0]],
+                        v11=batch_mapping[tri_indices_2[1]],
+                        v12=batch_mapping[tri_indices_2[2]]
                     )
-                    face_cursor += 6
                 else:
-                    tri_indices = vertex_cache.indices[face_cursor:face_cursor+3]
+                    tri_indices = face1[:3]
                     if vertex_cache.variants is not None:
                         tri_indices = prepare_variants(cmds, tri_indices, vertex_cache, batch_mapping, current_variants)
                     cmds.data += F3DEX["G_TRI1"].pack(
@@ -433,9 +489,6 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
                         v1=batch_mapping[tri_indices[1]],
                         v2=batch_mapping[tri_indices[2]],
                     )
-                    face_cursor += 3
-
-            batch_cursor = next_batch_cursor
 
         cmds.data += F3DEX["G_ENDDL"].pack()
         start_offset = 0
