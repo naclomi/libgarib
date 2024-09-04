@@ -366,29 +366,35 @@ def iterate_batch_faces(batch_faces, variant_indexing, materials):
 def sort_faces_by_variant(faces, batch_mapping, materials, loaded_material):
     # Reorder batch faces to minimize variant switching by
     # sorting based on this key:
-    # (!material_is_loaded, material_idx, cache[0]_variant, cache[1]_variant, cache[2]_variant, ..., original_batch_idx)
-    # Allowing for variants to be "-1" for "don't care"
-    # Note that material_is_loaded is inverted so that if the material is loaded,
-    # the top element of the key is 0 and so comes first in the order
-    # Also note that variant 0 always comes first in this ordering,
-    # so gsSPModifyVertex doesn't need to run right after a vertex is loaded
+    # (!material_is_loaded, material_idx, v1_variant, v2_variant, v3_variant, original_batch_idx)
+    # There is almost certainly no correlation between the v1 vertex used by one
+    # face and the v1 vertex used by another, so what we're really trying to do
+    # here is just generally group _any_ vertex that uses a given variant index
+    # near others that use the same index, in the hopes that this reduces the
+    # number of places that we'll cause a need for an extra gsSPModifyVertex
+    # () call. This algorithm is VERY ad-hoc and probably not correct, but it
+    # produces good enough results and I want to move on to other things. Also
+    # note that variant 0 always comes first in this ordering, so
+    # gsSPModifyVertex doesn't need to run right after a vertex is loaded
 
-    # TODO: not _totally_ sure this is working, it seems like there are
-    #       more MODIFYs than needed
-    sort_key = []
+    # TODO: figure out how to ACTUALLY do this. look into instruction sorting.
+    # To get a quick count:
+    # make at1obj
+    # objbank-tool.py dlist-rip build/suzanne.obj.bin --gfxdis ~/projects/glover-rev/glankk-n64/src/gfxdis/gfxdis.f3dex --output-dir /tmp/garib && cat /tmp/garib/9A276348.Suzanne.dlist.c | grep gsSPModifyVertex | wc -l
+
+    to_sort = []
     for original_idx, face in enumerate(faces):
-        variants = [-1] * 32
-        for v_idx in face[:3]:
-            cache_idx = batch_mapping[v_idx >> 2]
-            variants[cache_idx] = v_idx & 0x3
         material = materials[face[3]]
-        sort_key.append((
+        variants = face[:3] & 0x3
+        to_sort.append((
             material != loaded_material,
             material,
             *variants,
             original_idx
         ))
-    order = sorted(range(len(faces)), key=lambda i: sort_key[i])
+
+    sorted_faces = sorted(to_sort)
+    order = list(face[-1] for face in sorted_faces)
     return faces[order]
 
 
