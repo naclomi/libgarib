@@ -53,11 +53,14 @@
     - Animation
     - Child/sib nodes
     - Alpha
-    - Geopacking: Multiple materials
-- vertex compressor
 - better validation
 - look for missing properties in parent nodes
 - embed version info into output
+- presently, the algorithm for ordering faces within an F3DEX batch is totally
+  broken. it should be replaced with features in the global optimizer that:
+  - optimize across materials
+  - optimize which variant is "default" based on which other variants it often
+    appears with
 
 
 ## mapping
@@ -86,15 +89,3 @@
 
 ## stdout
 - how to do this easily with emulators?
-
-## quick test
-- Implement the following patches:
-  ```python
-  # To skip copyright screen:
-  # Force return 1:
-  # *(0x8010e878) = 0x08043ac2 # j 0x8010eb08
-  # *(0x8010e87c) = 0x24020001 # li v0, 1 # 
-  # To force presentation loader to boot playable level:
-  # *(0x8012bd0c) = 0x24040000 | (level_id & 0xFF) # li a0, (level_id & 0xff) 
-  # *(0x8012bcfc) = 0x24020000 # li v0, 0 
-  ```
