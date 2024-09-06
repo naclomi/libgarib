@@ -507,7 +507,7 @@ def gltfNodeToDisplayList(node_idx, render_mode, bank, file, texture_db, vertex_
 ################################
 # Dumping
 
-def f3dex_to_prims(display_list, bank, lighting, texture_db):
+def f3dex_to_prims(display_list, bank, lighting, texture_db, scale_factor):
     raw_dl = b"".join(struct.pack(">II", cmd.w1, cmd.w0) for cmd in display_list)
 
     def execute_dl(tri_callback):
@@ -607,13 +607,13 @@ def f3dex_to_prims(display_list, bank, lighting, texture_db):
         for v_idx in idx_list:
             v = env["vertex_buffer"][v_idx]
             prims.indices[cursor] = cursor
-            prims.position[cursor] = (v.x, v.y, v.z)
+            prims.position[cursor] = (v.x / scale_factor, v.y / scale_factor, v.z / scale_factor)
             prims.uv[cursor] = (v.u/env["texture_size"][0], v.v/env["texture_size"][1])
             if lighting is True:
                 norm_mag = math.sqrt(v.nx**2 + v.ny**2 + v.nz**2)
                 prims.norm[cursor] = (v.nx/norm_mag, v.ny/norm_mag, v.nz/norm_mag)
             else:
-                prims.color[cursor] = (v.r, v.g, v.b)
+                prims.color[cursor] = (v.r, v.g, v.b, 1)
             cursor += 1
         prim_cursor[env["material"]] = cursor
 

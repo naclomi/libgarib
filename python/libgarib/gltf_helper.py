@@ -594,7 +594,7 @@ def addMeshDataToGLTFMesh(primitives, render_mode, gltf_mesh, file, data):
             file.materials[-1].extensions["KHR_materials_unlit"] = {}
 
 
-def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
+def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data, scale_factor):
 
     for mesh_node_idx, node in enumerate(file.nodes):
         if node.extras.get("_id",None) == mesh.id:
@@ -602,7 +602,7 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
     else:
         raise Exception("Couldn't find mesh node '0x{:08X}'".format(mesh.id))
 
-    def addChannel(frames, output_type, channel_name):
+    def addChannel(frames, output_type, channel_name, channel_scale_factor):
         # Prep frames
         clip_frames = [frame for frame in frames if frame.t >= clip[0] and frame.t < clip[1]]
 
@@ -661,10 +661,19 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
 
         if output_type == gltf.VEC3:
             output_struct = struct.Struct("<3f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3) for frame in clip_frames]
+            output_tuples = [(
+                    frame.v1 / channel_scale_factor,
+                    frame.v2 / channel_scale_factor,
+                    frame.v3 / channel_scale_factor
+                ) for frame in clip_frames]
         elif output_type == gltf.VEC4:
             output_struct = struct.Struct("<4f")
-            output_tuples = [(frame.v1, frame.v2, frame.v3, frame.v4) for frame in clip_frames]
+            output_tuples = [(
+                    frame.v1 / channel_scale_factor,
+                    frame.v2 / channel_scale_factor,
+                    frame.v3 / channel_scale_factor,
+                    frame.v4 / channel_scale_factor
+                ) for frame in clip_frames]
         else:
             raise ValueError("Bad type")
 
@@ -705,25 +714,25 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data):
         data.extend(encoded_output)
 
     if len(mesh.translation) > 1:
-        addChannel(mesh.translation, gltf.VEC3, "translation")
+        addChannel(mesh.translation, gltf.VEC3, "translation", scale_factor)
     if len(mesh.rotation) > 1:
-        addChannel(mesh.rotation, gltf.VEC4, "rotation")
+        addChannel(mesh.rotation, gltf.VEC4, "rotation", 1)
     if len(mesh.scale) > 1:
-        addChannel(mesh.scale, gltf.VEC3, "scale")
+        addChannel(mesh.scale, gltf.VEC3, "scale", 1)
 
 def gltfNodeIsBillboard(node_idx, file):
     mesh = file.meshes[file.nodes[node_idx].mesh]
     return mesh.extras.get("billboard", False)
 
-def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data):
+def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data, scale_factor):
     name = "{:}_sprite_{:}".format(parent_node.name, idx)
 
     # Create node structure
     billboard_node = gltf.Node(
         name=name,
         mesh=len(file.meshes),
-        translation=(sprite.x, sprite.y, sprite.z),
-        scale=(1, sprite.height/3, sprite.width/3),
+        translation=(sprite.x / scale_factor, sprite.y / scale_factor, sprite.z / scale_factor),
+        scale=(1, sprite.height / (3 * scale_factor), sprite.width / (3 * scale_factor)),
         extensions={
             TSR_INHERITANCE_EXTENSION: {"scale": False, "rotation": False}
         },

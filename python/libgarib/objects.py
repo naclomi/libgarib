@@ -1016,12 +1016,13 @@ def kaitaiBankToLinkable(kaitai_bank):
 ###########################################
 ## Dumping utilities
 
-def actor_to_gltf(obj_root, texture_db):
+def actor_to_gltf(obj_root, texture_db, scale_factor):
     data = bytearray()
     root_node = gltf.Node(
         name="0x{:08X}".format(obj_root.obj_id),
         extras={
-            "_root_node": True
+            "_root_node": True,
+            "scale_factor": scale_factor
         }
     )
 
@@ -1041,7 +1042,7 @@ def actor_to_gltf(obj_root, texture_db):
 
     # Export model data
 
-    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_db=texture_db)
+    for_each_mesh(obj_root.mesh, mesh_to_gltf, file=file, gltf_parent=root_node, data=data, texture_db=texture_db, scale_factor=scale_factor)
 
     # Finalize rig
 
@@ -1078,7 +1079,7 @@ def actor_to_gltf(obj_root, texture_db):
         key = (anim.start_time, anim.end_time, anim.playback_speed, anim.unused)
         if key not in exported_anims:
             exported_anims[key] = len(file.animations)
-            animation_to_gltf(anim, obj_root.mesh, file, data)
+            animation_to_gltf(anim, obj_root.mesh, file, data, scale_factor)
             file.animations[exported_anims[key]].extras["slot"] = []
         file.animations[exported_anims[key]].extras["slot"].append(idx)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
@@ -1113,7 +1114,7 @@ def actor_to_gltf(obj_root, texture_db):
 
     return b"".join(file.save_to_bytes())
 
-def mesh_geo_to_prims(geo, render_mode, texture_db):
+def mesh_geo_to_prims(geo, render_mode, texture_db, scale_factor):
     # Coalesce Glover-style per-vertex/per-face attributes into
     # glTF-style per-vertex/per-material attributes
 
@@ -1151,17 +1152,18 @@ def mesh_geo_to_prims(geo, render_mode, texture_db):
             for loop_it, v_idx in ((0, face.v0), (1, face.v1), (2, face.v2)):
                 v = geo.vertices[v_idx]
                 prims.position[attr_cursor + loop_it] = (
-                    v.x,
-                    v.y,
-                    v.z
+                    v.x / scale_factor,
+                    v.y / scale_factor,
+                    v.z / scale_factor
                 )
                 if geo.vertex_cn is not None:
                     raw_color = geo.vertex_cn[v_idx]
                     prims.color[attr_cursor + loop_it] = (
                         ((raw_color & 0xFF000000) >> 24) / 255,
                         ((raw_color & 0x00FF0000) >> 16) / 255,
-                        ((raw_color & 0x0000FF00) >> 8) / 255
-                    )
+                        ((raw_color & 0x0000FF00) >> 8) / 255,
+                        1
+                )
 
             if geo.uvs is not None:
                 uv = geo.uvs[face_idx]
@@ -1268,7 +1270,7 @@ class RenderMode(object):
         return str(self.toDict())
 
 
-def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
+def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db, scale_factor):
     render_mode = RenderMode(mesh.render_mode)
     # Pack list represents what data channels in the gltf
     # file should be present when packing the actor
@@ -1277,9 +1279,9 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     # TODO: choose based on selectable export strategy:
     if mesh.display_list is not None:
         lighting = not render_mode.unlit
-        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_db)
+        primitives = display_lists.f3dex_to_prims(mesh.display_list, mesh._io._io.getbuffer(), lighting, texture_db, scale_factor)
     elif mesh.geometry.num_faces > 0:
-        primitives = mesh_geo_to_prims(mesh.geometry, render_mode, texture_db)
+        primitives = mesh_geo_to_prims(mesh.geometry, render_mode, texture_db, scale_factor)
     else:
         primitives = []
 
@@ -1325,7 +1327,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
     mesh_node = gltf.Node(
         name=name,
         mesh=mesh_id,
-        translation=(t.v1, t.v2, t.v3),
+        translation=(t.v1 / scale_factor, t.v2 / scale_factor, t.v3 / scale_factor),
         scale=(s.v1, s.v2, s.v3),
         rotation=(r.v1, r.v2, r.v3, r.v4),
         extensions={},
@@ -1343,7 +1345,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db):
         }
 
     for idx, sprite in enumerate(mesh.sprites or []):
-        gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh.sprite_alpha, mesh_node, file, data)
+        gltf_helper.addBillboardSpriteToGLTF(sprite, idx, mesh.sprite_alpha, mesh_node, file, data, scale_factor)
 
     return {"gltf_parent": mesh_node}
 
@@ -1366,7 +1368,7 @@ def global_timeline_to_gltf(root_mesh, file, data):
         file=file, data=data)
 
 
-def animation_to_gltf(anim, root_mesh, file, data):
+def animation_to_gltf(anim, root_mesh, file, data, scale_factor):
     anim_root = gltf.Animation(
         name="slot",
         extras={}
@@ -1378,7 +1380,7 @@ def animation_to_gltf(anim, root_mesh, file, data):
     file.animations.append(anim_root)
     for_each_mesh(root_mesh, gltf_helper.addAnimationDataToGLTF,
         gltf_animation=anim_root, clip=(anim.start_time, anim.end_time),
-        file=file, data=data)
+        file=file, data=data, scale_factor=scale_factor)
 
 ###############################################
 # Bank mapping utlities

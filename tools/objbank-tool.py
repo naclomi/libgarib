@@ -22,6 +22,8 @@ import PIL.Image
 
 import pygltflib as gltf
 
+DEFAULT_SCALE_FACTOR = 10
+
 def build_texture_db(textures):
     db = libgarib.textures.TextureDB()
     if textures is not None:
@@ -101,7 +103,7 @@ def unpack(args):
             if obj is None:
                 continue
             with open(os.path.join(args.output_dir, "0x{:08x}-{:}.glb".format(obj.obj_id, obj.mesh.name.strip("\0"))), "wb") as f:
-                f.write(libgarib.objects.actor_to_gltf(obj, texture_db))
+                f.write(libgarib.objects.actor_to_gltf(obj, texture_db, args.scale))
 
 
 def pack(args):
@@ -115,7 +117,7 @@ def pack(args):
             f.seek(0)
             if header == b"glTF" or header[0] == ord("{"):
                 file = gltf.GLTF2.load(filename)
-                libgarib.objects.packActor(file, root, texture_db)
+                libgarib.objects.packActor(file, root, texture_db, args.scale)
             else:
                 bank_data = data_from_stream(f)
                 bank = GloverObjbank.from_bytes(bank_data)
@@ -237,6 +239,8 @@ if __name__=="__main__":
                         help="FLA2-compress the output")
     pack_parser.add_argument("-t", "--textures", action="append", type=str,
                         help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
+    pack_parser.add_argument("--scale", type=float,
+                        help="Scale factor for vertex coordinates (by default taken from glTF metadata, this argument will override)")
 
     unpack_parser = subparsers.add_parser('unpack', help='Extract raw model assets from object banks')
     unpack_parser.add_argument("bank_file", type=str, nargs="+",
@@ -245,6 +249,8 @@ if __name__=="__main__":
                         help="Directory to output bank contents")
     unpack_parser.add_argument("-t", "--textures", action="append", type=str,
                         help="Textures used by object bank (*.png images or *.bin/*.bin.fla texture banks)")
+    unpack_parser.add_argument("--scale", type=float, default=DEFAULT_SCALE_FACTOR,
+                        help="Scale factor for vertex coordinates (default: {:})".format(DEFAULT_SCALE_FACTOR))
 
     split_parser = subparsers.add_parser('split', help='Split one object bank into individual objects')
     split_parser.add_argument("bank_file", type=str, nargs="+",
