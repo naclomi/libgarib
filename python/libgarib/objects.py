@@ -38,7 +38,6 @@ class LinkableDirectory(linkable.LinkableBytes):
             self.data += struct.pack(">I", obj_id)
             self.pointers.append(linkable.LinkablePointer(
                 offset=len(self.data),
-                dtype=">I",
                 target=actor
             ))
             self.data += b"\0" * 4
@@ -291,7 +290,6 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
         def setPtr(name, dst):
             geo_root.root.pointers.append(linkable.LinkablePointer(
                 offset = getConstructFieldOffset(objbank_writer.glover_objbank__geometry, name),
-                dtype = ">I",
                 target = dst
             ))
 
@@ -419,7 +417,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
             if len(children) > 1:
                 children[-2].pointers.append(linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
-                    dtype = ">I",
                     target = children[-1]
                 ))
 
@@ -443,7 +440,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         bank.include(sprites)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sprites_ptr"),
-            dtype = ">I",
             target = sprites
         ))
     else:
@@ -549,17 +545,14 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
     # Pack TRS/animation
     pointers.append(linkable.LinkablePointer(
         offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "translation_ptr"),
-        dtype = ">I",
         target = packAnimChannel(translation_keys, bank),
     ))
     pointers.append(linkable.LinkablePointer(
         offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "rotation_ptr"),
-        dtype = ">I",
         target = packAnimChannel(rotation_keys, bank),
     ))
     pointers.append(linkable.LinkablePointer(
         offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "scale_ptr"),
-        dtype = ">I",
         target = packAnimChannel(scale_keys, bank),
     ))
 
@@ -581,7 +574,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         geo_root = packGeo(node_idx, bank, file, vertex_cache, pack_list)
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
-            dtype = ">I",
             target = geo_root,
             target_offset = geo_root.root
         ))
@@ -593,7 +585,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
             display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, RenderMode().fromInt(render_mode), bank, file, texture_db, vertex_cache)
             pointers.append(linkable.LinkablePointer(
                 offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "display_list_ptr"),
-                dtype = ">I",
                 target = display_list,
                 target_offset = dl_start_offset
             ))
@@ -602,7 +593,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
     if len(children) > 0:
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "child_ptr"),
-            dtype = ">I",
             target = children[0]
         ))
 
@@ -749,7 +739,6 @@ def setupActorAnimations(file, root_node_idx, bank):
         bank.include(anim_defs)
         anim_props.pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__animation, "animation_definitions_ptr"),
-            dtype = ">I",
             target = anim_defs
         ))
 
@@ -793,12 +782,10 @@ def packActor(file, bank, texture_db, override_scale_factor):
             pointers=[
                 linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "animation_ptr"),
-                    dtype = ">I",
                     target = anim_data
                 ),
                 linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__object_root, "mesh_ptr"),
-                    dtype = ">I",
                     target = root_mesh
                 ),
             ]
@@ -843,7 +830,6 @@ def kaitaiAnimDataToLinkable(kaitai_anim, bank):
 
         anim_props.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_anim, "animation_definitions_ptr"),
-            dtype = ">I",
             target = anim_defs
         ))
 
@@ -864,7 +850,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.verts = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "vertices"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "vertices_ptr"),
-                dtype = ">I",
                 target = linkable_geo.verts
             ))
 
@@ -872,7 +857,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.faces = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "faces"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "faces_ptr"),
-                dtype = ">I",
                 target = linkable_geo.faces
             ))
 
@@ -880,7 +864,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.face_cn = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "face_cn"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "face_cn_ptr"),
-                dtype = ">I",
                 target = linkable_geo.face_cn
             ))
 
@@ -888,7 +871,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.vertex_cn = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "vertex_cn"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "vertex_cn_ptr"),
-                dtype = ">I",
                 target = linkable_geo.vertex_cn
             ))
 
@@ -896,7 +878,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.uvs = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "uvs"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "uvs_ptr"),
-                dtype = ">I",
                 target = linkable_geo.uvs
             ))
 
@@ -904,7 +885,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.flags = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "flags"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "flags_ptr"),
-                dtype = ">I",
                 target = linkable_geo.flags
             ))
 
@@ -913,14 +893,12 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
             linkable_geo.texture_ids = linkable.LinkableBytes(data=kaitaiObjectToBytes(geo, "texture_ids"), pointers=[])
             linkable_geo.root.pointers.append(linkable.LinkablePointer(
                 offset = getKaitaiFieldOffset(geo, "texture_ids_ptr"),
-                dtype = ">I",
                 target = linkable_geo.texture_ids
             ))
 
         bank.include(linkable_geo)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "geometry_ptr"),
-            dtype = ">I",
             target = linkable_geo,
             target_offset = linkable_geo.root
         ))
@@ -932,7 +910,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         bank.include(linkable_dl)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "display_list_ptr"),
-            dtype = ">I",
             target = linkable_dl,
             target_offset = dl_offset
         ))
@@ -942,7 +919,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         bank.include(sprites)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "sprites_ptr"),
-            dtype = ">I",
             target = sprites
         ))
 
@@ -951,7 +927,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "translation_ptr"),
-            dtype = ">I",
             target = keyframes
         ))
 
@@ -960,7 +935,6 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "rotation_ptr"),
-            dtype = ">I",
             target = keyframes
         ))
 
@@ -969,21 +943,18 @@ def kaitaiMeshToLinkable(kaitai_mesh, bank):
         bank.include(keyframes)
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "scale_ptr"),
-            dtype = ">I",
             target = keyframes
         ))
 
     if kaitai_mesh.child is not None:
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "child_ptr"),
-            dtype = ">I",
             target = kaitaiMeshToLinkable(kaitai_mesh.child, bank)
         ))
 
     if kaitai_mesh.sibling is not None:
         linkable_mesh.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_mesh, "sibling_ptr"),
-            dtype = ">I",
             target = kaitaiMeshToLinkable(kaitai_mesh.sibling, bank)
         ))
 
@@ -994,13 +965,11 @@ def kaitaiActorToLinkable(kaitai_obj, bank):
     if kaitai_obj.animation is not None:
         actor.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_obj, "animation_ptr"),
-            dtype = ">I",
             target = kaitaiAnimDataToLinkable(kaitai_obj.animation, bank)
         ))
     if kaitai_obj.mesh is not None:
         actor.pointers.append(linkable.LinkablePointer(
             offset = getKaitaiFieldOffset(kaitai_obj, "mesh_ptr"),
-            dtype = ">I",
             target = kaitaiMeshToLinkable(kaitai_obj.mesh, bank)
         ))
     bank.include(actor)

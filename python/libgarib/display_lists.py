@@ -46,7 +46,6 @@ def relocatableDisplayListToLinkable(raw_mesh_dl):
         ptr_offset = struct.unpack(">I", raw_mesh_dl[cursor:cursor+4])[0]
         pointers.append(linkable.LinkablePointer(
             offset=ptr_offset,
-            dtype=">I",
             target=None, # Relative
             target_offset=struct.unpack(">I", raw_mesh_dl[payload_base+ptr_offset:payload_base+ptr_offset+4])[0]
         ))
@@ -286,7 +285,6 @@ def writeVtxLoad(dl_cmds, vertex_data_block):
     )
     dl_cmds.pointers.append(linkable.LinkablePointer(
         offset=len(dl_cmds.data) - 4,
-        dtype=">I",
         target=vertex_data_block
     ))
 

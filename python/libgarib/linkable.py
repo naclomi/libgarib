@@ -37,8 +37,8 @@ class Linkable(object):
 @dataclasses.dataclass
 class LinkablePointer(object):
     offset: int
-    dtype: str # struct format specifier
-    target: Linkable
+    dtype: str = ">I" # Struct format specifier
+    target: Linkable = None # Target data block or 'None' for relative
     target_offset: int = 0
 
     def rewrite(self, data: bytearray):
