@@ -9,10 +9,13 @@ FRAME_TO_SEC = 1/29.97
 
 
 def vec3ToNeutralFrame(v):
- return [np.array([[*v,0]], dtype="f"), np.zeros(1, dtype="i")]
+    return [np.array([[*v,0]], dtype="f"), np.zeros(1, dtype="i")]
 
 def vec4ToNeutralFrame(v):
- return [np.array([v], dtype="f"), np.zeros(1, dtype="i")]
+    return [np.array([v], dtype="f"), np.zeros(1, dtype="i")]
+
+def scale_channel(channel, scale_factor):
+    channel[0] *= scale_factor
 
 @dataclass
 class InterpolatedFrame:

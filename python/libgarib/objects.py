@@ -223,7 +223,7 @@ def getConstructFieldOffset(construct_struct, field_name):
     else:
         raise Exception("Field not found")
 
-def packSprite(sprite_idx, file, texture_db):
+def packSprite(sprite_idx, file, texture_db, scale_factor):
     sprite_node = file.nodes[sprite_idx]
     mesh = file.meshes[sprite_node.mesh]
 
@@ -237,11 +237,11 @@ def packSprite(sprite_idx, file, texture_db):
     return objbank_writer.glover_objbank__sprite.build({
         "texture_id": prims.material.texture_id, # / Int32ub,
         "runtime_data_ptr": 0,
-        "x": sprite_node.translation[0],
-        "y": sprite_node.translation[1],
-        "z": sprite_node.translation[2],
-        "width": sprite_node.scale[2]*3 if sprite_node.scale[0] == 1 else sprite_node.scale[0]*3, 
-        "height": sprite_node.scale[1]*3, 
+        "x": sprite_node.translation[0] * scale_factor,
+        "y": sprite_node.translation[1] * scale_factor,
+        "z": sprite_node.translation[2] * scale_factor,
+        "width": (sprite_node.scale[2 if sprite_node.scale[0] == 1 else 0]) * 3 * scale_factor, 
+        "height": sprite_node.scale[1]*3*scale_factor, 
         "u5": 0, # TODO
         "u6": 0, # TODO
         "flags": 0, # TODO
@@ -399,7 +399,7 @@ def packAnimChannel(channel_data, bank):
     bank.include(keyframes)
     return keyframes
 
-def packNode(node_idx, bank, file, texture_db, dopesheet):
+def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
     node = file.nodes[node_idx]
 
     pack_list = DEFAULT_PACK_LIST[:]
@@ -415,7 +415,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         if gltf_helper.gltfNodeIsBillboard(child_idx, file):
             sprite_nodes.append(child_idx)
         else:
-            children.append(packNode(child_idx, bank, file, texture_db, dopesheet))
+            children.append(packNode(child_idx, bank, file, texture_db, dopesheet, scale_factor))
             if len(children) > 1:
                 children[-2].pointers.append(linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
@@ -434,7 +434,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
                     sprite_alpha = sprite_node.extras["alpha"]
                 elif sprite_alpha != sprite_node.extras["alpha"]:
                     print("WARNING: Inconsistent sprite alphas on {:}, only first will be used".format(node.name))
-            raw_sprites.append(packSprite(sprite_idx, file, texture_db))
+            raw_sprites.append(packSprite(sprite_idx, file, texture_db, scale_factor))
         if sprite_alpha is None:
             sprite_alpha = 0xFF
 
@@ -510,6 +510,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         animation.vec3ToNeutralFrame(node.scale or (1,1,1)))
     translation_keys = dopesheet["translation"].get(node_idx,
         animation.vec3ToNeutralFrame(node.translation or (0,0,0)))
+    animation.scale_channel(translation_keys, scale_factor)
     rotation_keys = dopesheet["rotation"].get(node_idx,
         animation.vec4ToNeutralFrame(node.rotation or (0,0,0,0)))
 
@@ -572,11 +573,8 @@ def packNode(node_idx, bank, file, texture_db, dopesheet):
         for prim in prims:
             prim.optimize()
 
-        # TODO: parameterize scale factor
         for prim in prims:
-            scale_factor = 1000
             prim.position *= scale_factor
-            prim.norm *= scale_factor
 
         vertex_cache = gltf_helper.MeshData.flatten(prims)
 
@@ -759,10 +757,15 @@ def setupActorAnimations(file, root_node_idx, bank):
     return dopesheet, anim_props
 
 
-def packActor(file, bank, texture_db):
+def packActor(file, bank, texture_db, override_scale_factor):
     for node_idx in file.scenes[file.scene].nodes:
 
         root_node = file.nodes[node_idx]
+
+        if override_scale_factor is not None:
+            scale_factor = override_scale_factor
+        else:
+            scale_factor = root_node.extras.get("scale_factor", 1.0)
 
         obj_id = root_node.extras.get("id", None)
         if obj_id is None:
@@ -772,7 +775,7 @@ def packActor(file, bank, texture_db):
         anim_dopesheet, anim_data = setupActorAnimations(file, node_idx, bank)
 
         # Pack mesh data
-        root_mesh = packNode(node_idx, bank, file, texture_db, anim_dopesheet)
+        root_mesh = packNode(node_idx, bank, file, texture_db, anim_dopesheet, scale_factor)
 
         root_actor_raw = objbank_writer.glover_objbank__object_root.build({
             "obj_id": obj_id,
