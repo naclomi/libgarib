@@ -3,6 +3,7 @@ import dataclasses
 import enum
 import json
 import math
+import numbers
 import struct
 import typing
 
@@ -22,6 +23,97 @@ from . import objproxy
 
 ###############################################
 # Bank packing utlities
+
+class Packable(enum.Enum):
+    display_list = enum.auto()
+    faces = enum.auto()
+    verts = enum.auto()
+    colors = enum.auto()
+    flags = enum.auto()
+    norms = enum.auto()
+    uvs = enum.auto()
+    textures = enum.auto()
+
+def strict_coerce_bool(value):
+    if value in (0, False):
+        return False
+    elif value in (1, True):
+        return True
+    return None
+
+def validate_base64(value):
+    try:
+        return base64.b64decode(value, validate=True)
+    except binascii.Error:
+        return None
+
+class MeshMetadata(gltf_helper.MetadataManager):
+    ROOT_KEY = "libgarib"
+    DEFAULTS = {
+        "id": None,
+        "scale_factor": 1.0,
+        "alpha": 0xFF,
+        "pack_list": [],
+        "ripple": 0,
+        "cloud": 0,
+        "sync_to_global_clock": 0,
+        "unlit": 0,
+        "render_mode": 0,
+        "render_mode_mask": 0,
+        "billboard": False,
+        "display_list": None,
+        "data_hash": 0,
+    }
+    VALIDATORS = {
+        "id": int,
+        "scale_factor": numbers.Number,
+        "alpha": lambda v: isinstance(v, int) and (0 <= v <= 255),
+        "pack_list": lambda v: all(e in Packable.__members__ for e in v),
+        "ripple": lambda v: strict_coerce_bool(v) is not None,
+        "cloud": lambda v: strict_coerce_bool(v) is not None,
+        "sync_to_global_clock": lambda v: strict_coerce_bool(v) is not None,
+        "unlit": lambda v: strict_coerce_bool(v) is not None,
+        "render_mode": int,
+        "render_mode_mask": int,
+        "billboard": lambda v: strict_coerce_bool(v) is not None,
+        "display_list": lambda v: validate_base64(v) is noe None,
+        "data_hash": int,
+    }
+    TRANSFORMERS = {
+        "pack_list": lambda v: list(Packable.__members__[e] for e in v),
+        "ripple": strict_coerce_bool,
+        "cloud": strict_coerce_bool,
+        "sync_to_global_clock": strict_coerce_bool,
+        "unlit": strict_coerce_bool,
+        "billboard": strict_coerce_bool,
+    }
+
+def json_to_array(txt, elem_type=None):
+    try:
+        res = json.loads(txt)
+        if not isinstance(res, list):
+            res = [res]
+        if elem_type is not None and not all(isinstance(e, elem_type) for e in res):
+            return None
+    except json.JSONDecodeError:
+        return None
+    return res
+
+class AnimMetadata(gltf_helper.MetadataManager):
+    ROOT_KEY = "libgarib"
+    DEFAULTS = {
+        "slot": None,
+        "playback_speed": 1.0,
+        # TODO: "anim_props"
+        "unused": 0,
+    }
+    VALIDATORS = {
+        "slot": lambda v: json_to_array(v, int) is not None,
+        "playback_speed": numbers.Number,
+    }
+    TRANSFORMERS = {
+        "slot": lambda v: json_to_array(v, int)
+    }
 
 class LinkableDirectory(linkable.LinkableBytes):
     def __init__(self):

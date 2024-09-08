@@ -29,6 +29,47 @@ def transposeMap(fn, array):
         results.append(fn(list(row[col_idx] for row in array)))
     return results
 
+class MetadataException(ValueError):
+    ...
+
+class MetadataManager(object):
+    ROOT_KEY = ""
+    DEFAULTS = {}
+    VALIDATORS = {}
+    TRANSFORMERS = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        for k in ("ROOT_KEY", "DEFAULTS", "VALIDATORS"):
+            if not hasattr(cls, k):
+                raise TypeError("Subclass must define class attribute '{:}'".format(k))
+
+    def __init__(self, new_extras, previous_metadata):
+        if previous_metadata is not None:
+            self.values = copy.deepcopy(self.values.copy())
+        if self.ROOT_KEY in new_extras:
+            for k,v in new_extras[self.ROOT_KEY]:
+                if k in self.DEFAULTS:
+                    if k in self.VALIDATORS:
+                        validator = self.VALIDATORS[k]
+                        if isinstance(validator, (type, tuple)):
+                            valid = isinstance(self.values[k], validator)
+                        else:
+                            valid = validator(v)
+                        if not valid:
+                            raise MetadataException("Bad metadata value for field '{:}': '{:}'".format(k, v))
+                    if k in self.TRANSFORMERS:
+                        self.values[k] = self.TRANSFORMERS[k](v)
+                    else:
+                        self.values[k] = copy.deepcopy(v)
+                else:
+                    raise MetadataException("Unrecognized metadata field '{:}'".format(k))
+
+    def __getitem__(self, key):
+        if key in self.values:
+            return self.values[key]
+        return self.DEFAULTS[key]
+
 @dataclass(frozen=True, order=True)
 class Material(object):
     texture_id: int = None
