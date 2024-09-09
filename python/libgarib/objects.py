@@ -44,76 +44,56 @@ def strict_coerce_bool(value):
 def validate_base64(value):
     try:
         return base64.b64decode(value, validate=True)
-    except binascii.Error:
+    except base64.binascii.Error:
         return None
 
 class MeshMetadata(gltf_helper.MetadataManager):
-    ROOT_KEY = "libgarib"
-    DEFAULTS = {
-        "id": None,
-        "scale_factor": 1.0,
-        "alpha": 0xFF,
-        "pack_list": [],
-        "ripple": 0,
-        "cloud": 0,
-        "sync_to_global_clock": 0,
-        "unlit": 0,
-        "render_mode": 0,
-        "render_mode_mask": 0,
-        "billboard": False,
-        "display_list": None,
-        "data_hash": 0,
-    }
-    VALIDATORS = {
-        "id": int,
-        "scale_factor": numbers.Number,
-        "alpha": lambda v: isinstance(v, int) and (0 <= v <= 255),
-        "pack_list": lambda v: all(e in Packable.__members__ for e in v),
-        "ripple": lambda v: strict_coerce_bool(v) is not None,
-        "cloud": lambda v: strict_coerce_bool(v) is not None,
-        "sync_to_global_clock": lambda v: strict_coerce_bool(v) is not None,
-        "unlit": lambda v: strict_coerce_bool(v) is not None,
-        "render_mode": int,
-        "render_mode_mask": int,
-        "billboard": lambda v: strict_coerce_bool(v) is not None,
-        "display_list": lambda v: validate_base64(v) is noe None,
-        "data_hash": int,
-    }
-    TRANSFORMERS = {
-        "pack_list": lambda v: list(Packable.__members__[e] for e in v),
-        "ripple": strict_coerce_bool,
-        "cloud": strict_coerce_bool,
-        "sync_to_global_clock": strict_coerce_bool,
-        "unlit": strict_coerce_bool,
-        "billboard": strict_coerce_bool,
-    }
-
-def json_to_array(txt, elem_type=None):
-    try:
-        res = json.loads(txt)
-        if not isinstance(res, list):
-            res = [res]
-        if elem_type is not None and not all(isinstance(e, elem_type) for e in res):
-            return None
-    except json.JSONDecodeError:
-        return None
-    return res
+    PREFIX = "lg_"
+    class FIELDS(enum.Enum):
+        id = gltf_helper.MetadataField(
+            None, int),
+        scale_factor = gltf_helper.MetadataField(
+            1.0, numbers.Number),
+        alpha = gltf_helper.MetadataField(
+            0xFF, lambda v: isinstance(v, int) and (0 <= v <= 255))
+        pack_list = gltf_helper.MetadataField(
+            [],
+            validator=lambda v: all(e in Packable.__members__ for e in v),
+            transformer=lambda v: list(Packable.__members__[e] for e in v))
+        ripple = gltf_helper.MetadataField(
+            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        cloud = gltf_helper.MetadataField(
+            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        sync_to_global_clock = gltf_helper.MetadataField(
+            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        unlit = gltf_helper.MetadataField(
+            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        render_mode = gltf_helper.MetadataField(
+            0, int)
+        render_mode_mask = gltf_helper.MetadataField(
+            0xFFFF, int)
+        billboard = gltf_helper.MetadataField(
+            False, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        display_list = gltf_helper.MetadataField(
+            None, lambda v: validate_base64(v) is not None)
+        data_hash = gltf_helper.MetadataField(
+            0, int)
+        sprite_idx = gltf_helper.MetadataField(
+            0, int)
+        animation_props = gltf_helper.MetadataField(
+            None, dict) # TODO: better validation
 
 class AnimMetadata(gltf_helper.MetadataManager):
-    ROOT_KEY = "libgarib"
-    DEFAULTS = {
-        "slot": None,
-        "playback_speed": 1.0,
-        # TODO: "anim_props"
-        "unused": 0,
-    }
-    VALIDATORS = {
-        "slot": lambda v: json_to_array(v, int) is not None,
-        "playback_speed": numbers.Number,
-    }
-    TRANSFORMERS = {
-        "slot": lambda v: json_to_array(v, int)
-    }
+    PREFIX = "lg_"
+    class FIELDS(enum.Enum):
+        slot = gltf_helper.MetadataField(
+            None,
+            validator=lambda v: isinstance(v, int) or (isinstance(v, list) and all(isinstance(e, int) for e in v)),
+            transformer=lambda v: [v] if isinstance(v, int) else v)
+        playback_speed = gltf_helper.MetadataField(
+            1.0, numbers.Number)
+        unused = gltf_helper.MetadataField(
+            0) # TODO: what is this for?
 
 class LinkableDirectory(linkable.LinkableBytes):
     def __init__(self):
@@ -340,15 +320,7 @@ def packSprite(sprite_idx, file, texture_db, scale_factor):
 
 DEFAULT_PACK_LIST = ["display_list", "faces", "verts", "norms"]
 
-def updatePackList(obj, pack_list):
-    try:
-        new_list = json.loads(obj.extras["pack_list"])
-        pack_list.clear()
-        pack_list += new_list
-    except:
-        pass
-
-def packGeo(node_idx, bank, file, vertex_cache, pack_list):    
+def packGeo(node_idx, bank, file, vertex_cache, pack_list):
     node = file.nodes[node_idx]
 
     geo_root = LinkableGeometry()
@@ -390,18 +362,18 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
         else:
             indices = vertex_cache.indices
 
-        if "faces" in pack_list:
+        if Packable.faces in pack_list:
             geo_root.faces = linkable.LinkableBytes(data=indices.astype(">H").tobytes())
             setPtr("faces_ptr", geo_root.faces)
-        if "verts" in pack_list:
+        if Packable.verts in pack_list:
             geo_root.verts = linkable.LinkableBytes(data=vertex_cache.position.astype(">f").tobytes())
             setPtr("vertices_ptr", geo_root.verts)
-        if "colors" in pack_list:
+        if Packable.colors in pack_list:
             ubyte_values = (vertex_cache.color*255).astype("B")
             raw_colors = b"".join(struct.pack("4B", *color[:3], 0) for color in ubyte_values)
             geo_root.vertex_cn = linkable.LinkableBytes(data=raw_colors)
             setPtr("vertex_cn_ptr", geo_root.vertex_cn)
-        if "norms" in pack_list:
+        if Packable.norms in pack_list:
             # Have to recalculate face norms
             raw_norms = []
             positions = vertex_cache.position
@@ -427,7 +399,7 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
 
             geo_root.face_cn = linkable.LinkableBytes(data=b"".join(raw_norms))
             setPtr("face_cn_ptr", geo_root.face_cn)   
-        if "flags" in pack_list:
+        if Packable.flags in pack_list:
             raw_attr = []
             flags = vertex_cache.flags
             for base_idx in range(0, vertex_cache.idx_count, 3):
@@ -439,8 +411,8 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
                     print("WARNING: Inconsistent vertex flags in {:}".format(node.name))
             geo_root.flags = linkable.LinkableBytes(data=b"".join(raw_attr))
             setPtr("flags_ptr", geo_root.flags)
-        if "uvs" in pack_list or "texture_ids" in pack_list:
-            if "textures" in pack_list:
+        if Packable.uvs in pack_list or Packable.textures in pack_list:
+            if Packable.textures in pack_list:
                 raw_attr = []
                 for face_idx in range(vertex_cache.face_count):
                     t = vertex_cache.material[face_idx].texture_id
@@ -448,7 +420,7 @@ def packGeo(node_idx, bank, file, vertex_cache, pack_list):
                 geo_root.texture_ids = linkable.LinkableBytes(data=b"".join(raw_attr))
                 setPtr("texture_ids_ptr", geo_root.texture_ids)
 
-            if "uvs" in pack_list:
+            if Packable.uvs in pack_list:
                 uvs = vertex_cache.uv_scaled.copy()
 
                 # Convert to 11.5 format
@@ -489,11 +461,72 @@ def packAnimChannel(channel_data, bank):
     bank.include(keyframes)
     return keyframes
 
-def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
+def extractRenderMode(node, file, parent_extras):
+    if node.mesh is None:
+        return 0
+
+    gltf_mesh = file.meshes[node.mesh]
+    extras = MeshMetadata(gltf_mesh.extras, parent_extras)
+
+    render_mode = None
+
+    for prims in gltf_mesh.primitives:
+        if prims.material is None:
+            xlu = False
+            masked = False
+            unlit = False
+            material_extras = extras
+        else:
+            material = file.materials[prims.material]
+            material_extras = MeshMetadata(material.extras, extras)
+            ripple = material_extras[MeshMetadata.FIELDS.ripple]
+            xlu = material.alphaMode == gltf.BLEND
+            masked = material.alphaMode == gltf.MASK
+            unlit = ("KHR_materials_unlit" in material.extensions or
+                     int(material.extras.get("unlit", "0")) == 1)
+    
+        material_render_mode = RenderMode()
+        material_render_mode.ripple = material_extras[MeshMetadata.FIELDS.ripple]
+        material_render_mode.sync_to_global_clock = material_extras[MeshMetadata.FIELDS.sync_to_global_clock]
+        material_render_mode.cloud = material_extras[MeshMetadata.FIELDS.cloud]
+        material_render_mode.xlu = xlu
+        material_render_mode.masked = masked
+        material_render_mode.unlit = unlit
+        if MeshMetadata.FIELDS.render_mode in material_extras:
+            material_render_mode.bitbash(
+                material_extras[MeshMetadata.FIELDS.render_mode],
+                material_extras[MeshMetadata.FIELDS.render_mode_mask]
+            )
+
+
+        if render_mode is None:
+            render_mode = material_render_mode
+        elif material_render_mode != render_mode:
+            print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
+
+    pack_list = extras[MeshMetadata.FIELDS.pack_list]
+    if Packable.display_list not in pack_list:
+        render_mode.per_vertex_cn = render_mode.unlit
+        if render_mode.per_vertex_cn and Packable.colors not in pack_list:
+            print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
+        elif not render_mode.per_vertex_cn and Packable.norms not in pack_list:
+            print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
+
+    return render_mode.toInt()
+
+def extractNodeExtras(node, file, parent_extras):
+    extras = MeshMetadata(node.extras, parent_extras)
+    if node.mesh is not None:
+        mesh = file.meshes[node.mesh]
+        extras = MeshMetadata(mesh.extras, extras)
+    return extras
+
+def packNode(node_idx, bank, file, texture_db, dopesheet, override_scale_factor, parent_extras):
     node = file.nodes[node_idx]
 
-    pack_list = DEFAULT_PACK_LIST[:]
-    updatePackList(node, pack_list)
+    extras = extractNodeExtras(node, file, parent_extras)
+
+    scale_factor = override_scale_factor or extras[MeshMetadata.FIELDS.scale_factor]
 
     pointers = []
 
@@ -505,7 +538,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         if gltf_helper.gltfNodeIsBillboard(child_idx, file):
             sprite_nodes.append(child_idx)
         else:
-            children.append(packNode(child_idx, bank, file, texture_db, dopesheet, scale_factor))
+            children.append(packNode(child_idx, bank, file, texture_db, dopesheet, override_scale_factor, extras))
             if len(children) > 1:
                 children[-2].pointers.append(linkable.LinkablePointer(
                     offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "sibling_ptr"),
@@ -518,10 +551,10 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         sprite_alpha = None
         for sprite_idx in sprite_nodes:
             sprite_node = file.nodes[sprite_idx]
-            if "alpha" in sprite_node.extras:
+            if MeshMetadata.FIELDS.alpha in extras:
                 if sprite_alpha is None:
-                    sprite_alpha = sprite_node.extras["alpha"]
-                elif sprite_alpha != sprite_node.extras["alpha"]:
+                    sprite_alpha = extras[MeshMetadata.FIELDS.alpha]
+                elif sprite_alpha != extras[MeshMetadata.FIELDS.alpha]:
                     print("WARNING: Inconsistent sprite alphas on {:}, only first will be used".format(node.name))
             raw_sprites.append(packSprite(sprite_idx, file, texture_db, scale_factor))
         if sprite_alpha is None:
@@ -539,61 +572,9 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
 
     # Set up mesh metadata
     mesh_id = hash_str.hash_str(node.name)
-    
-    
-    if node.mesh is not None:
-        gltf_mesh = file.meshes[node.mesh]
-
-        mesh_pack_list = pack_list[:]
-        updatePackList(gltf_mesh, mesh_pack_list)
-
-
-        render_mode = RenderMode()
-        render_mode.ripple = bool(gltf_mesh.extras.get("ripple", 0))
-        render_mode.sync_to_global_clock = bool(gltf_mesh.extras.get("sync_to_global_clock", 0))
-        render_mode.cloud = bool(gltf_mesh.extras.get("cloud", 0))
-
-        first_material = True
-        for prims in gltf_mesh.primitives:
-            if prims.material is None:
-                xlu = False
-                masked = False
-                unlit = False
-            else:
-                material = file.materials[prims.material]
-                xlu = material.alphaMode == gltf.BLEND
-                masked = material.alphaMode == gltf.MASK
-                unlit = ("KHR_materials_unlit" in material.extensions or
-                         int(material.extras.get("unlit", "0")) == 1)
-            if first_material:
-                render_mode.xlu = xlu
-                render_mode.masked = masked
-                render_mode.unlit = unlit
-                first_material = False
-            else:
-                if (render_mode.xlu != xlu or
-                    render_mode.masked != masked or
-                    render_mode.unlit != unlit):
-                    print("WARNING: Inconsistent render mode across materials in node {:}".format(node.name))
-
-        if "display_list" not in mesh_pack_list:
-            render_mode.per_vertex_cn = render_mode.unlit
-            if render_mode.per_vertex_cn and "colors" not in mesh_pack_list:
-                print("WARNING: Unlit dynamic meshes need vertex colors in pack list, game may crash")
-            elif not render_mode.per_vertex_cn and "norms" not in mesh_pack_list:
-                print("WARNING: Lit dynamic meshes need normals in pack list, game may crash")
-
-        render_mode = render_mode.toInt()
-        if "render_mode" in gltf_mesh.extras:
-            render_misc = gltf_mesh.extras["render_mode"]
-            render_misc_mask = gltf_mesh.extras.get("render_mode_mask", 0xFFFF)
-            render_misc &= render_misc_mask
-            render_mode = (render_mode & ~render_misc_mask) | render_misc
-    else:
-        render_mode = 0
+    render_mode = extractRenderMode(node, file, extras)
 
     # Pack mesh
-
     scale_keys = dopesheet["scale"].get(node_idx,
         animation.vec3ToNeutralFrame(node.scale or (1,1,1)))
     translation_keys = dopesheet["translation"].get(node_idx,
@@ -608,7 +589,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         "name": node.name[:8].ljust(8, "\0"),
         # TODO: figure out alpha
         "mesh_alpha": 0, #node.extras.get("alpha", 0xFF),
-        "sprite_alpha": node.extras.get("alpha", 0xFF), #sprite_alpha,
+        "sprite_alpha": extras[MeshMetadata.FIELDS.alpha], #sprite_alpha,
         "num_scale": len(scale_keys[0]),
         "num_translation": len(translation_keys[0]),
         "num_rotation": len(rotation_keys[0]),
@@ -651,7 +632,6 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
     if node.mesh is not None:
         # Pack geo
         mesh = file.meshes[node.mesh]
-        updatePackList(mesh, pack_list)
 
         prims = [gltf_helper.MeshData().loadFromGltf(p, file, texture_db) for p in mesh.primitives]
 
@@ -663,7 +643,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
 
         vertex_cache = gltf_helper.MeshData.flatten(prims)
 
-        geo_root = packGeo(node_idx, bank, file, vertex_cache, pack_list)
+        geo_root = packGeo(node_idx, bank, file, vertex_cache, extras[MeshMetadata.FIELDS.pack_list])
         pointers.append(linkable.LinkablePointer(
             offset = getConstructFieldOffset(objbank_writer.glover_objbank__mesh, "geometry_ptr"),
             target = geo_root,
@@ -671,7 +651,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
         ))
 
         # Pack DL
-        if "display_list" in pack_list:
+        if Packable.display_list in extras[MeshMetadata.FIELDS.pack_list]:
             if RenderMode().fromInt(render_mode).ripple:
                 print("WARNING: Static display list will take precedence over water ripple effect in node {:}".format(node.name))
             display_list, dl_start_offset = display_lists.gltfNodeToDisplayList(node_idx, RenderMode().fromInt(render_mode), bank, file, texture_db, vertex_cache)
@@ -694,9 +674,8 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, scale_factor):
     return linkable_mesh
 
 
-def actorAnimationMetadataFromJson(props_json, num_defs):
-    if props_json is not None:
-        p = json.loads(props_json)
+def actorAnimationMetadataFromJson(p, num_defs):
+    if p is not None:
         raw_props = objbank_writer.glover_objbank__animation.build({
             "num_animation_definitions": num_defs,
             "current_animation_idx": p["starting_props"]["idx"],
@@ -747,6 +726,7 @@ def actorAnimationMetadataToJson(obj):
 
 def setupActorAnimations(file, root_node_idx, bank):
     root_node = file.nodes[root_node_idx]
+    extras = extractNodeExtras(root_node, file, None)
 
     # Find relevant animations
     all_nodes = gltf_helper.getAllNodesInTree(file, root_node_idx)
@@ -769,12 +749,11 @@ def setupActorAnimations(file, root_node_idx, bank):
     }
 
     for gltf_animation in relevant_animations:
-        if "slot" not in gltf_animation.extras:
+        animation_extras = AnimMetadata(gltf_animation.extras, None)
+        if AnimMetadata.FIELDS.slot not in animation_extras:
             print("WARNING: Not packing animation '{:}' as it has no slot assignment".format(animation.name))
             continue
-        slots = json.loads(gltf_animation.extras["slot"])
-        if not isinstance(slots, list):
-            slots = [slots]
+        slots = animation_extras[AnimMetadata.FIELDS.slot]
 
         anim_end = 0
         for channel in gltf_animation:
@@ -785,7 +764,7 @@ def setupActorAnimations(file, root_node_idx, bank):
             ##########
             # TODO: automate
             scale_value = 1.0
-            playback_speed = gltf_animation.extras.get("playback_speed", 1.0)
+            playback_speed = animation_extras[AnimMetadata.FIELDS.playback_speed]
             ##########
 
             key_times *= scale_value
@@ -823,7 +802,7 @@ def setupActorAnimations(file, root_node_idx, bank):
         if raw_defs[idx] is None:
             raw_defs[idx] = default_anim_def
 
-    anim_props = actorAnimationMetadataFromJson(root_node.extras.get("animation_props"), len(raw_defs))
+    anim_props = actorAnimationMetadataFromJson(extras[MeshMetadata.FIELDS.animation_props], len(raw_defs))
     bank.include(anim_props)
 
     if len(raw_defs) > 0:
@@ -842,13 +821,11 @@ def packActor(file, bank, texture_db, override_scale_factor):
     for node_idx in file.scenes[file.scene].nodes:
 
         root_node = file.nodes[node_idx]
+        extras = extractNodeExtras(root_node, file, None)
+    
+        scale_factor = override_scale_factor or extras[MeshMetadata.FIELDS.scale_factor]
 
-        if override_scale_factor is not None:
-            scale_factor = override_scale_factor
-        else:
-            scale_factor = root_node.extras.get("scale_factor", 1.0)
-
-        obj_id = root_node.extras.get("id", None)
+        obj_id = extras[MeshMetadata.FIELDS.id]
         if obj_id is None:
             obj_id = hash_str.hash_str(root_node.name)
 
@@ -856,7 +833,7 @@ def packActor(file, bank, texture_db, override_scale_factor):
         anim_dopesheet, anim_data = setupActorAnimations(file, node_idx, bank)
 
         # Pack mesh data
-        root_mesh = packNode(node_idx, bank, file, texture_db, anim_dopesheet, scale_factor)
+        root_mesh = packNode(node_idx, bank, file, texture_db, anim_dopesheet, override_scale_factor, extras)
 
         root_actor_raw = objbank_writer.glover_objbank__object_root.build({
             "obj_id": obj_id,
@@ -1151,15 +1128,15 @@ def actor_to_gltf(obj_root, texture_db, scale_factor):
     for anim_idx in exported_anims.values():
         slots = file.animations[anim_idx].extras["slot"]
         if len(slots) == 1:
-            file.animations[anim_idx].extras["slot"] = str(slots[0])
+            file.animations[anim_idx].extras["slot"] = slots[0]
         else:
-            file.animations[anim_idx].extras["slot"] = json.dumps(slots)
+            file.animations[anim_idx].extras["slot"] = slots
 
     if len(exported_anims) > 0:
         global_timeline_to_gltf(obj_root.mesh, file, data)
 
     animation_props = actorAnimationMetadataToJson(obj_root)
-    file.nodes[0].extras["animation_props"] = json.dumps(animation_props)
+    file.nodes[0].extras["animation_props"] = animation_props
 
     # Finalize binary data
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
@@ -1270,7 +1247,15 @@ def mesh_geo_to_prims(geo, render_mode, texture_db, scale_factor):
     return primitives
 
 def should_pack_geo(pack_list):
-    return len(set(("faces", "verts", "colors", "uvs", "norms", "flags", "textures")).intersection(set(pack_list))) > 0
+    return len(set((
+        Packable.faces,
+        Packable.verts,
+        Packable.colors,
+        Packable.uvs,
+        Packable.norms,
+        Packable.flags,
+        Packable.textures
+    )).intersection(set(pack_list))) > 0
 
 def mesh_to_pack_list(mesh):
     pack_list = []
@@ -1313,6 +1298,12 @@ class RenderMode(object):
     def __init__(self, mode=0):
         self.fromInt(mode)
 
+    def bitbash(self, bits, mask):
+        val = self.toInt()
+        val &= ~mask
+        val |= (bits & mask)
+        self.fromInt(val)
+
     def fromInt(self, mode):
         for name, pos in self.FLAGS:
             setattr(self, name, (mode & pos) != 0)
@@ -1326,6 +1317,9 @@ class RenderMode(object):
         d = {name: getattr(self, name) for name, _ in self.FLAGS}
         d["misc"] = self.misc
         return d
+
+    def __eq__(self, other):
+        return self.toInt() == other.toInt()
 
     def __str__(self):
         return str(self.toDict())
@@ -1362,7 +1356,7 @@ def mesh_to_gltf(mesh, file, gltf_parent, data, texture_db, scale_factor):
 
     if len(primitives) > 0:
         gltf_mesh = gltf.Mesh(name=name, extras={
-            "pack_list": json.dumps(pack_list),
+            "pack_list": pack_list,
         })
         if render_mode.ripple:
             gltf_mesh.extras["ripple"] = 1

@@ -1,6 +1,7 @@
 import collections
 import copy
 from dataclasses import dataclass, replace
+import typing
 import enum
 import hashlib
 import json
@@ -32,43 +33,53 @@ def transposeMap(fn, array):
 class MetadataException(ValueError):
     ...
 
+@dataclass(frozen=True, order=True)
+class MetadataField(object):
+    default: typing.Any
+    validator: typing.Union[typing.Callable, type, tuple, None] = None
+    transformer: typing.Union[typing.Callable, None] = None
+
+
 class MetadataManager(object):
-    ROOT_KEY = ""
-    DEFAULTS = {}
-    VALIDATORS = {}
-    TRANSFORMERS = {}
+    PREFIX = ""
+    FIELDS = enum.Enum
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        for k in ("ROOT_KEY", "DEFAULTS", "VALIDATORS"):
+        for k in ("PREFIX", "DEFAULTS", "VALIDATORS"):
             if not hasattr(cls, k):
                 raise TypeError("Subclass must define class attribute '{:}'".format(k))
 
     def __init__(self, new_extras, previous_metadata):
         if previous_metadata is not None:
             self.values = copy.deepcopy(self.values.copy())
-        if self.ROOT_KEY in new_extras:
-            for k,v in new_extras[self.ROOT_KEY]:
-                if k in self.DEFAULTS:
-                    if k in self.VALIDATORS:
-                        validator = self.VALIDATORS[k]
-                        if isinstance(validator, (type, tuple)):
-                            valid = isinstance(self.values[k], validator)
-                        else:
-                            valid = validator(v)
-                        if not valid:
-                            raise MetadataException("Bad metadata value for field '{:}': '{:}'".format(k, v))
-                    if k in self.TRANSFORMERS:
-                        self.values[k] = self.TRANSFORMERS[k](v)
+        for k,v in new_extras.items():
+            if not k.startswith(self.PREFIX):
+                continue
+            k = k[len(self.PREFIX):]
+            if k in self.FIELDS.__members__:
+                field = self.FIELDS.__members__[k]
+                if field.validator is not None:
+                    if isinstance(field.validator, (type, tuple)):
+                        valid = isinstance(self.values[k], field.validator)
                     else:
-                        self.values[k] = copy.deepcopy(v)
+                        valid = field.validator(v)
+                    if not valid:
+                        raise MetadataException("Bad metadata value for field '{:}': '{:}'".format(k, v))
+                if field.transformer is not None:
+                    self.values[k] = field.transformer(v)
                 else:
-                    raise MetadataException("Unrecognized metadata field '{:}'".format(k))
+                    self.values[k] = copy.deepcopy(v)
+            else:
+                raise MetadataException("Unrecognized metadata field '{:}'".format(k))
 
-    def __getitem__(self, key):
-        if key in self.values:
-            return self.values[key]
-        return self.DEFAULTS[key]
+    def __contains__(self, field):
+        return field.name in self.values
+
+    def __getitem__(self, field):
+        if field.name in self.values:
+            return self.values[field.name]
+        return field.default
 
 @dataclass(frozen=True, order=True)
 class Material(object):
