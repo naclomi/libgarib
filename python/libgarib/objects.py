@@ -50,38 +50,24 @@ def validate_base64(value):
 class MeshMetadata(gltf_helper.MetadataManager):
     PREFIX = "lg_"
     class FIELDS(enum.Enum):
-        id = gltf_helper.MetadataField(
-            None, int),
-        scale_factor = gltf_helper.MetadataField(
-            1.0, numbers.Number),
-        alpha = gltf_helper.MetadataField(
-            0xFF, lambda v: isinstance(v, int) and (0 <= v <= 255))
+        id = gltf_helper.MetadataField(None, int)
+        scale_factor = gltf_helper.MetadataField(1.0, numbers.Number)
+        alpha = gltf_helper.MetadataField(0xFF, lambda v: isinstance(v, int) and (0 <= v <= 255))
         pack_list = gltf_helper.MetadataField(
-            [],
+            [Packable.display_list, Packable.faces, Packable.verts, Packable.norms],
             validator=lambda v: all(e in Packable.__members__ for e in v),
             transformer=lambda v: list(Packable.__members__[e] for e in v))
-        ripple = gltf_helper.MetadataField(
-            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
-        cloud = gltf_helper.MetadataField(
-            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
-        sync_to_global_clock = gltf_helper.MetadataField(
-            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
-        unlit = gltf_helper.MetadataField(
-            0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
-        render_mode = gltf_helper.MetadataField(
-            0, int)
-        render_mode_mask = gltf_helper.MetadataField(
-            0xFFFF, int)
-        billboard = gltf_helper.MetadataField(
-            False, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
-        display_list = gltf_helper.MetadataField(
-            None, lambda v: validate_base64(v) is not None)
-        data_hash = gltf_helper.MetadataField(
-            0, int)
-        sprite_idx = gltf_helper.MetadataField(
-            0, int)
-        animation_props = gltf_helper.MetadataField(
-            None, dict) # TODO: better validation
+        ripple = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        cloud = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        sync_to_global_clock = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        unlit = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        render_mode = gltf_helper.MetadataField(0, int)
+        render_mode_mask = gltf_helper.MetadataField(0xFFFF, int)
+        billboard = gltf_helper.MetadataField(False, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
+        display_list = gltf_helper.MetadataField(None, lambda v: validate_base64(v) is not None)
+        data_hash = gltf_helper.MetadataField(0, int)
+        sprite_idx = gltf_helper.MetadataField(0, int)
+        animation_props = gltf_helper.MetadataField(None, dict) # TODO: better validation
 
 class AnimMetadata(gltf_helper.MetadataManager):
     PREFIX = "lg_"
@@ -90,10 +76,8 @@ class AnimMetadata(gltf_helper.MetadataManager):
             None,
             validator=lambda v: isinstance(v, int) or (isinstance(v, list) and all(isinstance(e, int) for e in v)),
             transformer=lambda v: [v] if isinstance(v, int) else v)
-        playback_speed = gltf_helper.MetadataField(
-            1.0, numbers.Number)
-        unused = gltf_helper.MetadataField(
-            0) # TODO: what is this for?
+        playback_speed = gltf_helper.MetadataField(1.0, numbers.Number)
+        unused = gltf_helper.MetadataField(0) # TODO: what is this for?
 
 class LinkableDirectory(linkable.LinkableBytes):
     def __init__(self):
@@ -317,8 +301,6 @@ def packSprite(sprite_idx, file, texture_db, scale_factor):
         "u6": 0, # TODO
         "flags": 0, # TODO
     })
-
-DEFAULT_PACK_LIST = ["display_list", "faces", "verts", "norms"]
 
 def packGeo(node_idx, bank, file, vertex_cache, pack_list):
     node = file.nodes[node_idx]

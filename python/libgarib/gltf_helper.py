@@ -46,13 +46,15 @@ class MetadataManager(object):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        for k in ("PREFIX", "DEFAULTS", "VALIDATORS"):
+        for k in ("PREFIX", "FIELDS"):
             if not hasattr(cls, k):
                 raise TypeError("Subclass must define class attribute '{:}'".format(k))
 
     def __init__(self, new_extras, previous_metadata):
         if previous_metadata is not None:
-            self.values = copy.deepcopy(self.values.copy())
+            self.values = copy.deepcopy(previous_metadata.values.copy())
+        else:
+            self.values = {}
         for k,v in new_extras.items():
             if not k.startswith(self.PREFIX):
                 continue
@@ -79,7 +81,7 @@ class MetadataManager(object):
     def __getitem__(self, field):
         if field.name in self.values:
             return self.values[field.name]
-        return field.default
+        return field.value.default
 
 @dataclass(frozen=True, order=True)
 class Material(object):
