@@ -63,17 +63,7 @@ class MetadataManager(object):
             k = k[len(self.PREFIX):]
             if k in self.FIELDS.__members__:
                 field = self.FIELDS.__members__[k]
-                if field.validator is not None:
-                    if isinstance(field.validator, (type, tuple)):
-                        valid = isinstance(self.values[k], field.validator)
-                    else:
-                        valid = field.validator(v)
-                    if not valid:
-                        raise MetadataException("Bad metadata value for field '{:}': '{:}'".format(k, v))
-                if field.transformer is not None:
-                    self.values[k] = field.transformer(v)
-                else:
-                    self.values[k] = copy.deepcopy(v)
+                self[field] = v
             else:
                 raise MetadataException("Unrecognized metadata field '{:}'".format(k))
 
@@ -81,7 +71,15 @@ class MetadataManager(object):
         return type(self)(new_extras, self)
 
     def to_dict(self):
-        ... TODO
+        result = {}
+        for k, v in self.values.items():
+            if self.parent is not None and self.parent[k] == v:
+                # Skip values we'd inherit anyway
+                continue
+            if k.value.inv_transformer is not None:
+                v = k.value.inv_transformer(v)
+            result[self.PREFIX + k.name] = v
+        return result
 
     def __contains__(self, field):
         return field.name in self.values
@@ -92,10 +90,19 @@ class MetadataManager(object):
         return field.value.default
 
     def __setitem__(self, field, value):
-        if field.name not in self.FIELDS:
-            raise KeyError(field)
-        if field.value.inv_transformer is not None:
-            value = field.value.inv_transformer(value)
+        if not isinstance(field, self.FIELDS):
+            raise MetadataException("Unrecognized metadata field '{:}'".format(field.name))
+        if field.value.validator is not None:
+            if isinstance(field.validator, (type, tuple)):
+                valid = isinstance(value, field.value.validator)
+            else:
+                valid = field.value.validator(value)
+            if not valid:
+                raise MetadataException("Bad metadata value for field '{:}': '{:}'".format(field.name, value))
+        if field.value.transformer is not None:
+            value = field.value.transformer(value)
+        else:
+            value = copy.deepcopy(value)
         self.values[field.name] = value
 
 @dataclass(frozen=True, order=True)
