@@ -53,10 +53,7 @@ class MetadataManager(object):
 
     def __init__(self, new_extras={}, parent=None):
         self.parent = parent
-        if parent is not None:
-            self.values = copy.deepcopy(parent.values.copy())
-        else:
-            self.values = {}
+        self.values = {}
         for k,v in new_extras.items():
             if not k.startswith(self.PREFIX):
                 continue
@@ -82,11 +79,13 @@ class MetadataManager(object):
         return result
 
     def __contains__(self, field):
-        return field.name in self.values
+        return field.name in self.values or (self.parent is not None and field.name in self.parent)
 
     def __getitem__(self, field):
         if field.name in self.values:
             return self.values[field.name]
+        elif field.name in self.parent:
+            return self.parent[field.name]
         return field.value.default
 
     def __setitem__(self, field, value):
