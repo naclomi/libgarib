@@ -38,6 +38,7 @@ class MetadataField(object):
     default: typing.Any
     validator: typing.Union[typing.Callable, type, tuple, None] = None
     transformer: typing.Union[typing.Callable, None] = None
+    inv_transformer: typing.Union[typing.Callable, None] = None
 
 
 class MetadataManager(object):
@@ -50,9 +51,10 @@ class MetadataManager(object):
             if not hasattr(cls, k):
                 raise TypeError("Subclass must define class attribute '{:}'".format(k))
 
-    def __init__(self, new_extras, previous_metadata):
-        if previous_metadata is not None:
-            self.values = copy.deepcopy(previous_metadata.values.copy())
+    def __init__(self, new_extras={}, parent=None):
+        self.parent = parent
+        if parent is not None:
+            self.values = copy.deepcopy(parent.values.copy())
         else:
             self.values = {}
         for k,v in new_extras.items():
@@ -75,6 +77,12 @@ class MetadataManager(object):
             else:
                 raise MetadataException("Unrecognized metadata field '{:}'".format(k))
 
+    def derive(self, new_extras):
+        return type(self)(new_extras, self)
+
+    def to_dict(self):
+        ... TODO
+
     def __contains__(self, field):
         return field.name in self.values
 
@@ -82,6 +90,13 @@ class MetadataManager(object):
         if field.name in self.values:
             return self.values[field.name]
         return field.value.default
+
+    def __setitem__(self, field, value):
+        if field.name not in self.FIELDS:
+            raise KeyError(field)
+        if field.value.inv_transformer is not None:
+            value = field.value.inv_transformer(value)
+        self.values[field.name] = value
 
 @dataclass(frozen=True, order=True)
 class Material(object):
@@ -773,10 +788,6 @@ def addAnimationDataToGLTF(mesh, gltf_animation, clip, file, data, scale_factor)
         addChannel(mesh.rotation, gltf.VEC4, "rotation", 1)
     if len(mesh.scale) > 1:
         addChannel(mesh.scale, gltf.VEC3, "scale", 1)
-
-def gltfNodeIsBillboard(node_idx, file):
-    mesh = file.meshes[file.nodes[node_idx].mesh]
-    return mesh.extras.get("billboard", False)
 
 def addBillboardSpriteToGLTF(sprite, idx, alpha, parent_node, file, data, scale_factor):
     name = "{:}_sprite_{:}".format(parent_node.name, idx)

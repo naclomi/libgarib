@@ -56,7 +56,8 @@ class MeshMetadata(gltf_helper.MetadataManager):
         pack_list = gltf_helper.MetadataField(
             [Packable.display_list, Packable.faces, Packable.verts, Packable.norms],
             validator=lambda v: all(e in Packable.__members__ for e in v),
-            transformer=lambda v: list(Packable.__members__[e] for e in v))
+            transformer=lambda v: list(Packable.__members__[e] for e in v),
+            inv_transformer=lambda v: list(e.name for e in v))
         ripple = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
         cloud = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
         sync_to_global_clock = gltf_helper.MetadataField(0, lambda v: strict_coerce_bool(v) is not None, strict_coerce_bool)
@@ -75,7 +76,8 @@ class AnimMetadata(gltf_helper.MetadataManager):
         slot = gltf_helper.MetadataField(
             None,
             validator=lambda v: isinstance(v, int) or (isinstance(v, list) and all(isinstance(e, int) for e in v)),
-            transformer=lambda v: [v] if isinstance(v, int) else v)
+            transformer=lambda v: [v] if isinstance(v, int) else v,
+            inv_transformer=lambda v: v[0] if hasattr(v, "__len__") and len(v) == 1 else v)
         playback_speed = gltf_helper.MetadataField(1.0, numbers.Number)
         unused = gltf_helper.MetadataField(0) # TODO: what is this for?
 
@@ -443,13 +445,11 @@ def packAnimChannel(channel_data, bank):
     bank.include(keyframes)
     return keyframes
 
-def extractRenderMode(node, file, parent_extras):
+def extractRenderMode(node, file, extras):
     if node.mesh is None:
         return 0
 
     gltf_mesh = file.meshes[node.mesh]
-    extras = MeshMetadata(gltf_mesh.extras, parent_extras)
-
     render_mode = None
 
     for prims in gltf_mesh.primitives:
@@ -460,7 +460,7 @@ def extractRenderMode(node, file, parent_extras):
             material_extras = extras
         else:
             material = file.materials[prims.material]
-            material_extras = MeshMetadata(material.extras, extras)
+            material_extras = extras.derive(material.extras)
             ripple = material_extras[MeshMetadata.FIELDS.ripple]
             xlu = material.alphaMode == gltf.BLEND
             masked = material.alphaMode == gltf.MASK
@@ -496,11 +496,14 @@ def extractRenderMode(node, file, parent_extras):
 
     return render_mode.toInt()
 
-def extractNodeExtras(node, file, parent_extras):
-    extras = MeshMetadata(node.extras, parent_extras)
+def extractNodeExtras(node, file, parent_extras=None):
+    if parent_extras is None:
+        extras = MeshMetadata(node.extras)
+    else:
+        extras = parent_extras.derive(node.extras)
     if node.mesh is not None:
         mesh = file.meshes[node.mesh]
-        extras = MeshMetadata(mesh.extras, extras)
+        extras = extras.derive(mesh.extras)
     return extras
 
 def packNode(node_idx, bank, file, texture_db, dopesheet, override_scale_factor, parent_extras):
@@ -517,7 +520,7 @@ def packNode(node_idx, bank, file, texture_db, dopesheet, override_scale_factor,
     children = []
     sprite_nodes = []
     for child_idx in node.children:
-        if gltf_helper.gltfNodeIsBillboard(child_idx, file):
+        if extras[MeshMetadata.FIELDS.billboard]:
             sprite_nodes.append(child_idx)
         else:
             children.append(packNode(child_idx, bank, file, texture_db, dopesheet, override_scale_factor, extras))
@@ -803,7 +806,7 @@ def packActor(file, bank, texture_db, override_scale_factor):
     for node_idx in file.scenes[file.scene].nodes:
 
         root_node = file.nodes[node_idx]
-        extras = extractNodeExtras(root_node, file, None)
+        extras = extractNodeExtras(root_node, file)
     
         scale_factor = override_scale_factor or extras[MeshMetadata.FIELDS.scale_factor]
 
@@ -1045,7 +1048,7 @@ def actor_to_gltf(obj_root, texture_db, scale_factor):
         name="0x{:08X}".format(obj_root.obj_id),
         extras={
             "_root_node": True,
-            "scale_factor": scale_factor
+            MeshMetadata.FIELDS.scale_factor.name: scale_factor
         }
     )
 
@@ -1072,7 +1075,8 @@ def actor_to_gltf(obj_root, texture_db, scale_factor):
     skeletal_nodes = []
     billboard_nodes = []
     for idx, node in enumerate(file.nodes):
-        is_billboard = file.meshes[node.mesh].extras.get("billboard", False) if node.mesh is not None else False
+        extras = extractNodeExtras(node, file)
+        is_billboard = extras[MeshMetadata.FIELDS.billboard]
         if node.mesh is None or not is_billboard:
             # Only include non-billboard nodes in skin
             skeletal_nodes.append(idx)
@@ -1103,22 +1107,22 @@ def actor_to_gltf(obj_root, texture_db, scale_factor):
         if key not in exported_anims:
             exported_anims[key] = len(file.animations)
             animation_to_gltf(anim, obj_root.mesh, file, data, scale_factor)
-            file.animations[exported_anims[key]].extras["slot"] = []
-        file.animations[exported_anims[key]].extras["slot"].append(idx)
+            file.animations[exported_anims[key]].extras[AnimMetadata.FIELDS.slot.name] = []
+        file.animations[exported_anims[key]].extras[AnimMetadata.FIELDS.slot.name].append(idx)
         file.animations[exported_anims[key]].name += "_{:}".format(idx)
 
     for anim_idx in exported_anims.values():
-        slots = file.animations[anim_idx].extras["slot"]
+        slots = file.animations[anim_idx].extras[AnimMetadata.FIELDS.slot.name]
         if len(slots) == 1:
-            file.animations[anim_idx].extras["slot"] = slots[0]
+            file.animations[anim_idx].extras[AnimMetadata.FIELDS.slot.name] = slots[0]
         else:
-            file.animations[anim_idx].extras["slot"] = slots
+            file.animations[anim_idx].extras[AnimMetadata.FIELDS.slot.name] = slots
 
     if len(exported_anims) > 0:
         global_timeline_to_gltf(obj_root.mesh, file, data)
 
     animation_props = actorAnimationMetadataToJson(obj_root)
-    file.nodes[0].extras["animation_props"] = animation_props
+    file.nodes[0].extras[MeshMetadata.FIELDS.animation_props.name] = animation_props
 
     # Finalize binary data
     file.buffers.append(gltf.Buffer(byteLength=len(data)))
