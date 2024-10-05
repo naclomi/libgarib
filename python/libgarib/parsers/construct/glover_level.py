@@ -1065,12 +1065,12 @@ glover_level__plat_pos_0xa7 = Struct(
 )
 
 glover_level__plat_conf_boundary_volume = Struct(
-	'x' / Int32ub,
-	'y' / Int32ub,
-	'z' / Int32ub,
-	'w' / Int32ub,
-	'h' / Int32ub,
-	'd' / Int32ub,
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'w' / Float32b,
+	'h' / Float32b,
+	'd' / Float32b,
 )
 
 glover_level__plat_special_0x6e = Struct(

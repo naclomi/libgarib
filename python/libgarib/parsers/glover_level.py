@@ -3818,22 +3818,22 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             self._debug['x']['start'] = self._io.pos()
-            self.x = self._io.read_u4be()
+            self.x = self._io.read_f4be()
             self._debug['x']['end'] = self._io.pos()
             self._debug['y']['start'] = self._io.pos()
-            self.y = self._io.read_u4be()
+            self.y = self._io.read_f4be()
             self._debug['y']['end'] = self._io.pos()
             self._debug['z']['start'] = self._io.pos()
-            self.z = self._io.read_u4be()
+            self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
             self._debug['w']['start'] = self._io.pos()
-            self.w = self._io.read_u4be()
+            self.w = self._io.read_f4be()
             self._debug['w']['end'] = self._io.pos()
             self._debug['h']['start'] = self._io.pos()
-            self.h = self._io.read_u4be()
+            self.h = self._io.read_f4be()
             self._debug['h']['end'] = self._io.pos()
             self._debug['d']['start'] = self._io.pos()
-            self.d = self._io.read_u4be()
+            self.d = self._io.read_f4be()
             self._debug['d']['end'] = self._io.pos()
 
 
@@ -5133,5 +5133,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = 'e1e3f03ba3890d69e72ceead19a628099a43007c'
+ksy_hash = '07bdaf4d31c5e6f027ad8eb9cc278cd4cfe700d5'
 #############

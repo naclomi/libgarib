@@ -4709,22 +4709,22 @@ var GloverLevel = (function() {
     }
     PlatConfBoundaryVolume.prototype._read = function() {
       this._debug.x = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.x = this._io.readU4be();
+      this.x = this._io.readF4be();
       this._debug.x.end = this._io.pos;
       this._debug.y = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.y = this._io.readU4be();
+      this.y = this._io.readF4be();
       this._debug.y.end = this._io.pos;
       this._debug.z = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.z = this._io.readU4be();
+      this.z = this._io.readF4be();
       this._debug.z.end = this._io.pos;
       this._debug.w = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.w = this._io.readU4be();
+      this.w = this._io.readF4be();
       this._debug.w.end = this._io.pos;
       this._debug.h = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h = this._io.readU4be();
+      this.h = this._io.readF4be();
       this._debug.h.end = this._io.pos;
       this._debug.d = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.d = this._io.readU4be();
+      this.d = this._io.readF4be();
       this._debug.d.end = this._io.pos;
     }
 

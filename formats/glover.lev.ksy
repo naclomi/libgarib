@@ -1567,18 +1567,18 @@ types:
       modifies: PLATFORM
     seq:
       - id: x
-        type: u4
+        type: f4
       - id: y
-        type: u4
+        type: f4
       - id: z
-        type: u4
+        type: f4
 
       - id: w
-        type: u4
+        type: f4
       - id: h
-        type: u4
+        type: f4
       - id: d
-        type: u4
+        type: f4
 
 ###############################################################
 ### Platform Orbit
