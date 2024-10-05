@@ -1,6 +1,11 @@
 from construct import *
 from construct.lib import *
 
+glover_level__puzzle_cond_glover_changed_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'started_or_stopped' / Int16sb,
+)
+
 glover_level__puzzle_action_0x54 = Struct(
 	'u32_0x14' / Int16ub,
 	'u32_0x16' / Int16ub,
@@ -25,6 +30,11 @@ glover_level__plat_sound_0xc2 = Struct(
 	'sound_id' / Int16ub,
 	'volume' / Int16ub,
 	'pitch' / Int16ub,
+)
+
+glover_level__puzzle_cond_ball_changed_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'started_or_stopped' / Int16sb,
 )
 
 glover_level__plat_spin_pause_0x7c = Struct(
@@ -67,6 +77,11 @@ glover_level__diffuse_light = Struct(
 	'b' / Int16ub,
 	'theta_x' / Float32b,
 	'theta_y' / Float32b,
+)
+
+glover_level__puzzle_cond_glover_platform_todo = Struct(
+	'plat_tag' / Int16ub,
+	'invert_result' / Int16sb,
 )
 
 glover_level__plat_path_acceleration = Struct(
@@ -142,6 +157,11 @@ glover_level__plat_orbit = Struct(
 	'u32_176' / Int32ub,
 )
 
+glover_level__puzzle_cond_platform_orbit_todo = Struct(
+	'plat_tag' / Int16ub,
+	'idx' / Int16sb,
+)
+
 glover_level__plat_spike = Struct(
 )
 
@@ -211,6 +231,16 @@ glover_level__plat_mvspn_0x59 = Struct(
 glover_level__cameo = Struct(
 )
 
+glover_level__puzzle_cond_platform_spin_2_todo = Struct(
+	'plat_tag' / Int16ub,
+	'arg2' / Int16sb,
+)
+
+glover_level__puzzle_cond_enemy_is_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'invert_result' / Int16sb,
+)
+
 def glover_level__plat_constant_spin__axis(subcon):
 	return Enum(subcon,
 		x=0,
@@ -222,6 +252,21 @@ glover_level__plat_constant_spin = Struct(
 	'axis' / glover_level__plat_constant_spin__axis(Int16ub),
 	'initial_theta' / Float32b,
 	'speed' / Float32b,
+)
+
+def glover_level__puzzle_platform_close_to_conf_boundary_edge__edge_type(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+		x_plus_w=3,
+		y_plus_h=4,
+		z_plus_d=5,
+	)
+
+glover_level__puzzle_platform_close_to_conf_boundary_edge = Struct(
+	'plat_tag' / Int16ub,
+	'edge' / glover_level__puzzle_platform_close_to_conf_boundary_edge__edge_type(Int16ub),
 )
 
 glover_level__vent_duty_cycle = Struct(
@@ -310,7 +355,7 @@ glover_level__vent = Struct(
 
 glover_level__puzzle_cond = Struct(
 	'cond_type' / Int16ub,
-	'body' / Switch(this.cond_type, {39: LazyBound(lambda: glover_level__puzzle_cond_c), 35: LazyBound(lambda: glover_level__puzzle_cond_c), 38: LazyBound(lambda: glover_level__puzzle_cond_d), 40: LazyBound(lambda: glover_level__puzzle_cond_d), 37: LazyBound(lambda: glover_level__puzzle_cond_c), 41: LazyBound(lambda: glover_level__puzzle_cond_e), 36: LazyBound(lambda: glover_level__puzzle_cond_d), 34: LazyBound(lambda: glover_level__puzzle_cond_b), }, default=LazyBound(lambda: glover_level__puzzle_cond_a)),
+	'body' / Switch(this.cond_type, {14: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_2_todo), 10: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_todo), 17: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_todo), 39: LazyBound(lambda: glover_level__puzzle_cond_c), 24: LazyBound(lambda: glover_level__puzzle_cond_ball_changed_touching_platform), 35: LazyBound(lambda: glover_level__puzzle_cond_c), 32: LazyBound(lambda: glover_level__puzzle_platform_close_to_conf_boundary_edge), 13: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_2_todo), 11: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_todo), 12: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_2), 23: LazyBound(lambda: glover_level__puzzle_cond_ball_is_touching_platform), 15: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_todo), 38: LazyBound(lambda: glover_level__puzzle_cond_d), 40: LazyBound(lambda: glover_level__puzzle_cond_d), 9: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_at_rest), 21: LazyBound(lambda: glover_level__puzzle_cond_glover_is_touching_platform), 37: LazyBound(lambda: glover_level__puzzle_cond_c), 41: LazyBound(lambda: glover_level__puzzle_cond_e), 36: LazyBound(lambda: glover_level__puzzle_cond_d), 16: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_2_todo), 18: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_2_todo), 26: LazyBound(lambda: glover_level__puzzle_cond_enemy_changed_touching_platform), 31: LazyBound(lambda: glover_level__puzzle_platform_touching_conf_boundary_edge), 34: LazyBound(lambda: glover_level__puzzle_cond_b), 25: LazyBound(lambda: glover_level__puzzle_cond_enemy_is_touching_platform), 22: LazyBound(lambda: glover_level__puzzle_cond_glover_changed_touching_platform), }, default=LazyBound(lambda: glover_level__puzzle_cond_a)),
 )
 
 glover_level__plat_mvspn_0x73 = Struct(
@@ -358,6 +403,11 @@ glover_level__plat_vent_advance_frames = Struct(
 	'num_frames' / Int16ub,
 )
 
+glover_level__puzzle_cond_platform_path_at_point_2 = Struct(
+	'plat_tag' / Int16ub,
+	'arg2' / Int16sb,
+)
+
 def glover_level__set_exit__exit_type(subcon):
 	return Enum(subcon,
 		loading_zone=0,
@@ -387,6 +437,11 @@ glover_level__puzzle_and = Struct(
 )
 
 glover_level__plat_0x66 = Struct(
+)
+
+glover_level__puzzle_cond_glover_platform_2_todo = Struct(
+	'plat_tag' / Int16ub,
+	'arg2' / Int16sb,
 )
 
 glover_level__plat_special_0xc7 = Struct(
@@ -472,13 +527,18 @@ glover_level__puzzle_action_0x56 = Struct(
 
 glover_level__cmd = Struct(
 	'type_code' / Int16ub,
-	'params' / Switch(this.type_code, {120: LazyBound(lambda: glover_level__plat_0x78), 141: LazyBound(lambda: glover_level__rope), 93: LazyBound(lambda: glover_level__null_platform), 118: LazyBound(lambda: glover_level__plat_orbit_pause), 159: LazyBound(lambda: glover_level__plat_0x9f), 194: LazyBound(lambda: glover_level__plat_sound_0xc2), 184: LazyBound(lambda: glover_level__plat_special_0xb8), 105: LazyBound(lambda: glover_level__plat_cat_0x69), 142: LazyBound(lambda: glover_level__plat_special_0x8e), 112: LazyBound(lambda: glover_level__plat_rocking), 163: LazyBound(lambda: glover_level__vent_duty_cycle), 131: LazyBound(lambda: glover_level__enemy), 0: LazyBound(lambda: glover_level__noop), 167: LazyBound(lambda: glover_level__plat_pos_0xa7), 146: LazyBound(lambda: glover_level__land_actor), 4: LazyBound(lambda: glover_level__puzzle), 169: LazyBound(lambda: glover_level__set_gravity), 162: LazyBound(lambda: glover_level__vent), 116: LazyBound(lambda: glover_level__plat_mvspn_0x74), 119: LazyBound(lambda: glover_level__plat_orbit_flip_0x77), 6: LazyBound(lambda: glover_level__puzzle_or), 7: LazyBound(lambda: glover_level__puzzle_numtimes), 113: LazyBound(lambda: glover_level__plat_set_parent), 121: LazyBound(lambda: glover_level__plat_scale), 96: LazyBound(lambda: glover_level__look_at_hand_0x60), 191: LazyBound(lambda: glover_level__actor_0xbf), 1: LazyBound(lambda: glover_level__glover_spawn_point), 150: LazyBound(lambda: glover_level__puzzle_action), 97: LazyBound(lambda: glover_level__look_at_ball_0x61), 106: LazyBound(lambda: glover_level__plat_actor_surface_type), 145: LazyBound(lambda: glover_level__background_actor), 101: LazyBound(lambda: glover_level__plat_destructible), 144: LazyBound(lambda: glover_level__plat_sine), 127: LazyBound(lambda: glover_level__plat_constant_spin), 100: LazyBound(lambda: glover_level__plat_no_clip), 149: LazyBound(lambda: glover_level__puzzle_cond), 115: LazyBound(lambda: glover_level__plat_mvspn_0x73), 91: LazyBound(lambda: glover_level__plat_push_0x5b), 107: LazyBound(lambda: glover_level__plat_path_point), 143: LazyBound(lambda: glover_level__plat_orbit), 89: LazyBound(lambda: glover_level__plat_mvspn_0x59), 104: LazyBound(lambda: glover_level__platform_conveyor), 98: LazyBound(lambda: glover_level__platform), 197: LazyBound(lambda: glover_level__plat_spin_sound_0xc5), 95: LazyBound(lambda: glover_level__plat_go_forwards_0x5f), 137: LazyBound(lambda: glover_level__set_teleport), 88: LazyBound(lambda: glover_level__plat_mvspn_0x58), 161: LazyBound(lambda: glover_level__enemy_set_attention_bbox), 138: LazyBound(lambda: glover_level__plat_fan_0x8a), 3: LazyBound(lambda: glover_level__camera_spawn_point), 192: LazyBound(lambda: glover_level__plat_play_object_animation), 126: LazyBound(lambda: glover_level__plat_0x7e), 165: LazyBound(lambda: glover_level__fog_configuration), 5: LazyBound(lambda: glover_level__puzzle_and), 103: LazyBound(lambda: glover_level__plat_crumb_0x67), 99: LazyBound(lambda: glover_level__plat_checkpoint), 185: LazyBound(lambda: glover_level__plat_special_0xb9), 180: LazyBound(lambda: glover_level__set_object_sparkle), 156: LazyBound(lambda: glover_level__enemy_attack_instruction), 125: LazyBound(lambda: glover_level__plat_spin_flip), 186: LazyBound(lambda: glover_level__enemy_0xba), 188: LazyBound(lambda: glover_level__animated_background_actor), 153: LazyBound(lambda: glover_level__backdrop), 123: LazyBound(lambda: glover_level__plat_copy_spin_from_parent), 160: LazyBound(lambda: glover_level__water), 8: LazyBound(lambda: glover_level__puzzle_any), 166: LazyBound(lambda: glover_level__plat_set_initial_pos), 114: LazyBound(lambda: glover_level__plat_conf_0x72), 181: LazyBound(lambda: glover_level__buzzer), 148: LazyBound(lambda: glover_level__set_actor_scale), 158: LazyBound(lambda: glover_level__plat_special_0x9e), 117: LazyBound(lambda: glover_level__plat_orbit_around_point), 152: LazyBound(lambda: glover_level__ambient_light), 94: LazyBound(lambda: glover_level__plat_turn_towards_path_point), 109: LazyBound(lambda: glover_level__plat_path_acceleration), 32000: LazyBound(lambda: glover_level__end_level_data), 140: LazyBound(lambda: glover_level__wind), 122: LazyBound(lambda: glover_level__plat_str_0x7a), 179: LazyBound(lambda: glover_level__plat_actor_enable_water_animation), 195: LazyBound(lambda: glover_level__plat_0xc3), 130: LazyBound(lambda: glover_level__plat_spike), 187: LazyBound(lambda: glover_level__mr_tip), 170: LazyBound(lambda: glover_level__cameo), 199: LazyBound(lambda: glover_level__plat_special_0xc7), 164: LazyBound(lambda: glover_level__plat_0xa4), 182: LazyBound(lambda: glover_level__buzzer_duty_cycle), 108: LazyBound(lambda: glover_level__plat_max_velocity), 189: LazyBound(lambda: glover_level__unknown_sound_0xbd), 168: LazyBound(lambda: glover_level__set_exit), 171: LazyBound(lambda: glover_level__cameo_inst), 193: LazyBound(lambda: glover_level__plat_sound_0xc1), 133: LazyBound(lambda: glover_level__garib_group), 129: LazyBound(lambda: glover_level__plat_topple_0x81), 151: LazyBound(lambda: glover_level__diffuse_light), 157: LazyBound(lambda: glover_level__plat_0x9d), 147: LazyBound(lambda: glover_level__set_actor_rotation), 134: LazyBound(lambda: glover_level__garib), 102: LazyBound(lambda: glover_level__plat_0x66), 110: LazyBound(lambda: glover_level__plat_special_0x6e), 139: LazyBound(lambda: glover_level__plat_magnet_0x8b), 155: LazyBound(lambda: glover_level__enemy_conditional_instruction), 2: LazyBound(lambda: glover_level__ball_spawn_point), 135: LazyBound(lambda: glover_level__powerup), 124: LazyBound(lambda: glover_level__plat_spin_pause_0x7c), 200: LazyBound(lambda: glover_level__plat_destructible_sound), 132: LazyBound(lambda: glover_level__enemy_finalize), 92: LazyBound(lambda: glover_level__plat_vent_advance_frames), 198: LazyBound(lambda: glover_level__plat_0xc6), 111: LazyBound(lambda: glover_level__plat_set_tag), 190: LazyBound(lambda: glover_level__environmental_sound), 196: LazyBound(lambda: glover_level__plat_orbit_sound_0xc4), 183: LazyBound(lambda: glover_level__set_global_0xb7), 128: LazyBound(lambda: glover_level__plat_spin_0x80), 90: LazyBound(lambda: glover_level__plat_mvspn_0x5a), 154: LazyBound(lambda: glover_level__enemy_normal_instruction), }, default=LazyBound(lambda: glover_level__unknown)),
+	'params' / Switch(this.type_code, {120: LazyBound(lambda: glover_level__plat_0x78), 141: LazyBound(lambda: glover_level__rope), 93: LazyBound(lambda: glover_level__null_platform), 118: LazyBound(lambda: glover_level__plat_orbit_pause), 159: LazyBound(lambda: glover_level__plat_0x9f), 194: LazyBound(lambda: glover_level__plat_sound_0xc2), 184: LazyBound(lambda: glover_level__plat_special_0xb8), 105: LazyBound(lambda: glover_level__plat_cat_0x69), 142: LazyBound(lambda: glover_level__plat_special_0x8e), 112: LazyBound(lambda: glover_level__plat_rocking), 163: LazyBound(lambda: glover_level__vent_duty_cycle), 131: LazyBound(lambda: glover_level__enemy), 0: LazyBound(lambda: glover_level__noop), 167: LazyBound(lambda: glover_level__plat_pos_0xa7), 146: LazyBound(lambda: glover_level__land_actor), 4: LazyBound(lambda: glover_level__puzzle), 169: LazyBound(lambda: glover_level__set_gravity), 162: LazyBound(lambda: glover_level__vent), 116: LazyBound(lambda: glover_level__plat_mvspn_0x74), 119: LazyBound(lambda: glover_level__plat_orbit_flip_0x77), 6: LazyBound(lambda: glover_level__puzzle_or), 7: LazyBound(lambda: glover_level__puzzle_numtimes), 113: LazyBound(lambda: glover_level__plat_set_parent), 121: LazyBound(lambda: glover_level__plat_scale), 96: LazyBound(lambda: glover_level__look_at_hand_0x60), 191: LazyBound(lambda: glover_level__actor_0xbf), 1: LazyBound(lambda: glover_level__glover_spawn_point), 150: LazyBound(lambda: glover_level__puzzle_action), 97: LazyBound(lambda: glover_level__look_at_ball_0x61), 106: LazyBound(lambda: glover_level__plat_actor_surface_type), 145: LazyBound(lambda: glover_level__background_actor), 101: LazyBound(lambda: glover_level__plat_destructible), 144: LazyBound(lambda: glover_level__plat_sine), 127: LazyBound(lambda: glover_level__plat_constant_spin), 100: LazyBound(lambda: glover_level__plat_no_clip), 149: LazyBound(lambda: glover_level__puzzle_cond), 115: LazyBound(lambda: glover_level__plat_mvspn_0x73), 91: LazyBound(lambda: glover_level__plat_push_0x5b), 107: LazyBound(lambda: glover_level__plat_path_point), 143: LazyBound(lambda: glover_level__plat_orbit), 89: LazyBound(lambda: glover_level__plat_mvspn_0x59), 104: LazyBound(lambda: glover_level__platform_conveyor), 98: LazyBound(lambda: glover_level__platform), 197: LazyBound(lambda: glover_level__plat_spin_sound_0xc5), 95: LazyBound(lambda: glover_level__plat_go_forwards_0x5f), 137: LazyBound(lambda: glover_level__set_teleport), 88: LazyBound(lambda: glover_level__plat_mvspn_0x58), 161: LazyBound(lambda: glover_level__enemy_set_attention_bbox), 138: LazyBound(lambda: glover_level__plat_fan_0x8a), 3: LazyBound(lambda: glover_level__camera_spawn_point), 192: LazyBound(lambda: glover_level__plat_play_object_animation), 126: LazyBound(lambda: glover_level__plat_0x7e), 165: LazyBound(lambda: glover_level__fog_configuration), 5: LazyBound(lambda: glover_level__puzzle_and), 103: LazyBound(lambda: glover_level__plat_crumb_0x67), 99: LazyBound(lambda: glover_level__plat_checkpoint), 185: LazyBound(lambda: glover_level__plat_special_0xb9), 180: LazyBound(lambda: glover_level__set_object_sparkle), 156: LazyBound(lambda: glover_level__enemy_attack_instruction), 125: LazyBound(lambda: glover_level__plat_spin_flip), 186: LazyBound(lambda: glover_level__enemy_0xba), 188: LazyBound(lambda: glover_level__animated_background_actor), 153: LazyBound(lambda: glover_level__backdrop), 123: LazyBound(lambda: glover_level__plat_copy_spin_from_parent), 160: LazyBound(lambda: glover_level__water), 8: LazyBound(lambda: glover_level__puzzle_any), 166: LazyBound(lambda: glover_level__plat_set_initial_pos), 114: LazyBound(lambda: glover_level__plat_conf_boundary_volume), 181: LazyBound(lambda: glover_level__buzzer), 148: LazyBound(lambda: glover_level__set_actor_scale), 158: LazyBound(lambda: glover_level__plat_special_0x9e), 117: LazyBound(lambda: glover_level__plat_orbit_around_point), 152: LazyBound(lambda: glover_level__ambient_light), 94: LazyBound(lambda: glover_level__plat_turn_towards_path_point), 109: LazyBound(lambda: glover_level__plat_path_acceleration), 32000: LazyBound(lambda: glover_level__end_level_data), 140: LazyBound(lambda: glover_level__wind), 122: LazyBound(lambda: glover_level__plat_str_0x7a), 179: LazyBound(lambda: glover_level__plat_actor_enable_water_animation), 195: LazyBound(lambda: glover_level__plat_0xc3), 130: LazyBound(lambda: glover_level__plat_spike), 187: LazyBound(lambda: glover_level__mr_tip), 170: LazyBound(lambda: glover_level__cameo), 199: LazyBound(lambda: glover_level__plat_special_0xc7), 164: LazyBound(lambda: glover_level__plat_0xa4), 182: LazyBound(lambda: glover_level__buzzer_duty_cycle), 108: LazyBound(lambda: glover_level__plat_max_velocity), 189: LazyBound(lambda: glover_level__unknown_sound_0xbd), 168: LazyBound(lambda: glover_level__set_exit), 171: LazyBound(lambda: glover_level__cameo_inst), 193: LazyBound(lambda: glover_level__plat_sound_0xc1), 133: LazyBound(lambda: glover_level__garib_group), 129: LazyBound(lambda: glover_level__plat_topple_0x81), 151: LazyBound(lambda: glover_level__diffuse_light), 157: LazyBound(lambda: glover_level__plat_0x9d), 147: LazyBound(lambda: glover_level__set_actor_rotation), 134: LazyBound(lambda: glover_level__garib), 102: LazyBound(lambda: glover_level__plat_0x66), 110: LazyBound(lambda: glover_level__plat_special_0x6e), 139: LazyBound(lambda: glover_level__plat_magnet_0x8b), 155: LazyBound(lambda: glover_level__enemy_conditional_instruction), 2: LazyBound(lambda: glover_level__ball_spawn_point), 135: LazyBound(lambda: glover_level__powerup), 124: LazyBound(lambda: glover_level__plat_spin_pause_0x7c), 200: LazyBound(lambda: glover_level__plat_destructible_sound), 132: LazyBound(lambda: glover_level__enemy_finalize), 92: LazyBound(lambda: glover_level__plat_vent_advance_frames), 198: LazyBound(lambda: glover_level__plat_0xc6), 111: LazyBound(lambda: glover_level__plat_set_tag), 190: LazyBound(lambda: glover_level__environmental_sound), 196: LazyBound(lambda: glover_level__plat_orbit_sound_0xc4), 183: LazyBound(lambda: glover_level__set_global_0xb7), 128: LazyBound(lambda: glover_level__plat_spin_0x80), 90: LazyBound(lambda: glover_level__plat_mvspn_0x5a), 154: LazyBound(lambda: glover_level__enemy_normal_instruction), }, default=LazyBound(lambda: glover_level__unknown)),
 )
 
 glover_level__plat_0xc6 = Struct(
 	'u16_0x4a' / Int16ub,
 	'u16_0x44' / Int16ub,
 	'u16_0x48' / Int16ub,
+)
+
+glover_level__puzzle_cond_enemy_changed_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'started_or_stopped' / Int16sb,
 )
 
 glover_level__wind = Struct(
@@ -582,6 +642,11 @@ glover_level__plat_orbit_sound_0xc4 = Struct(
 	'u16_0x38' / Int16ub,
 )
 
+glover_level__puzzle_cond_ball_is_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'invert_result' / Int16sb,
+)
+
 glover_level__plat_orbit_flip_0x77 = Struct(
 	'u16_0x08' / Int16ub,
 	'u16_0x10' / Int16ub,
@@ -662,6 +727,11 @@ glover_level__enemy = Struct(
 	'y' / Float32b,
 	'z' / Float32b,
 	'y_rotation' / Float32b,
+)
+
+glover_level__puzzle_cond_platform_orbit_2_todo = Struct(
+	'plat_tag' / Int16ub,
+	'arg2' / Int16sb,
 )
 
 glover_level__plat_0xa4 = Struct(
@@ -795,6 +865,11 @@ glover_level__plat_spin_0x80 = Struct(
 	'f_0x70' / Int16ub,
 )
 
+glover_level__puzzle_cond_glover_is_touching_platform = Struct(
+	'plat_tag' / Int16ub,
+	'invert_result' / Int16sb,
+)
+
 glover_level__plat_rocking = Struct(
 	'axis' / Int16ub,
 	'theta' / Float32b,
@@ -897,6 +972,21 @@ glover_level__plat_go_forwards_0x5f = Struct(
 	'u32_0x2c_0x34' / Int32ub,
 )
 
+def glover_level__puzzle_platform_touching_conf_boundary_edge__edge_type(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+		x_plus_w=3,
+		y_plus_h=4,
+		z_plus_d=5,
+	)
+
+glover_level__puzzle_platform_touching_conf_boundary_edge = Struct(
+	'plat_tag' / Int16ub,
+	'edge' / glover_level__puzzle_platform_touching_conf_boundary_edge__edge_type(Int16ub),
+)
+
 glover_level__plat_special_0x9e = Struct(
 	'u32_0x5c' / Int32ub,
 	'u32_0x60' / Int32ub,
@@ -948,17 +1038,13 @@ glover_level__enemy_instruction = Struct(
 	'execution_condition' / glover_level__enemy_instruction__execution_condition_type(Int16ub),
 )
 
-glover_level__set_global_0xb7 = Struct(
-	'value' / Int32ub,
+glover_level__puzzle_cond_platform_spin_todo = Struct(
+	'plat_tag' / Int16ub,
+	'idx' / Int16sb,
 )
 
-glover_level__plat_conf_0x72 = Struct(
-	'u32_0x00' / Int32ub,
-	'u32_0x04' / Int32ub,
-	'u32_0x08' / Int32ub,
-	'u32_0x0c' / Int32ub,
-	'u32_0x10' / Int32ub,
-	'u32_0x14' / Int32ub,
+glover_level__set_global_0xb7 = Struct(
+	'value' / Int32ub,
 )
 
 glover_level__puzzle_cond_e = Struct(
@@ -978,9 +1064,23 @@ glover_level__plat_pos_0xa7 = Struct(
 	'u8_idx' / Int16ub,
 )
 
+glover_level__plat_conf_boundary_volume = Struct(
+	'x' / Int32ub,
+	'y' / Int32ub,
+	'z' / Int32ub,
+	'w' / Int32ub,
+	'h' / Int32ub,
+	'd' / Int32ub,
+)
+
 glover_level__plat_special_0x6e = Struct(
 	'flags' / Int16ub,
 	'u32_0x70' / Int32ub,
+)
+
+glover_level__puzzle_cond_ball_platform_2_todo = Struct(
+	'plat_tag' / Int16ub,
+	'arg2' / Int16sb,
 )
 
 glover_level__cameo_inst_default = Struct(
@@ -996,6 +1096,11 @@ glover_level__puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40 = Struct(
 	'u16_0x0e' / Int16ub,
 	'u16_0x0a' / Int16ub,
 	'u32_0x20' / Int32ub,
+)
+
+glover_level__puzzle_cond_platform_path_at_point_at_rest = Struct(
+	'plat_tag' / Int16ub,
+	'path_point_idx' / Int16sb,
 )
 
 glover_level__plat_orbit_around_point = Struct(
@@ -1057,6 +1162,11 @@ glover_level__enemy_instruction_a = Struct(
 )
 
 glover_level__plat_special_0xb9 = Struct(
+)
+
+glover_level__puzzle_cond_ball_platform_todo = Struct(
+	'plat_tag' / Int16ub,
+	'invert_result' / Int16sb,
 )
 
 glover_level__enemy_attack_instruction = Struct(

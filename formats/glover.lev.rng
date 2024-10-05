@@ -191,7 +191,7 @@
           <ref name="PlatPush0x5b"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatConf0x72"/>
+          <ref name="PlatConfBoundaryVolume"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatOrbitSound0xc4"/>
@@ -1107,6 +1107,168 @@
     <element name="PuzzleCond">
       <choice>
         <group>
+          <!--Case 0x9-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">9|0x0*9</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformPathAtPointAtRest"/>
+        </group>
+        <group>
+          <!--Case 0xA-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">10|0x0*[Aa]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformSpinTodo"/>
+        </group>
+        <group>
+          <!--Case 0xB-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">11|0x0*[Bb]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformOrbitTodo"/>
+        </group>
+        <group>
+          <!--Case 0xC-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">12|0x0*[Cc]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformPathAtPoint2"/>
+        </group>
+        <group>
+          <!--Case 0xD-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">13|0x0*[Dd]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformSpin2Todo"/>
+        </group>
+        <group>
+          <!--Case 0xE-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">14|0x0*[Ee]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformOrbit2Todo"/>
+        </group>
+        <group>
+          <!--Case 0xF-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">15|0x0*[Ff]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondGloverPlatformTodo"/>
+        </group>
+        <group>
+          <!--Case 0x10-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">16|0x0*10</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondGloverPlatform2Todo"/>
+        </group>
+        <group>
+          <!--Case 0x11-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">17|0x0*11</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondBallPlatformTodo"/>
+        </group>
+        <group>
+          <!--Case 0x12-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">18|0x0*12</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondBallPlatform2Todo"/>
+        </group>
+        <group>
+          <!--Case 0x15-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">21|0x0*15</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondGloverIsTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x16-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">22|0x0*16</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondGloverChangedTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x17-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">23|0x0*17</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondBallIsTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x18-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">24|0x0*18</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondBallChangedTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x19-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">25|0x0*19</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondEnemyIsTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x1A-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">26|0x0*1[Aa]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondEnemyChangedTouchingPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x1F-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">31|0x0*1[Ff]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzlePlatformTouchingConfBoundaryEdge"/>
+        </group>
+        <group>
+          <!--Case 0x20-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">32|0x0*20</param>
+            </data>
+          </attribute>
+          <ref name="PuzzlePlatformCloseToConfBoundaryEdge"/>
+        </group>
+        <group>
           <!--Case 0x22-->
           <attribute name="cond_type">
             <data type="string">
@@ -1186,6 +1348,186 @@
           <ref name="PuzzleCondA"/>
         </group>
       </choice>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformPathAtPointAtRest">
+    <element name="PuzzleCondPlatformPathAtPointAtRest">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="path_point_idx">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformSpinTodo">
+    <element name="PuzzleCondPlatformSpinTodo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="idx">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformOrbitTodo">
+    <element name="PuzzleCondPlatformOrbitTodo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="idx">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformPathAtPoint2">
+    <element name="PuzzleCondPlatformPathAtPoint2">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="arg2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformSpin2Todo">
+    <element name="PuzzleCondPlatformSpin2Todo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="arg2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondPlatformOrbit2Todo">
+    <element name="PuzzleCondPlatformOrbit2Todo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="arg2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondGloverPlatformTodo">
+    <element name="PuzzleCondGloverPlatformTodo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondGloverPlatform2Todo">
+    <element name="PuzzleCondGloverPlatform2Todo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="arg2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallPlatformTodo">
+    <element name="PuzzleCondBallPlatformTodo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallPlatform2Todo">
+    <element name="PuzzleCondBallPlatform2Todo">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="arg2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondGloverIsTouchingPlatform">
+    <element name="PuzzleCondGloverIsTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondGloverChangedTouchingPlatform">
+    <element name="PuzzleCondGloverChangedTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="started_or_stopped">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallIsTouchingPlatform">
+    <element name="PuzzleCondBallIsTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallChangedTouchingPlatform">
+    <element name="PuzzleCondBallChangedTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="started_or_stopped">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondEnemyIsTouchingPlatform">
+    <element name="PuzzleCondEnemyIsTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondEnemyChangedTouchingPlatform">
+    <element name="PuzzleCondEnemyChangedTouchingPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="started_or_stopped">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzlePlatformTouchingConfBoundaryEdge">
+    <element name="PuzzlePlatformTouchingConfBoundaryEdge">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="edge">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzlePlatformCloseToConfBoundaryEdge">
+    <element name="PuzzlePlatformCloseToConfBoundaryEdge">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="edge">
+        <text/>
+      </attribute>
     </element>
   </define>
   <define name="PuzzleCondA">
@@ -2085,24 +2427,24 @@
       </attribute>
     </element>
   </define>
-  <define name="PlatConf0x72">
-    <element name="PlatConf0x72">
-      <attribute name="u32_0x00">
+  <define name="PlatConfBoundaryVolume">
+    <element name="PlatConfBoundaryVolume">
+      <attribute name="x">
         <text/>
       </attribute>
-      <attribute name="u32_0x04">
+      <attribute name="y">
         <text/>
       </attribute>
-      <attribute name="u32_0x08">
+      <attribute name="z">
         <text/>
       </attribute>
-      <attribute name="u32_0x0c">
+      <attribute name="w">
         <text/>
       </attribute>
-      <attribute name="u32_0x10">
+      <attribute name="h">
         <text/>
       </attribute>
-      <attribute name="u32_0x14">
+      <attribute name="d">
         <text/>
       </attribute>
     </element>
@@ -2848,7 +3190,7 @@
           <ref name="PlatPush0x5b"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatConf0x72"/>
+          <ref name="PlatConfBoundaryVolume"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatOrbitSound0xc4"/>
@@ -3046,7 +3388,7 @@
           <ref name="PlatPush0x5b"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatConf0x72"/>
+          <ref name="PlatConfBoundaryVolume"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatOrbitSound0xc4"/>

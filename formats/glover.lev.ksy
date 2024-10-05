@@ -86,7 +86,7 @@ types:
             0x6e: plat_special_0x6e
             0x8e: plat_special_0x8e
             0x5b: plat_push_0x5b
-            0x72: plat_conf_0x72
+            0x72: plat_conf_boundary_volume
 
             0xc4: plat_orbit_sound_0xc4
             0xc6: plat_0xc6
@@ -708,6 +708,30 @@ types:
         type:
           switch-on: cond_type
           cases:
+            0x9: puzzle_cond_platform_path_at_point_at_rest
+            0xa: puzzle_cond_platform_spin_todo
+            0xb: puzzle_cond_platform_orbit_todo
+            0xc: puzzle_cond_platform_path_at_point_2
+            0xd: puzzle_cond_platform_spin_2_todo
+            0xe: puzzle_cond_platform_orbit_2_todo
+
+            0xf: puzzle_cond_glover_platform_todo
+            0x10: puzzle_cond_glover_platform_2_todo
+
+            0x11: puzzle_cond_ball_platform_todo
+            0x12: puzzle_cond_ball_platform_2_todo
+
+            0x15: puzzle_cond_glover_is_touching_platform
+            0x16: puzzle_cond_glover_changed_touching_platform
+            0x17: puzzle_cond_ball_is_touching_platform
+            0x18: puzzle_cond_ball_changed_touching_platform
+
+            0x19: puzzle_cond_enemy_is_touching_platform
+            0x1a: puzzle_cond_enemy_changed_touching_platform
+
+            0x1f: puzzle_platform_touching_conf_boundary_edge
+            0x20: puzzle_platform_close_to_conf_boundary_edge
+
             0x22: puzzle_cond_b
 
             0x23: puzzle_cond_c
@@ -721,6 +745,150 @@ types:
             0x29: puzzle_cond_e
 
             _: puzzle_cond_a
+
+  puzzle_cond_platform_path_at_point_at_rest:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: path_point_idx
+        type: s2
+
+  puzzle_cond_platform_spin_todo:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: idx
+        type: s2
+
+  puzzle_cond_platform_orbit_todo:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: idx
+        type: s2
+
+  puzzle_cond_platform_path_at_point_2:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: arg2
+        type: s2
+
+  puzzle_cond_platform_spin_2_todo:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: arg2
+        type: s2
+
+  puzzle_cond_platform_orbit_2_todo:
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: arg2
+        type: s2
+
+  puzzle_cond_glover_platform_todo:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: invert_result
+      type: s2
+
+  puzzle_cond_glover_platform_2_todo:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: arg2
+      type: s2
+
+  puzzle_cond_ball_platform_todo:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: invert_result
+      type: s2
+
+  puzzle_cond_ball_platform_2_todo:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: arg2
+      type: s2
+
+  puzzle_cond_glover_is_touching_platform: # 0x15
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: invert_result
+        type: s2
+
+  puzzle_cond_glover_changed_touching_platform: # 0x16
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: started_or_stopped
+        type: s2
+
+  puzzle_cond_ball_is_touching_platform: # 0x17
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: invert_result
+        type: s2
+
+  puzzle_cond_ball_changed_touching_platform: # 0x18
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: started_or_stopped
+        type: s2
+
+  puzzle_cond_enemy_is_touching_platform: # 0x19
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: invert_result
+        type: s2
+
+  puzzle_cond_enemy_changed_touching_platform: # 0x1a
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: started_or_stopped
+        type: s2
+
+  puzzle_platform_touching_conf_boundary_edge: # 0x1f
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: edge
+        type: u2
+        enum: edge_type
+    enums:
+      edge_type:
+        0: x
+        1: y
+        2: z
+        3: x_plus_w
+        4: y_plus_h
+        5: z_plus_d
+
+  puzzle_platform_close_to_conf_boundary_edge: # 0x20
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: edge
+        type: u2
+        enum: edge_type
+    enums:
+      edge_type:
+        0: x
+        1: y
+        2: z
+        3: x_plus_w
+        4: y_plus_h
+        5: z_plus_d
 
 
   puzzle_cond_a:
@@ -1392,22 +1560,24 @@ types:
       - id: u32_0x1c
         type: u4
 
-  plat_conf_0x72: # 0x72
+  plat_conf_boundary_volume: # 0x72
+    # defines a bounding volume outside of which the
+    # platform cannot be moved
     -semantic:
       modifies: PLATFORM
     seq:
-      - id: u32_0x00
+      - id: x
         type: u4
-      - id: u32_0x04
+      - id: y
         type: u4
-      - id: u32_0x08
+      - id: z
         type: u4
 
-      - id: u32_0x0c
+      - id: w
         type: u4
-      - id: u32_0x10
+      - id: h
         type: u4
-      - id: u32_0x14
+      - id: d
         type: u4
 
 ###############################################################
