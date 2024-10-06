@@ -187,6 +187,15 @@ glover_level__enemy_instruction_dash = Struct(
 	'vel_magnitude' / Float32b,
 )
 
+glover_level__puzzle_cond_camera_within_volume = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'l' / Float32b,
+	'w' / Float32b,
+	'h' / Float32b,
+)
+
 glover_level__environmental_sound = Struct(
 	'sound_id' / Int16ub,
 	'volume' / Int16ub,
@@ -308,15 +317,6 @@ glover_level__plat_spin_sound_0xc5 = Struct(
 	'pitch' / Int16ub,
 )
 
-glover_level__puzzle_cond_c = Struct(
-	'i_0x00' / Int32ub,
-	'i_0x04' / Int32ub,
-	'i_0x08' / Int32ub,
-	'i_0x0c' / Int32ub,
-	'i_0x10' / Int32ub,
-	'i_0x14' / Int32ub,
-)
-
 glover_level__enemy_instruction_turn = Struct(
 	'lookat_x' / Float32b,
 	'lookat_y' / Float32b,
@@ -332,6 +332,13 @@ glover_level__puzzle_action_0x4a = Struct(
 
 glover_level__enemy_conditional_instruction = Struct(
 	'instr' / LazyBound(lambda: glover_level__enemy_instruction),
+)
+
+glover_level__puzzle_cond_ball_within_range_of_point = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'range' / Float32b,
 )
 
 glover_level__plat_set_tag = Struct(
@@ -355,7 +362,7 @@ glover_level__vent = Struct(
 
 glover_level__puzzle_cond = Struct(
 	'cond_type' / Int16ub,
-	'body' / Switch(this.cond_type, {14: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_2_todo), 10: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_todo), 17: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_todo), 39: LazyBound(lambda: glover_level__puzzle_cond_c), 24: LazyBound(lambda: glover_level__puzzle_cond_ball_changed_touching_platform), 35: LazyBound(lambda: glover_level__puzzle_cond_c), 32: LazyBound(lambda: glover_level__puzzle_platform_close_to_conf_boundary_edge), 13: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_2_todo), 11: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_todo), 12: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_2), 23: LazyBound(lambda: glover_level__puzzle_cond_ball_is_touching_platform), 15: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_todo), 38: LazyBound(lambda: glover_level__puzzle_cond_d), 40: LazyBound(lambda: glover_level__puzzle_cond_d), 9: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_at_rest), 21: LazyBound(lambda: glover_level__puzzle_cond_glover_is_touching_platform), 37: LazyBound(lambda: glover_level__puzzle_cond_c), 41: LazyBound(lambda: glover_level__puzzle_cond_e), 36: LazyBound(lambda: glover_level__puzzle_cond_d), 16: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_2_todo), 18: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_2_todo), 26: LazyBound(lambda: glover_level__puzzle_cond_enemy_changed_touching_platform), 31: LazyBound(lambda: glover_level__puzzle_platform_touching_conf_boundary_edge), 34: LazyBound(lambda: glover_level__puzzle_cond_b), 25: LazyBound(lambda: glover_level__puzzle_cond_enemy_is_touching_platform), 22: LazyBound(lambda: glover_level__puzzle_cond_glover_changed_touching_platform), }, default=LazyBound(lambda: glover_level__puzzle_cond_a)),
+	'body' / Switch(this.cond_type, {14: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_2_todo), 10: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_todo), 17: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_todo), 39: LazyBound(lambda: glover_level__puzzle_cond_camera_within_volume), 24: LazyBound(lambda: glover_level__puzzle_cond_ball_changed_touching_platform), 35: LazyBound(lambda: glover_level__puzzle_cond_glover_within_volume), 32: LazyBound(lambda: glover_level__puzzle_platform_close_to_conf_boundary_edge), 13: LazyBound(lambda: glover_level__puzzle_cond_platform_spin_2_todo), 11: LazyBound(lambda: glover_level__puzzle_cond_platform_orbit_todo), 12: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_2), 23: LazyBound(lambda: glover_level__puzzle_cond_ball_is_touching_platform), 15: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_todo), 38: LazyBound(lambda: glover_level__puzzle_cond_ball_within_range_of_point), 40: LazyBound(lambda: glover_level__puzzle_cond_camera_within_range_of_point), 9: LazyBound(lambda: glover_level__puzzle_cond_platform_path_at_point_at_rest), 21: LazyBound(lambda: glover_level__puzzle_cond_glover_is_touching_platform), 37: LazyBound(lambda: glover_level__puzzle_cond_ball_within_volume), 41: LazyBound(lambda: glover_level__puzzle_cond_e), 36: LazyBound(lambda: glover_level__puzzle_cond_glover_within_range_of_point), 16: LazyBound(lambda: glover_level__puzzle_cond_glover_platform_2_todo), 18: LazyBound(lambda: glover_level__puzzle_cond_ball_platform_2_todo), 26: LazyBound(lambda: glover_level__puzzle_cond_enemy_changed_touching_platform), 31: LazyBound(lambda: glover_level__puzzle_platform_touching_conf_boundary_edge), 34: LazyBound(lambda: glover_level__puzzle_cond_b), 25: LazyBound(lambda: glover_level__puzzle_cond_enemy_is_touching_platform), 22: LazyBound(lambda: glover_level__puzzle_cond_glover_changed_touching_platform), }, default=LazyBound(lambda: glover_level__puzzle_cond_a)),
 )
 
 glover_level__plat_mvspn_0x73 = Struct(
@@ -450,6 +457,15 @@ glover_level__plat_special_0xc7 = Struct(
 	'u16_0x28' / Int16ub,
 )
 
+glover_level__puzzle_cond_ball_within_volume = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'l' / Float32b,
+	'w' / Float32b,
+	'h' / Float32b,
+)
+
 glover_level__null_platform = Struct(
 )
 
@@ -476,13 +492,6 @@ glover_level__set_teleport = Struct(
 	'u32_0x00' / Int32ub,
 	'u32_0x04' / Int32ub,
 	'u32_0x08' / Int32ub,
-)
-
-glover_level__puzzle_cond_d = Struct(
-	'i_0x00' / Int32ub,
-	'i_0x04' / Int32ub,
-	'i_0x08' / Int32ub,
-	'i_0x0c' / Int32ub,
 )
 
 glover_level__unknown_sound_0xbd = Struct(
@@ -927,6 +936,15 @@ glover_level__cameo_inst_5 = Struct(
 glover_level__plat_play_object_animation = Struct(
 )
 
+glover_level__puzzle_cond_glover_within_volume = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'l' / Float32b,
+	'w' / Float32b,
+	'h' / Float32b,
+)
+
 glover_level__plat_topple_0x81 = Struct(
 	'idx' / Int16ub,
 	'f_0x1c' / Float32b,
@@ -1078,6 +1096,13 @@ glover_level__plat_special_0x6e = Struct(
 	'u32_0x70' / Int32ub,
 )
 
+glover_level__puzzle_cond_camera_within_range_of_point = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'range' / Float32b,
+)
+
 glover_level__puzzle_cond_ball_platform_2_todo = Struct(
 	'plat_tag' / Int16ub,
 	'arg2' / Int16sb,
@@ -1152,6 +1177,13 @@ glover_level__plat_str_0x7a = Struct(
 glover_level__enemy_instruction_goto = Struct(
 	'instr_idx' / Int32ub,
 	'unused' / Int32ub,
+)
+
+glover_level__puzzle_cond_glover_within_range_of_point = Struct(
+	'x' / Float32b,
+	'y' / Float32b,
+	'z' / Float32b,
+	'range' / Float32b,
 )
 
 glover_level__enemy_instruction_a = Struct(

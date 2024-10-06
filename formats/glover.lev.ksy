@@ -734,13 +734,13 @@ types:
 
             0x22: puzzle_cond_b
 
-            0x23: puzzle_cond_c
-            0x25: puzzle_cond_c
-            0x27: puzzle_cond_c
+            0x23: puzzle_cond_glover_within_volume
+            0x25: puzzle_cond_ball_within_volume
+            0x27: puzzle_cond_camera_within_volume
 
-            0x24: puzzle_cond_d
-            0x26: puzzle_cond_d
-            0x28: puzzle_cond_d
+            0x24: puzzle_cond_glover_within_range_of_point
+            0x26: puzzle_cond_ball_within_range_of_point
+            0x28: puzzle_cond_camera_within_range_of_point
 
             0x29: puzzle_cond_e
 
@@ -917,33 +917,109 @@ types:
       - id: i_0x18
         type: u4
 
-  puzzle_cond_c:
+  puzzle_cond_glover_within_volume:
     seq:
-      - id: i_0x00
-        type: u4
-      - id: i_0x04
-        type: u4
-      - id: i_0x08
-        type: u4
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
 
-      - id: i_0x0c
-        type: u4
-      - id: i_0x10
-        type: u4
-      - id: i_0x14
-        type: u4
+      - id: l
+        type: f4
+      - id: w
+        type: f4
+      - id: h
+        type: f4
 
-  puzzle_cond_d:
+  puzzle_cond_ball_within_volume:
     seq:
-      - id: i_0x00
-        type: u4
-      - id: i_0x04
-        type: u4
-      - id: i_0x08
-        type: u4
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
 
-      - id: i_0x0c
-        type: u4
+      - id: l
+        type: f4
+      - id: w
+        type: f4
+      - id: h
+        type: f4
+
+  puzzle_cond_camera_within_volume:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      - id: l
+        type: f4
+      - id: w
+        type: f4
+      - id: h
+        type: f4
+
+
+
+  puzzle_cond_glover_within_range_of_point:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      # TODO: it SEEMS like this should be range, but the
+      #       game code doesn't seem to be reading from the
+      #       correct place when checking the condition;
+      #       see function @ 0x8018ff50
+      #       is this a bug? is there something I'm not
+      #       understanding?
+      - id: range
+        type: f4
+
+  puzzle_cond_ball_within_range_of_point:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      # TODO: it SEEMS like this should be range, but the
+      #       game code doesn't seem to be reading from the
+      #       correct place when checking the condition;
+      #       see function @ 0x8018ff50
+      #       is this a bug? is there something I'm not
+      #       understanding?
+      - id: range
+        type: f4
+
+  puzzle_cond_camera_within_range_of_point:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      # TODO: it SEEMS like this should be range, but the
+      #       game code doesn't seem to be reading from the
+      #       correct place when checking the condition;
+      #       see function @ 0x8018ff50
+      #       is this a bug? is there something I'm not
+      #       understanding?
+      - id: range
+        type: f4
 
   puzzle_cond_e:
     seq:

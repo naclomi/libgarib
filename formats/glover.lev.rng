@@ -1284,7 +1284,7 @@
               <param name="pattern">35|0x0*23</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondC"/>
+          <ref name="PuzzleCondGloverWithinVolume"/>
         </group>
         <group>
           <!--Case 0x25-->
@@ -1293,7 +1293,7 @@
               <param name="pattern">37|0x0*25</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondC"/>
+          <ref name="PuzzleCondBallWithinVolume"/>
         </group>
         <group>
           <!--Case 0x27-->
@@ -1302,7 +1302,7 @@
               <param name="pattern">39|0x0*27</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondC"/>
+          <ref name="PuzzleCondCameraWithinVolume"/>
         </group>
         <group>
           <!--Case 0x24-->
@@ -1311,7 +1311,7 @@
               <param name="pattern">36|0x0*24</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondD"/>
+          <ref name="PuzzleCondGloverWithinRangeOfPoint"/>
         </group>
         <group>
           <!--Case 0x26-->
@@ -1320,7 +1320,7 @@
               <param name="pattern">38|0x0*26</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondD"/>
+          <ref name="PuzzleCondBallWithinRangeOfPoint"/>
         </group>
         <group>
           <!--Case 0x28-->
@@ -1329,7 +1329,7 @@
               <param name="pattern">40|0x0*28</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondD"/>
+          <ref name="PuzzleCondCameraWithinRangeOfPoint"/>
         </group>
         <group>
           <!--Case 0x29-->
@@ -1565,40 +1565,116 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondC">
-    <element name="PuzzleCondC">
-      <attribute name="i_0x00">
+  <define name="PuzzleCondGloverWithinVolume">
+    <element name="PuzzleCondGloverWithinVolume">
+      <attribute name="x">
         <text/>
       </attribute>
-      <attribute name="i_0x04">
+      <attribute name="y">
         <text/>
       </attribute>
-      <attribute name="i_0x08">
+      <attribute name="z">
         <text/>
       </attribute>
-      <attribute name="i_0x0c">
+      <attribute name="l">
         <text/>
       </attribute>
-      <attribute name="i_0x10">
+      <attribute name="w">
         <text/>
       </attribute>
-      <attribute name="i_0x14">
+      <attribute name="h">
         <text/>
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondD">
-    <element name="PuzzleCondD">
-      <attribute name="i_0x00">
+  <define name="PuzzleCondBallWithinVolume">
+    <element name="PuzzleCondBallWithinVolume">
+      <attribute name="x">
         <text/>
       </attribute>
-      <attribute name="i_0x04">
+      <attribute name="y">
         <text/>
       </attribute>
-      <attribute name="i_0x08">
+      <attribute name="z">
         <text/>
       </attribute>
-      <attribute name="i_0x0c">
+      <attribute name="l">
+        <text/>
+      </attribute>
+      <attribute name="w">
+        <text/>
+      </attribute>
+      <attribute name="h">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondCameraWithinVolume">
+    <element name="PuzzleCondCameraWithinVolume">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="l">
+        <text/>
+      </attribute>
+      <attribute name="w">
+        <text/>
+      </attribute>
+      <attribute name="h">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondGloverWithinRangeOfPoint">
+    <element name="PuzzleCondGloverWithinRangeOfPoint">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="range">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallWithinRangeOfPoint">
+    <element name="PuzzleCondBallWithinRangeOfPoint">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="range">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondCameraWithinRangeOfPoint">
+    <element name="PuzzleCondCameraWithinRangeOfPoint">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="range">
         <text/>
       </attribute>
     </element>
