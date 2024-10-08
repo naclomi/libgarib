@@ -12,7 +12,7 @@ A landscape file includes the following information:
 - The position and layout of _everything_ in the level's 3D space (terrain,
   collectibles, enemies, level exits/loading zones, positional sound sources,
   etc.)
-- Atmospheric settings (lighting, fog, backdrops)
+- Atmospheric settings (lighting, fog, backdrops, gravity)
 - Scripts to govern puzzles and interactive level elements
 - Per-enemy AI scripts
 - Cutscene scripts
@@ -32,11 +32,13 @@ engine that is triggered based solely on the active level ID. This behavior
 can't be modified or disabled without patching the game code itself.
 
 The rest of this document is divided into these sections:
-1. **Landscape Components**: A description of what the building blocks of a
-   level are, and how they interact.
-2. **File Format**: The details of how those building blocks are *specified*
+1. **Landscape Components**: A high-level overview description of what the
+   building blocks of a level are, and how they interact.
+2. **Platform Behavior**: TODO
+3. **Scripting**: TODO
+4. **File Format**: The details of how those building blocks are *specified*
    in a landscape file.
-3. **Special Cases**: Level-ID-dependent engine behaviors
+5. **Special Cases**: Level-ID-dependent engine behaviors
 
 ## Landscape Components
 
@@ -59,8 +61,9 @@ The most _concrete_ building blocks are "actors" and "platforms":
 - **Platforms**: Collidable objects at _changing_ locations in 3D space. Does
   not support object (skeletal) animation. **Can** be altered by puzzles and
   player interaction. Almost all parts of the level that physically move,
-  aside from enemies and particle effects, are platforms. This includes
-  buttons, breakable blocks, doors, checkpoints, exits and loading zones.
+  aside from enemies and particle effects, are platforms. Almost any object
+  that "does" something is probably a platform. This includes buttons,
+  breakable blocks, doors, checkpoints, exits and loading zones.
 
 [TODO: double-check skeletal animation details for all of the above. Exit cones rotate using skeletal animation, and those are platforms]
 
@@ -94,14 +97,39 @@ which alter game physics:
   renders the water's "surface", though this actor does not have to correspond
   with the actual volume in any way and does not affect game physics at all.
   
+  [TODO how does atlantis 2 change water level? it looks like 'unknown_1' is a tag. is this in the platform namespace of tags? or just for water?]
+
 - **Wind**: Defines an axis-aligned rectangular volume of 3D space inside of
   which a "wind current" that can move Glover and the ball. The velocity of
   the wind can be specified independently for each axis. Wind volumes are
-  actually invisible, but are often paired with a "vent" (particle emitter) to
+  actually invisible, but are often placed near a "vent" (particle emitter) to
   visually represent their presence.
+
+### Enemies and NPCs
+- **Enemies**: Animated actors that move around and, in most cases, can hurt
+  Glover. Decorative NPCs like bats, fish and insects are also technically
+  enemies. The hub chicken is an enemy as well, though it attacks players'
+  emotions rather than Glover's health points. Each enemy is given a spawn
+  location and type, as well as a unique "AI" script which defines constraints
+  on movement and behavior.
+- **Buzzers**: Defines a linear electricity/lightning bolt hazard, which can
+  be controlled by a puzzle script or just set to run on a periodic duty
+  cycle. Their endpoints can either be fixed in space or pinned to two
+  platforms.
+- **Mr. Tip**: An instance of Mr. Tip, specified by a 3D location and a
+  message ID.
 
 ### Miscellaneous terrain elements
 
+- **Garibs and garib groups**: Garibs (and extra-lives, which in landscape
+  files are effectively the same thing) are arranged into *groups*. All garibs
+  must be in a group, though there are no limits on group size or arrangement;
+  every garib could be alone in its own group, or all garibs could be in one
+  big group [TODO: confirm true]. Glover's "garib radar" feature is based on
+  the various centroids of these groups, rather than on the garibs themselves.
+  It's also possible to "spawn" a group's garibs through a puzzle script
+  [TODO: confirm true].
+- **Powerups**: TODO
 - **Vents** (particle emitters): Vents specify a position in 3D space from
   which particles are emitted. There are a very wide variety of particle
   types, ranging from purely aesthetic (eg. bubbles in a pool of water) to
@@ -109,51 +137,60 @@ which alter game physics:
   Vents can be turned on and off dynamically or be given a periodic duty
   cycle. A given vent can only emit a single particle type, and that type
   fully specifies the particles' appearance and behavior.
-- **Mr. Tip**: An instance of Mr. Tip, specified by a 3D location and a
-  message ID.
-- **Environmental sounds**: A point in 3D space from which a specific sound
+- **Sound emitters**: A point in 3D space from which a specific sound
   effect is played. As the player move closer to the sound's origin, it gets
   louder.
-- **Backgrounds**: TODO
+- **Glover spawn point**: The location where Glover spawns if no mid-way checkpoints have been activated.
+- **Ball spawn point and configuration**: The location where the ball spawns
+  if Glover has not yet collected it and reached a checkpoint. If missing from
+  a landscape, Glover will spawn holding the ball. This command also
+  configures how said ball contributes to overall game progress [TODO:
+  research more]
 
-### Collectibles
+<!-- TODO:
+  0x03: camera_spawn_point
+  0xBD: unknown_sound_0xbd
+ -->
 
-### Enemies
 
-### Misc
+### Environmental settings
+
+The level's environment is also controlled by landscape commands, broken down
+into the following settings:
+- **Backdrops**: TODO surprisingly complex
+- **Fog**: Specified as an RGB color and clip plane distances
+- **Diffuse lights**: Defines a directional diffuse light in the form of an RGB color, a pitch angle and a yaw angle. [TODO: how many?]
+- **Ambient light**: Specifies the color of ambient light in the scene as an
+  RGB color. Only the most recent ambient color specified is uses.
+- **Gravity intensity**: TODO
+
+## Platform Behavior
+
+Platforms can be given a _wide_ variety of behaviors, that range from moving
+along a fixed path to affecting camera behavior to acting as a loading zone.
+In some cases platform behaviors can be combined, though many are incompatible
+with each other and will stop the game from loading.
+
+The rest of this section outlines the various ways platforms can be used.
+
+TODO
+
+### Visual effects
+
+<!-- 0xb3: plat_actor_enable_water_animation
+0xb4: set_object_sparkle
+ -->
+
+
+### Collision effects
+<!-- 
+0x89: set_teleport
+0xa8: set_exit
+0x64: plat_no_clip
+0x82: plat_spike
+ -->
 
 <!-- 
-0xBD: unknown_sound_0xbd
-0xBE: environmental_sound
-0xA9: unknown_0xa9
-0xBB: mr_tip
-0x97: diffuse_light
-0x98: ambient_light
-0x01: glover_spawn_point
-0x02: ball_spawn_point
-0x03: camera_spawn_point
-0xA5: fog_configuration
-0x93: set_actor_rotation
-0x94: set_actor_scale
-0x8C: wind
-0xA0: water
-0x99: backdrop
-
-0xAA: cameo
-0xAB: cameo_inst
-
-0x04: puzzle
-0x05: puzzle_and
-0x06: puzzle_or
-0x07: puzzle_numtimes
-0x08: puzzle_any
-0x95: puzzle_cond
-0x96: puzzle_action
-
-0x85: garib_group
-0x86: garib
-0x87: powerup
-
 0x58: plat_mvspn_0x58
 0x59: plat_mvspn_0x59
 0x5a: plat_mvspn_0x5a
@@ -163,19 +200,10 @@ which alter game physics:
 0x7b: plat_copy_spin_from_parent
 
 0xb8: plat_special_0xb8
-0xb3: plat_actor_enable_water_animation
-0xb7: set_global_0xb7
-
-0xb5: buzzer
-0xb6: buzzer_duty_cycle
-
-0xb4: set_object_sparkle
 0xb9: plat_special_0xb9
-0xa8: set_exit
 0x69: plat_cat_0x69
 0x68: platform_conveyor
 0x9e: plat_special_0x9e
-0x89: set_teleport
 0x8a: plat_fan_0x8a
 0x8b: plat_magnet_0x8b
 0x63: plat_checkpoint
@@ -219,14 +247,12 @@ which alter game physics:
 0xc0: plat_play_object_animation
 0xa4: plat_0xa4
 0x5c: plat_vent_advance_frames
-0x64: plat_no_clip
 0x65: plat_destructible
 0xc8: plat_destructible_sound
 0x9d: plat_0x9d
 0x66: plat_0x66
 0x6a: plat_actor_surface_type
 0x6f: plat_set_tag
-0x82: plat_spike
 0x79: plat_scale
 0x7a: plat_str_0x7a
 
@@ -234,24 +260,43 @@ which alter game physics:
 0x90: plat_sine
 0x8f: plat_orbit
 
-0xa2: vent
-0xa3: vent_duty_cycle
-
 0x62: platform
 0x5d: null_platform
 
-0x83: enemy
+ -->
+
+## Scripting
+
+### Puzzle scripts
+TODO
+
+<!--
+0x04: puzzle
+0x05: puzzle_and
+0x06: puzzle_or
+0x07: puzzle_numtimes
+0x08: puzzle_any
+0x95: puzzle_cond
+0x96: puzzle_action
+ -->
+
+### Enemy AI scripts
+TODO
+
+<!-- 0x83: enemy
 0xa1: enemy_set_attention_bbox
 0xba: enemy_0xba
 0x84: enemy_finalize
 0x9a: enemy_normal_instruction
 0x9b: enemy_conditional_instruction
 0x9c: enemy_attack_instruction
-
-0x7D00: end_level_data
  -->
 
+### Cameo scripts
+TODO
 
+<!-- 0xAA: cameo
+0xAB: cameo_inst -->
 
 ## File Format
 
@@ -281,12 +326,62 @@ is specified in the header, it is possible to store arbitrary data between
 the "end" command and the actual end-of-file, although the vanilla game does
 not do this.
 
-## Libgarib tools
+### Libgarib tools
 
-
+TODO
 
 ## Special cases
 
+| Level ID | Level name        | Hard-coded behavior |
+| -------- | ----------------  | ------------------- |
+| 00       | Hub 1             |                     |
+| 01       | Hub 2             |                     |
+| 02       | Hub 3             |                     |
+| 03       | Hub 4             |                     |
+| 04       | Hub 5             |                     |
+| 05       | Hub 6             |                     |
+| 06       | Hub 7             |                     |
+| 07       | Hub 8             |                     |
+| 08       | Castle Cave       |                     |
+| 09       | Assault Course    |                     |
+| 10       | Atlantis 1        |                     |
+| 11       | Atlantis 2        |                     |
+| 12       | Atlantis 3        |                     |
+| 13       | Atlantis boss     |                     |
+| 14       | Atlantis bonus    |                     |
+| 15       | Carnival 1        |                     |
+| 16       | Carnival 2        |                     |
+| 17       | Carnival 3        |                     |
+| 18       | Carnival boss     |                     |
+| 19       | Carnival bonus    |                     |
+| 20       | Pirates 1         |                     |
+| 21       | Pirates 2         |                     |
+| 22       | Pirates 3         |                     |
+| 23       | Pirates boss      |                     |
+| 24       | Pirates bonus     |                     |
+| 25       | Prehistoric 1     |                     |
+| 26       | Prehistoric 2     |                     |
+| 27       | Prehistoric 3     |                     |
+| 28       | Prehistoric boss  |                     |
+| 29       | Prehistoric bonus |                     |
+| 30       | Fortress of Fear 1|                     |
+| 31       | Fortress of Fear 2|                     |
+| 32       | Fortress of Fear 3|                     |
+| 33       | Fortress of Fear boss|                  |
+| 34       | Fortress of Fear bonus|                 |
+| 35       | Out of this World 1|                    |
+| 36       | Out of this World 2|                    |
+| 37       | Out of this World 3|                    |
+| 38       | Out of this World boss 1 |              |
+| 39       | Out of this World boss 2 |              |
+| 40       | Out of this World boss 3 |              |
+| 41       | Out of this World bonus |               |
+| 42       | Wayroom           |                     |
+| 43       | Opening logos     |                     |
+| 44       | Title screen      |                     |
+| 45       | Closing credits   |                     |
+| 46       | Intro cutscene    |                     |
+| 47       | Outro cutscene    |                     |
 
 
-[^1] Much of what was learned about this format initially came from a differential analysis of the same level data across these two game editions, which facilitated the identification of word boundaries.
+[^1]: Much of what was learned about this format initially came from a differential analysis of the same level data across these two game editions, which facilitated the identification of word boundaries.
