@@ -509,22 +509,22 @@ var GloverLevel = (function() {
       this._debug.body = { start: this._io.pos, ioOffset: this._io.byteOffset };
       switch (this.instType) {
       case 0:
-        this.body = new CameoInst0(this._io, this, this._root);
+        this.body = new CameoPlayAnimation(this._io, this, this._root);
         break;
       case 4:
-        this.body = new CameoInst4(this._io, this, this._root);
+        this.body = new CameoGrabTodo(this._io, this, this._root);
         break;
       case 6:
-        this.body = new CameoInst6(this._io, this, this._root);
+        this.body = new CameoLightningFlash(this._io, this, this._root);
         break;
       case 1:
-        this.body = new CameoInst1(this._io, this, this._root);
+        this.body = new CameoSetCameraAttention(this._io, this, this._root);
         break;
       case 3:
-        this.body = new CameoInst3(this._io, this, this._root);
+        this.body = new CameoSpin(this._io, this, this._root);
         break;
       case 5:
-        this.body = new CameoInst5(this._io, this, this._root);
+        this.body = new CameoSetEnemyFlagTodo(this._io, this, this._root);
         break;
       case 2:
         this.body = new CameoInst2(this._io, this, this._root);
@@ -913,6 +913,31 @@ var GloverLevel = (function() {
     }
 
     return PlatSetInitialPos;
+  })();
+
+  var CameoSetEnemyFlagTodo = GloverLevel.CameoSetEnemyFlagTodo = (function() {
+    function CameoSetEnemyFlagTodo(_io, _parent, _root) {
+      this.__type = 'CameoSetEnemyFlagTodo';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    CameoSetEnemyFlagTodo.prototype._read = function() {
+      this._debug.enemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.enemyIdx = this._io.readU2be();
+      this._debug.enemyIdx.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
+    }
+
+    return CameoSetEnemyFlagTodo;
   })();
 
   var Actor0xbf = GloverLevel.Actor0xbf = (function() {
@@ -1330,6 +1355,31 @@ var GloverLevel = (function() {
     return EnemyInstructionTurn;
   })();
 
+  var CameoLightningFlash = GloverLevel.CameoLightningFlash = (function() {
+    function CameoLightningFlash(_io, _parent, _root) {
+      this.__type = 'CameoLightningFlash';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    CameoLightningFlash.prototype._read = function() {
+      this._debug.reserved = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.reserved = this._io.readU2be();
+      this._debug.reserved.end = this._io.pos;
+      this._debug.durationMin = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.durationMin = this._io.readU2be();
+      this._debug.durationMin.end = this._io.pos;
+      this._debug.durationRange = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.durationRange = this._io.readU2be();
+      this._debug.durationRange.end = this._io.pos;
+    }
+
+    return CameoLightningFlash;
+  })();
+
   var PuzzleAction0x4a = GloverLevel.PuzzleAction0x4a = (function() {
     function PuzzleAction0x4a(_io, _parent, _root) {
       this.__type = 'PuzzleAction0x4a';
@@ -1372,6 +1422,37 @@ var GloverLevel = (function() {
     }
 
     return EnemyConditionalInstruction;
+  })();
+
+  var PuzzleCondGloverWithinRangeOfPoint2 = GloverLevel.PuzzleCondGloverWithinRangeOfPoint2 = (function() {
+    function PuzzleCondGloverWithinRangeOfPoint2(_io, _parent, _root) {
+      this.__type = 'PuzzleCondGloverWithinRangeOfPoint2';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondGloverWithinRangeOfPoint2.prototype._read = function() {
+      this._debug.x = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.x = this._io.readF4be();
+      this._debug.x.end = this._io.pos;
+      this._debug.z = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.z = this._io.readF4be();
+      this._debug.z.end = this._io.pos;
+      this._debug.range = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.range = this._io.readF4be();
+      this._debug.range.end = this._io.pos;
+      this._debug.maxY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.maxY = this._io.readF4be();
+      this._debug.maxY.end = this._io.pos;
+      this._debug.minY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.minY = this._io.readF4be();
+      this._debug.minY.end = this._io.pos;
+    }
+
+    return PuzzleCondGloverWithinRangeOfPoint2;
   })();
 
   var PuzzleCondBallWithinRangeOfPoint = GloverLevel.PuzzleCondBallWithinRangeOfPoint = (function() {
@@ -1548,7 +1629,7 @@ var GloverLevel = (function() {
         this.body = new PuzzleCondBallWithinVolume(this._io, this, this._root);
         break;
       case 41:
-        this.body = new PuzzleCondE(this._io, this, this._root);
+        this.body = new PuzzleCondGloverWithinRangeOfPoint2(this._io, this, this._root);
         break;
       case 36:
         this.body = new PuzzleCondGloverWithinRangeOfPoint(this._io, this, this._root);
@@ -1711,27 +1792,27 @@ var GloverLevel = (function() {
       this._read();
     }
     CameoInst2.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
+      this._debug.subcommand = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.subcommand = this._io.readU2be();
+      this._debug.subcommand.end = this._io.pos;
       this._debug.i0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x02 = this._io.readU4be();
+      this.i0x02 = this._io.readF4be();
       this._debug.i0x02.end = this._io.pos;
       this._debug.i0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x06 = this._io.readU4be();
+      this.i0x06 = this._io.readF4be();
       this._debug.i0x06.end = this._io.pos;
       this._debug.i0x0a = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x0a = this._io.readU4be();
+      this.i0x0a = this._io.readF4be();
       this._debug.i0x0a.end = this._io.pos;
       this._debug.i0x0e = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.i0x0e = this._io.readU4be();
       this._debug.i0x0e.end = this._io.pos;
-      this._debug.h0x12 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x12 = this._io.readU2be();
-      this._debug.h0x12.end = this._io.pos;
-      this._debug.h0x14 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x14 = this._io.readU2be();
-      this._debug.h0x14.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
     }
 
     return CameoInst2;
@@ -2160,37 +2241,6 @@ var GloverLevel = (function() {
     }
 
     return PlatCheckpoint;
-  })();
-
-  var CameoInst4 = GloverLevel.CameoInst4 = (function() {
-    function CameoInst4(_io, _parent, _root) {
-      this.__type = 'CameoInst4';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    CameoInst4.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.h0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x02 = this._io.readU2be();
-      this._debug.h0x02.end = this._io.pos;
-      this._debug.h0x04 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x04 = this._io.readU2be();
-      this._debug.h0x04.end = this._io.pos;
-      this._debug.h0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x06 = this._io.readU2be();
-      this._debug.h0x06.end = this._io.pos;
-      this._debug.h0x08 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x08 = this._io.readU2be();
-      this._debug.h0x08.end = this._io.pos;
-    }
-
-    return CameoInst4;
   })();
 
   var BallSpawnPoint = GloverLevel.BallSpawnPoint = (function() {
@@ -3193,6 +3243,37 @@ var GloverLevel = (function() {
     return PuzzleCondBallIsTouchingPlatform;
   })();
 
+  var CameoGrabTodo = GloverLevel.CameoGrabTodo = (function() {
+    function CameoGrabTodo(_io, _parent, _root) {
+      this.__type = 'CameoGrabTodo';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    CameoGrabTodo.prototype._read = function() {
+      this._debug.grabbingEnemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.grabbingEnemyIdx = this._io.readU2be();
+      this._debug.grabbingEnemyIdx.end = this._io.pos;
+      this._debug.grabbedEnemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.grabbedEnemyIdx = this._io.readU2be();
+      this._debug.grabbedEnemyIdx.end = this._io.pos;
+      this._debug.linkagePointIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.linkagePointIdx = this._io.readU2be();
+      this._debug.linkagePointIdx.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
+    }
+
+    return CameoGrabTodo;
+  })();
+
   var PlatOrbitFlip0x77 = GloverLevel.PlatOrbitFlip0x77 = (function() {
     function PlatOrbitFlip0x77(_io, _parent, _root) {
       this.__type = 'PlatOrbitFlip0x77';
@@ -3585,34 +3666,6 @@ var GloverLevel = (function() {
     return GaribGroup;
   })();
 
-  var CameoInst6 = GloverLevel.CameoInst6 = (function() {
-    function CameoInst6(_io, _parent, _root) {
-      this.__type = 'CameoInst6';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    CameoInst6.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.h0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x02 = this._io.readU2be();
-      this._debug.h0x02.end = this._io.pos;
-      this._debug.h0x04 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x04 = this._io.readU2be();
-      this._debug.h0x04.end = this._io.pos;
-      this._debug.h0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x06 = this._io.readU2be();
-      this._debug.h0x06.end = this._io.pos;
-    }
-
-    return CameoInst6;
-  })();
-
   var AnimatedBackgroundActor = GloverLevel.AnimatedBackgroundActor = (function() {
     function AnimatedBackgroundActor(_io, _parent, _root) {
       this.__type = 'AnimatedBackgroundActor';
@@ -3786,6 +3839,34 @@ var GloverLevel = (function() {
     }
 
     return PuzzleCondA;
+  })();
+
+  var CameoSpin = GloverLevel.CameoSpin = (function() {
+    function CameoSpin(_io, _parent, _root) {
+      this.__type = 'CameoSpin';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    CameoSpin.prototype._read = function() {
+      this._debug.enemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.enemyIdx = this._io.readU2be();
+      this._debug.enemyIdx.end = this._io.pos;
+      this._debug.speed = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.speed = this._io.readF4be();
+      this._debug.speed.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
+    }
+
+    return CameoSpin;
   })();
 
   var PlatSine = GloverLevel.PlatSine = (function() {
@@ -4033,40 +4114,6 @@ var GloverLevel = (function() {
     return GloverSpawnPoint;
   })();
 
-  var CameoInst1 = GloverLevel.CameoInst1 = (function() {
-    function CameoInst1(_io, _parent, _root) {
-      this.__type = 'CameoInst1';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    CameoInst1.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.i0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x02 = this._io.readU4be();
-      this._debug.i0x02.end = this._io.pos;
-      this._debug.i0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x06 = this._io.readU4be();
-      this._debug.i0x06.end = this._io.pos;
-      this._debug.i0x0a = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x0a = this._io.readU4be();
-      this._debug.i0x0a.end = this._io.pos;
-      this._debug.h0x0e = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x0e = this._io.readU2be();
-      this._debug.h0x0e.end = this._io.pos;
-      this._debug.h0x10 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x10 = this._io.readU2be();
-      this._debug.h0x10.end = this._io.pos;
-    }
-
-    return CameoInst1;
-  })();
-
   var Plat0x9d = GloverLevel.Plat0x9d = (function() {
     function Plat0x9d(_io, _parent, _root) {
       this.__type = 'Plat0x9d';
@@ -4158,9 +4205,9 @@ var GloverLevel = (function() {
     return BuzzerDutyCycle;
   })();
 
-  var CameoInst5 = GloverLevel.CameoInst5 = (function() {
-    function CameoInst5(_io, _parent, _root) {
-      this.__type = 'CameoInst5';
+  var CameoPlayAnimation = GloverLevel.CameoPlayAnimation = (function() {
+    function CameoPlayAnimation(_io, _parent, _root) {
+      this.__type = 'CameoPlayAnimation';
       this._io = _io;
       this._parent = _parent;
       this._root = _root || this;
@@ -4168,19 +4215,28 @@ var GloverLevel = (function() {
 
       this._read();
     }
-    CameoInst5.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.h0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x02 = this._io.readU2be();
-      this._debug.h0x02.end = this._io.pos;
-      this._debug.h0x04 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x04 = this._io.readU2be();
-      this._debug.h0x04.end = this._io.pos;
+    CameoPlayAnimation.prototype._read = function() {
+      this._debug.enemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.enemyIdx = this._io.readU2be();
+      this._debug.enemyIdx.end = this._io.pos;
+      this._debug.animIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.animIdx = this._io.readU2be();
+      this._debug.animIdx.end = this._io.pos;
+      this._debug.startPlaying = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.startPlaying = this._io.readU2be();
+      this._debug.startPlaying.end = this._io.pos;
+      this._debug.playbackSpeed = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.playbackSpeed = this._io.readF4be();
+      this._debug.playbackSpeed.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
     }
 
-    return CameoInst5;
+    return CameoPlayAnimation;
   })();
 
   var PlatPlayObjectAnimation = GloverLevel.PlatPlayObjectAnimation = (function() {
@@ -4352,34 +4408,6 @@ var GloverLevel = (function() {
     }
 
     return PuzzleAction0x55;
-  })();
-
-  var CameoInst3 = GloverLevel.CameoInst3 = (function() {
-    function CameoInst3(_io, _parent, _root) {
-      this.__type = 'CameoInst3';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    CameoInst3.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.i0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x02 = this._io.readU4be();
-      this._debug.i0x02.end = this._io.pos;
-      this._debug.h0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x06 = this._io.readU2be();
-      this._debug.h0x06.end = this._io.pos;
-      this._debug.h0x08 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x08 = this._io.readU2be();
-      this._debug.h0x08.end = this._io.pos;
-    }
-
-    return CameoInst3;
   })();
 
   var PlatGoForwards0x5f = GloverLevel.PlatGoForwards0x5f = (function() {
@@ -4691,37 +4719,6 @@ var GloverLevel = (function() {
     }
 
     return SetGlobal0xb7;
-  })();
-
-  var PuzzleCondE = GloverLevel.PuzzleCondE = (function() {
-    function PuzzleCondE(_io, _parent, _root) {
-      this.__type = 'PuzzleCondE';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzleCondE.prototype._read = function() {
-      this._debug.i0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x00 = this._io.readU4be();
-      this._debug.i0x00.end = this._io.pos;
-      this._debug.i0x04 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x04 = this._io.readU4be();
-      this._debug.i0x04.end = this._io.pos;
-      this._debug.i0x08 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x08 = this._io.readU4be();
-      this._debug.i0x08.end = this._io.pos;
-      this._debug.i0x0c = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x0c = this._io.readU4be();
-      this._debug.i0x0c.end = this._io.pos;
-      this._debug.i0x10 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x10 = this._io.readU4be();
-      this._debug.i0x10.end = this._io.pos;
-    }
-
-    return PuzzleCondE;
   })();
 
   var Platform = GloverLevel.Platform = (function() {
@@ -5253,6 +5250,40 @@ var GloverLevel = (function() {
     return EnemyAttackInstruction;
   })();
 
+  var CameoSetCameraAttention = GloverLevel.CameoSetCameraAttention = (function() {
+    function CameoSetCameraAttention(_io, _parent, _root) {
+      this.__type = 'CameoSetCameraAttention';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    CameoSetCameraAttention.prototype._read = function() {
+      this._debug.enemyIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.enemyIdx = this._io.readU2be();
+      this._debug.enemyIdx.end = this._io.pos;
+      this._debug.x = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.x = this._io.readF4be();
+      this._debug.x.end = this._io.pos;
+      this._debug.y = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.y = this._io.readF4be();
+      this._debug.y.end = this._io.pos;
+      this._debug.z = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.z = this._io.readF4be();
+      this._debug.z.end = this._io.pos;
+      this._debug.frameCount = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.frameCount = this._io.readS2be();
+      this._debug.frameCount.end = this._io.pos;
+      this._debug.precedingInstrIdx = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.precedingInstrIdx = this._io.readS2be();
+      this._debug.precedingInstrIdx.end = this._io.pos;
+    }
+
+    return CameoSetCameraAttention;
+  })();
+
   var LandActor = GloverLevel.LandActor = (function() {
     function LandActor(_io, _parent, _root) {
       this.__type = 'LandActor';
@@ -5338,40 +5369,6 @@ var GloverLevel = (function() {
     }
 
     return PuzzleAction0x490x4d;
-  })();
-
-  var CameoInst0 = GloverLevel.CameoInst0 = (function() {
-    function CameoInst0(_io, _parent, _root) {
-      this.__type = 'CameoInst0';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    CameoInst0.prototype._read = function() {
-      this._debug.h0x00 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x00 = this._io.readU2be();
-      this._debug.h0x00.end = this._io.pos;
-      this._debug.h0x02 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x02 = this._io.readU2be();
-      this._debug.h0x02.end = this._io.pos;
-      this._debug.h0x04 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x04 = this._io.readU2be();
-      this._debug.h0x04.end = this._io.pos;
-      this._debug.i0x06 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.i0x06 = this._io.readU4be();
-      this._debug.i0x06.end = this._io.pos;
-      this._debug.h0x0a = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x0a = this._io.readU2be();
-      this._debug.h0x0a.end = this._io.pos;
-      this._debug.h0x0c = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x0c = this._io.readU2be();
-      this._debug.h0x0c.end = this._io.pos;
-    }
-
-    return CameoInst0;
   })();
 
   var CameraSpawnPoint = GloverLevel.CameraSpawnPoint = (function() {

@@ -846,7 +846,7 @@
               <param name="pattern">0|0x0*0</param>
             </data>
           </attribute>
-          <ref name="CameoInst0"/>
+          <ref name="CameoPlayAnimation"/>
         </group>
         <group>
           <!--Case 0x1-->
@@ -855,7 +855,7 @@
               <param name="pattern">1|0x0*1</param>
             </data>
           </attribute>
-          <ref name="CameoInst1"/>
+          <ref name="CameoSetCameraAttention"/>
         </group>
         <group>
           <!--Case 0x2-->
@@ -873,7 +873,7 @@
               <param name="pattern">3|0x0*3</param>
             </data>
           </attribute>
-          <ref name="CameoInst3"/>
+          <ref name="CameoSpin"/>
         </group>
         <group>
           <!--Case 0x4-->
@@ -882,7 +882,7 @@
               <param name="pattern">4|0x0*4</param>
             </data>
           </attribute>
-          <ref name="CameoInst4"/>
+          <ref name="CameoGrabTodo"/>
         </group>
         <group>
           <!--Case 0x5-->
@@ -891,7 +891,7 @@
               <param name="pattern">5|0x0*5</param>
             </data>
           </attribute>
-          <ref name="CameoInst5"/>
+          <ref name="CameoSetEnemyFlagTodo"/>
         </group>
         <group>
           <!--Case 0x6-->
@@ -900,7 +900,7 @@
               <param name="pattern">6|0x0*6</param>
             </data>
           </attribute>
-          <ref name="CameoInst6"/>
+          <ref name="CameoLightningFlash"/>
         </group>
         <group>
           <!--Default case (only for types not listed above!)-->
@@ -912,53 +912,53 @@
       </choice>
     </element>
   </define>
-  <define name="CameoInst0">
-    <element name="CameoInst0">
-      <attribute name="h_0x00">
+  <define name="CameoPlayAnimation">
+    <element name="CameoPlayAnimation">
+      <attribute name="enemy_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x02">
+      <attribute name="anim_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x04">
+      <attribute name="start_playing">
         <text/>
       </attribute>
-      <attribute name="i_0x06">
+      <attribute name="playback_speed">
         <text/>
       </attribute>
-      <attribute name="h_0x0a">
+      <attribute name="frame_count">
         <text/>
       </attribute>
-      <attribute name="h_0x0c">
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
     </element>
   </define>
-  <define name="CameoInst1">
-    <element name="CameoInst1">
-      <attribute name="h_0x00">
+  <define name="CameoSetCameraAttention">
+    <element name="CameoSetCameraAttention">
+      <attribute name="enemy_idx">
         <text/>
       </attribute>
-      <attribute name="i_0x02">
+      <attribute name="x">
         <text/>
       </attribute>
-      <attribute name="i_0x06">
+      <attribute name="y">
         <text/>
       </attribute>
-      <attribute name="i_0x0a">
+      <attribute name="z">
         <text/>
       </attribute>
-      <attribute name="h_0x0e">
+      <attribute name="frame_count">
         <text/>
       </attribute>
-      <attribute name="h_0x10">
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
     </element>
   </define>
   <define name="CameoInst2">
     <element name="CameoInst2">
-      <attribute name="h_0x00">
+      <attribute name="subcommand">
         <text/>
       </attribute>
       <attribute name="i_0x02">
@@ -973,74 +973,71 @@
       <attribute name="i_0x0e">
         <text/>
       </attribute>
-      <attribute name="h_0x12">
+      <attribute name="frame_count">
         <text/>
       </attribute>
-      <attribute name="h_0x14">
-        <text/>
-      </attribute>
-    </element>
-  </define>
-  <define name="CameoInst3">
-    <element name="CameoInst3">
-      <attribute name="h_0x00">
-        <text/>
-      </attribute>
-      <attribute name="i_0x02">
-        <text/>
-      </attribute>
-      <attribute name="h_0x06">
-        <text/>
-      </attribute>
-      <attribute name="h_0x08">
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
     </element>
   </define>
-  <define name="CameoInst4">
-    <element name="CameoInst4">
-      <attribute name="h_0x00">
+  <define name="CameoSpin">
+    <element name="CameoSpin">
+      <attribute name="enemy_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x02">
+      <attribute name="speed">
         <text/>
       </attribute>
-      <attribute name="h_0x04">
+      <attribute name="frame_count">
         <text/>
       </attribute>
-      <attribute name="h_0x06">
-        <text/>
-      </attribute>
-      <attribute name="h_0x08">
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
     </element>
   </define>
-  <define name="CameoInst5">
-    <element name="CameoInst5">
-      <attribute name="h_0x00">
+  <define name="CameoGrabTodo">
+    <element name="CameoGrabTodo">
+      <attribute name="grabbing_enemy_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x02">
+      <attribute name="grabbed_enemy_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x04">
+      <attribute name="linkage_point_idx">
+        <text/>
+      </attribute>
+      <attribute name="frame_count">
+        <text/>
+      </attribute>
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
     </element>
   </define>
-  <define name="CameoInst6">
-    <element name="CameoInst6">
-      <attribute name="h_0x00">
+  <define name="CameoSetEnemyFlagTodo">
+    <element name="CameoSetEnemyFlagTodo">
+      <attribute name="enemy_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x02">
+      <attribute name="frame_count">
         <text/>
       </attribute>
-      <attribute name="h_0x04">
+      <attribute name="preceding_instr_idx">
         <text/>
       </attribute>
-      <attribute name="h_0x06">
+    </element>
+  </define>
+  <define name="CameoLightningFlash">
+    <element name="CameoLightningFlash">
+      <attribute name="reserved">
+        <text/>
+      </attribute>
+      <attribute name="duration_min">
+        <text/>
+      </attribute>
+      <attribute name="duration_range">
         <text/>
       </attribute>
     </element>
@@ -1338,7 +1335,7 @@
               <param name="pattern">41|0x0*29</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondE"/>
+          <ref name="PuzzleCondGloverWithinRangeOfPoint2"/>
         </group>
         <group>
           <!--Default case (only for types not listed above!)-->
@@ -1679,21 +1676,21 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondE">
-    <element name="PuzzleCondE">
-      <attribute name="i_0x00">
+  <define name="PuzzleCondGloverWithinRangeOfPoint2">
+    <element name="PuzzleCondGloverWithinRangeOfPoint2">
+      <attribute name="x">
         <text/>
       </attribute>
-      <attribute name="i_0x04">
+      <attribute name="z">
         <text/>
       </attribute>
-      <attribute name="i_0x08">
+      <attribute name="range">
         <text/>
       </attribute>
-      <attribute name="i_0x0c">
+      <attribute name="max_y">
         <text/>
       </attribute>
-      <attribute name="i_0x10">
+      <attribute name="min_y">
         <text/>
       </attribute>
     </element>

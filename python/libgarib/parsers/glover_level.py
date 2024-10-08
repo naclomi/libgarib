@@ -449,17 +449,17 @@ class GloverLevel(KaitaiStruct):
             self._debug['body']['start'] = self._io.pos()
             _on = self.inst_type
             if _on == 0:
-                self.body = GloverLevel.CameoInst0(self._io, self, self._root)
+                self.body = GloverLevel.CameoPlayAnimation(self._io, self, self._root)
             elif _on == 4:
-                self.body = GloverLevel.CameoInst4(self._io, self, self._root)
+                self.body = GloverLevel.CameoGrabTodo(self._io, self, self._root)
             elif _on == 6:
-                self.body = GloverLevel.CameoInst6(self._io, self, self._root)
+                self.body = GloverLevel.CameoLightningFlash(self._io, self, self._root)
             elif _on == 1:
-                self.body = GloverLevel.CameoInst1(self._io, self, self._root)
+                self.body = GloverLevel.CameoSetCameraAttention(self._io, self, self._root)
             elif _on == 3:
-                self.body = GloverLevel.CameoInst3(self._io, self, self._root)
+                self.body = GloverLevel.CameoSpin(self._io, self, self._root)
             elif _on == 5:
-                self.body = GloverLevel.CameoInst5(self._io, self, self._root)
+                self.body = GloverLevel.CameoSetEnemyFlagTodo(self._io, self, self._root)
             elif _on == 2:
                 self.body = GloverLevel.CameoInst2(self._io, self, self._root)
             else:
@@ -790,6 +790,27 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['start'] = self._io.pos()
             self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
+
+
+    class CameoSetEnemyFlagTodo(KaitaiStruct):
+        SEQ_FIELDS = ["enemy_idx", "frame_count", "preceding_instr_idx"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['enemy_idx']['start'] = self._io.pos()
+            self.enemy_idx = self._io.read_u2be()
+            self._debug['enemy_idx']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
 
 
     class Actor0xbf(KaitaiStruct):
@@ -1129,6 +1150,27 @@ class GloverLevel(KaitaiStruct):
             self._debug['choose_random_direction']['end'] = self._io.pos()
 
 
+    class CameoLightningFlash(KaitaiStruct):
+        SEQ_FIELDS = ["reserved", "duration_min", "duration_range"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['reserved']['start'] = self._io.pos()
+            self.reserved = self._io.read_u2be()
+            self._debug['reserved']['end'] = self._io.pos()
+            self._debug['duration_min']['start'] = self._io.pos()
+            self.duration_min = self._io.read_u2be()
+            self._debug['duration_min']['end'] = self._io.pos()
+            self._debug['duration_range']['start'] = self._io.pos()
+            self.duration_range = self._io.read_u2be()
+            self._debug['duration_range']['end'] = self._io.pos()
+
+
     class PuzzleAction0x4a(KaitaiStruct):
         SEQ_FIELDS = ["u32_0x24", "u32_0x24_0x0c", "u16_0x0a"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1163,6 +1205,33 @@ class GloverLevel(KaitaiStruct):
             self._debug['instr']['start'] = self._io.pos()
             self.instr = GloverLevel.EnemyInstruction(self._io, self, self._root)
             self._debug['instr']['end'] = self._io.pos()
+
+
+    class PuzzleCondGloverWithinRangeOfPoint2(KaitaiStruct):
+        SEQ_FIELDS = ["x", "z", "range", "max_y", "min_y"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+            self._debug['range']['start'] = self._io.pos()
+            self.range = self._io.read_f4be()
+            self._debug['range']['end'] = self._io.pos()
+            self._debug['max_y']['start'] = self._io.pos()
+            self.max_y = self._io.read_f4be()
+            self._debug['max_y']['end'] = self._io.pos()
+            self._debug['min_y']['start'] = self._io.pos()
+            self.min_y = self._io.read_f4be()
+            self._debug['min_y']['end'] = self._io.pos()
 
 
     class PuzzleCondBallWithinRangeOfPoint(KaitaiStruct):
@@ -1306,7 +1375,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 37:
                 self.body = GloverLevel.PuzzleCondBallWithinVolume(self._io, self, self._root)
             elif _on == 41:
-                self.body = GloverLevel.PuzzleCondE(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondGloverWithinRangeOfPoint2(self._io, self, self._root)
             elif _on == 36:
                 self.body = GloverLevel.PuzzleCondGloverWithinRangeOfPoint(self._io, self, self._root)
             elif _on == 16:
@@ -1425,7 +1494,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class CameoInst2(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "i_0x02", "i_0x06", "i_0x0a", "i_0x0e", "h_0x12", "h_0x14"]
+        SEQ_FIELDS = ["subcommand", "i_0x02", "i_0x06", "i_0x0a", "i_0x0e", "frame_count", "preceding_instr_idx"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1434,27 +1503,27 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
+            self._debug['subcommand']['start'] = self._io.pos()
+            self.subcommand = self._io.read_u2be()
+            self._debug['subcommand']['end'] = self._io.pos()
             self._debug['i_0x02']['start'] = self._io.pos()
-            self.i_0x02 = self._io.read_u4be()
+            self.i_0x02 = self._io.read_f4be()
             self._debug['i_0x02']['end'] = self._io.pos()
             self._debug['i_0x06']['start'] = self._io.pos()
-            self.i_0x06 = self._io.read_u4be()
+            self.i_0x06 = self._io.read_f4be()
             self._debug['i_0x06']['end'] = self._io.pos()
             self._debug['i_0x0a']['start'] = self._io.pos()
-            self.i_0x0a = self._io.read_u4be()
+            self.i_0x0a = self._io.read_f4be()
             self._debug['i_0x0a']['end'] = self._io.pos()
             self._debug['i_0x0e']['start'] = self._io.pos()
             self.i_0x0e = self._io.read_u4be()
             self._debug['i_0x0e']['end'] = self._io.pos()
-            self._debug['h_0x12']['start'] = self._io.pos()
-            self.h_0x12 = self._io.read_u2be()
-            self._debug['h_0x12']['end'] = self._io.pos()
-            self._debug['h_0x14']['start'] = self._io.pos()
-            self.h_0x14 = self._io.read_u2be()
-            self._debug['h_0x14']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
 
 
     class Unknown(KaitaiStruct):
@@ -1808,33 +1877,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['theta']['start'] = self._io.pos()
             self.theta = self._io.read_f4be()
             self._debug['theta']['end'] = self._io.pos()
-
-
-    class CameoInst4(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04", "h_0x06", "h_0x08"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['h_0x02']['start'] = self._io.pos()
-            self.h_0x02 = self._io.read_u2be()
-            self._debug['h_0x02']['end'] = self._io.pos()
-            self._debug['h_0x04']['start'] = self._io.pos()
-            self.h_0x04 = self._io.read_u2be()
-            self._debug['h_0x04']['end'] = self._io.pos()
-            self._debug['h_0x06']['start'] = self._io.pos()
-            self.h_0x06 = self._io.read_u2be()
-            self._debug['h_0x06']['end'] = self._io.pos()
-            self._debug['h_0x08']['start'] = self._io.pos()
-            self.h_0x08 = self._io.read_u2be()
-            self._debug['h_0x08']['end'] = self._io.pos()
 
 
     class BallSpawnPoint(KaitaiStruct):
@@ -2612,6 +2654,33 @@ class GloverLevel(KaitaiStruct):
             self._debug['invert_result']['end'] = self._io.pos()
 
 
+    class CameoGrabTodo(KaitaiStruct):
+        SEQ_FIELDS = ["grabbing_enemy_idx", "grabbed_enemy_idx", "linkage_point_idx", "frame_count", "preceding_instr_idx"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['grabbing_enemy_idx']['start'] = self._io.pos()
+            self.grabbing_enemy_idx = self._io.read_u2be()
+            self._debug['grabbing_enemy_idx']['end'] = self._io.pos()
+            self._debug['grabbed_enemy_idx']['start'] = self._io.pos()
+            self.grabbed_enemy_idx = self._io.read_u2be()
+            self._debug['grabbed_enemy_idx']['end'] = self._io.pos()
+            self._debug['linkage_point_idx']['start'] = self._io.pos()
+            self.linkage_point_idx = self._io.read_u2be()
+            self._debug['linkage_point_idx']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
+
+
     class PlatOrbitFlip0x77(KaitaiStruct):
         SEQ_FIELDS = ["u16_0x08", "u16_0x10"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2901,30 +2970,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['initial_state']['end'] = self._io.pos()
 
 
-    class CameoInst6(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04", "h_0x06"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['h_0x02']['start'] = self._io.pos()
-            self.h_0x02 = self._io.read_u2be()
-            self._debug['h_0x02']['end'] = self._io.pos()
-            self._debug['h_0x04']['start'] = self._io.pos()
-            self.h_0x04 = self._io.read_u2be()
-            self._debug['h_0x04']['end'] = self._io.pos()
-            self._debug['h_0x06']['start'] = self._io.pos()
-            self.h_0x06 = self._io.read_u2be()
-            self._debug['h_0x06']['end'] = self._io.pos()
-
-
     class AnimatedBackgroundActor(KaitaiStruct):
         SEQ_FIELDS = ["object_id", "name", "x", "y", "z"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -3071,6 +3116,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x0a']['start'] = self._io.pos()
             self.u16_0x0a = self._io.read_u2be()
             self._debug['u16_0x0a']['end'] = self._io.pos()
+
+
+    class CameoSpin(KaitaiStruct):
+        SEQ_FIELDS = ["enemy_idx", "speed", "frame_count", "preceding_instr_idx"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['enemy_idx']['start'] = self._io.pos()
+            self.enemy_idx = self._io.read_u2be()
+            self._debug['enemy_idx']['end'] = self._io.pos()
+            self._debug['speed']['start'] = self._io.pos()
+            self.speed = self._io.read_f4be()
+            self._debug['speed']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
 
 
     class PlatSine(KaitaiStruct):
@@ -3286,36 +3355,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['end'] = self._io.pos()
 
 
-    class CameoInst1(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "i_0x02", "i_0x06", "i_0x0a", "h_0x0e", "h_0x10"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['i_0x02']['start'] = self._io.pos()
-            self.i_0x02 = self._io.read_u4be()
-            self._debug['i_0x02']['end'] = self._io.pos()
-            self._debug['i_0x06']['start'] = self._io.pos()
-            self.i_0x06 = self._io.read_u4be()
-            self._debug['i_0x06']['end'] = self._io.pos()
-            self._debug['i_0x0a']['start'] = self._io.pos()
-            self.i_0x0a = self._io.read_u4be()
-            self._debug['i_0x0a']['end'] = self._io.pos()
-            self._debug['h_0x0e']['start'] = self._io.pos()
-            self.h_0x0e = self._io.read_u2be()
-            self._debug['h_0x0e']['end'] = self._io.pos()
-            self._debug['h_0x10']['start'] = self._io.pos()
-            self.h_0x10 = self._io.read_u2be()
-            self._debug['h_0x10']['end'] = self._io.pos()
-
-
     class Plat0x9d(KaitaiStruct):
         SEQ_FIELDS = []
         def __init__(self, _io, _parent=None, _root=None):
@@ -3392,8 +3431,8 @@ class GloverLevel(KaitaiStruct):
             self._debug['frames_on']['end'] = self._io.pos()
 
 
-    class CameoInst5(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04"]
+    class CameoPlayAnimation(KaitaiStruct):
+        SEQ_FIELDS = ["enemy_idx", "anim_idx", "start_playing", "playback_speed", "frame_count", "preceding_instr_idx"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -3402,15 +3441,24 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['h_0x02']['start'] = self._io.pos()
-            self.h_0x02 = self._io.read_u2be()
-            self._debug['h_0x02']['end'] = self._io.pos()
-            self._debug['h_0x04']['start'] = self._io.pos()
-            self.h_0x04 = self._io.read_u2be()
-            self._debug['h_0x04']['end'] = self._io.pos()
+            self._debug['enemy_idx']['start'] = self._io.pos()
+            self.enemy_idx = self._io.read_u2be()
+            self._debug['enemy_idx']['end'] = self._io.pos()
+            self._debug['anim_idx']['start'] = self._io.pos()
+            self.anim_idx = self._io.read_u2be()
+            self._debug['anim_idx']['end'] = self._io.pos()
+            self._debug['start_playing']['start'] = self._io.pos()
+            self.start_playing = self._io.read_u2be()
+            self._debug['start_playing']['end'] = self._io.pos()
+            self._debug['playback_speed']['start'] = self._io.pos()
+            self.playback_speed = self._io.read_f4be()
+            self._debug['playback_speed']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
 
 
     class PlatPlayObjectAnimation(KaitaiStruct):
@@ -3559,30 +3607,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x0a']['start'] = self._io.pos()
             self.u16_0x0a = self._io.read_u2be()
             self._debug['u16_0x0a']['end'] = self._io.pos()
-
-
-    class CameoInst3(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "i_0x02", "h_0x06", "h_0x08"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['i_0x02']['start'] = self._io.pos()
-            self.i_0x02 = self._io.read_u4be()
-            self._debug['i_0x02']['end'] = self._io.pos()
-            self._debug['h_0x06']['start'] = self._io.pos()
-            self.h_0x06 = self._io.read_u2be()
-            self._debug['h_0x06']['end'] = self._io.pos()
-            self._debug['h_0x08']['start'] = self._io.pos()
-            self.h_0x08 = self._io.read_u2be()
-            self._debug['h_0x08']['end'] = self._io.pos()
 
 
     class PlatGoForwards0x5f(KaitaiStruct):
@@ -3805,33 +3829,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['value']['start'] = self._io.pos()
             self.value = self._io.read_u4be()
             self._debug['value']['end'] = self._io.pos()
-
-
-    class PuzzleCondE(KaitaiStruct):
-        SEQ_FIELDS = ["i_0x00", "i_0x04", "i_0x08", "i_0x0c", "i_0x10"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['i_0x00']['start'] = self._io.pos()
-            self.i_0x00 = self._io.read_u4be()
-            self._debug['i_0x00']['end'] = self._io.pos()
-            self._debug['i_0x04']['start'] = self._io.pos()
-            self.i_0x04 = self._io.read_u4be()
-            self._debug['i_0x04']['end'] = self._io.pos()
-            self._debug['i_0x08']['start'] = self._io.pos()
-            self.i_0x08 = self._io.read_u4be()
-            self._debug['i_0x08']['end'] = self._io.pos()
-            self._debug['i_0x0c']['start'] = self._io.pos()
-            self.i_0x0c = self._io.read_u4be()
-            self._debug['i_0x0c']['end'] = self._io.pos()
-            self._debug['i_0x10']['start'] = self._io.pos()
-            self.i_0x10 = self._io.read_u4be()
-            self._debug['i_0x10']['end'] = self._io.pos()
 
 
     class Platform(KaitaiStruct):
@@ -4288,6 +4285,36 @@ class GloverLevel(KaitaiStruct):
             self._debug['instr']['end'] = self._io.pos()
 
 
+    class CameoSetCameraAttention(KaitaiStruct):
+        SEQ_FIELDS = ["enemy_idx", "x", "y", "z", "frame_count", "preceding_instr_idx"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['enemy_idx']['start'] = self._io.pos()
+            self.enemy_idx = self._io.read_u2be()
+            self._debug['enemy_idx']['end'] = self._io.pos()
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['y']['start'] = self._io.pos()
+            self.y = self._io.read_f4be()
+            self._debug['y']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+            self._debug['frame_count']['start'] = self._io.pos()
+            self.frame_count = self._io.read_s2be()
+            self._debug['frame_count']['end'] = self._io.pos()
+            self._debug['preceding_instr_idx']['start'] = self._io.pos()
+            self.preceding_instr_idx = self._io.read_s2be()
+            self._debug['preceding_instr_idx']['end'] = self._io.pos()
+
+
     class LandActor(KaitaiStruct):
         SEQ_FIELDS = ["object_id", "name", "x", "y", "z"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4361,36 +4388,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u16_0x0a']['start'] = self._io.pos()
             self.u16_0x0a = self._io.read_u2be()
             self._debug['u16_0x0a']['end'] = self._io.pos()
-
-
-    class CameoInst0(KaitaiStruct):
-        SEQ_FIELDS = ["h_0x00", "h_0x02", "h_0x04", "i_0x06", "h_0x0a", "h_0x0c"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['h_0x00']['start'] = self._io.pos()
-            self.h_0x00 = self._io.read_u2be()
-            self._debug['h_0x00']['end'] = self._io.pos()
-            self._debug['h_0x02']['start'] = self._io.pos()
-            self.h_0x02 = self._io.read_u2be()
-            self._debug['h_0x02']['end'] = self._io.pos()
-            self._debug['h_0x04']['start'] = self._io.pos()
-            self.h_0x04 = self._io.read_u2be()
-            self._debug['h_0x04']['end'] = self._io.pos()
-            self._debug['i_0x06']['start'] = self._io.pos()
-            self.i_0x06 = self._io.read_u4be()
-            self._debug['i_0x06']['end'] = self._io.pos()
-            self._debug['h_0x0a']['start'] = self._io.pos()
-            self.h_0x0a = self._io.read_u2be()
-            self._debug['h_0x0a']['end'] = self._io.pos()
-            self._debug['h_0x0c']['start'] = self._io.pos()
-            self.h_0x0c = self._io.read_u2be()
-            self._debug['h_0x0c']['end'] = self._io.pos()
 
 
     class CameraSpawnPoint(KaitaiStruct):
@@ -4719,23 +4716,23 @@ switch_fields = {
         'body': {
             'field': 'inst_type',
             'code-to-type': {
-                0x0: GloverLevel.CameoInst0,
-                0x1: GloverLevel.CameoInst1,
+                0x0: GloverLevel.CameoPlayAnimation,
+                0x1: GloverLevel.CameoSetCameraAttention,
                 0x2: GloverLevel.CameoInst2,
-                0x3: GloverLevel.CameoInst3,
-                0x4: GloverLevel.CameoInst4,
-                0x5: GloverLevel.CameoInst5,
-                0x6: GloverLevel.CameoInst6,
+                0x3: GloverLevel.CameoSpin,
+                0x4: GloverLevel.CameoGrabTodo,
+                0x5: GloverLevel.CameoSetEnemyFlagTodo,
+                0x6: GloverLevel.CameoLightningFlash,
                 None: GloverLevel.CameoInstDefault,
             },
             'type-to-code': {
-                GloverLevel.CameoInst0: 0x0,
-                GloverLevel.CameoInst1: 0x1,
+                GloverLevel.CameoPlayAnimation: 0x0,
+                GloverLevel.CameoSetCameraAttention: 0x1,
                 GloverLevel.CameoInst2: 0x2,
-                GloverLevel.CameoInst3: 0x3,
-                GloverLevel.CameoInst4: 0x4,
-                GloverLevel.CameoInst5: 0x5,
-                GloverLevel.CameoInst6: 0x6,
+                GloverLevel.CameoSpin: 0x3,
+                GloverLevel.CameoGrabTodo: 0x4,
+                GloverLevel.CameoSetEnemyFlagTodo: 0x5,
+                GloverLevel.CameoLightningFlash: 0x6,
                 GloverLevel.CameoInstDefault: None,
             }
         },
@@ -4769,7 +4766,7 @@ switch_fields = {
                 0x24: GloverLevel.PuzzleCondGloverWithinRangeOfPoint,
                 0x26: GloverLevel.PuzzleCondBallWithinRangeOfPoint,
                 0x28: GloverLevel.PuzzleCondCameraWithinRangeOfPoint,
-                0x29: GloverLevel.PuzzleCondE,
+                0x29: GloverLevel.PuzzleCondGloverWithinRangeOfPoint2,
                 None: GloverLevel.PuzzleCondA,
             },
             'type-to-code': {
@@ -4798,7 +4795,7 @@ switch_fields = {
                 GloverLevel.PuzzleCondGloverWithinRangeOfPoint: 0x24,
                 GloverLevel.PuzzleCondBallWithinRangeOfPoint: 0x26,
                 GloverLevel.PuzzleCondCameraWithinRangeOfPoint: 0x28,
-                GloverLevel.PuzzleCondE: 0x29,
+                GloverLevel.PuzzleCondGloverWithinRangeOfPoint2: 0x29,
                 GloverLevel.PuzzleCondA: None,
             }
         },
@@ -4913,13 +4910,13 @@ original_names = {
     'GloverLevel.Backdrop': 'glover_level.backdrop',
     'GloverLevel.Cameo': 'glover_level.cameo',
     'GloverLevel.CameoInst': 'glover_level.cameo_inst',
-    'GloverLevel.CameoInst0': 'glover_level.cameo_inst_0',
-    'GloverLevel.CameoInst1': 'glover_level.cameo_inst_1',
+    'GloverLevel.CameoPlayAnimation': 'glover_level.cameo_play_animation',
+    'GloverLevel.CameoSetCameraAttention': 'glover_level.cameo_set_camera_attention',
     'GloverLevel.CameoInst2': 'glover_level.cameo_inst_2',
-    'GloverLevel.CameoInst3': 'glover_level.cameo_inst_3',
-    'GloverLevel.CameoInst4': 'glover_level.cameo_inst_4',
-    'GloverLevel.CameoInst5': 'glover_level.cameo_inst_5',
-    'GloverLevel.CameoInst6': 'glover_level.cameo_inst_6',
+    'GloverLevel.CameoSpin': 'glover_level.cameo_spin',
+    'GloverLevel.CameoGrabTodo': 'glover_level.cameo_grab_todo',
+    'GloverLevel.CameoSetEnemyFlagTodo': 'glover_level.cameo_set_enemy_flag_todo',
+    'GloverLevel.CameoLightningFlash': 'glover_level.cameo_lightning_flash',
     'GloverLevel.CameoInstDefault': 'glover_level.cameo_inst_default',
     'GloverLevel.Puzzle': 'glover_level.puzzle',
     'GloverLevel.PuzzleAnd': 'glover_level.puzzle_and',
@@ -4953,7 +4950,7 @@ original_names = {
     'GloverLevel.PuzzleCondGloverWithinRangeOfPoint': 'glover_level.puzzle_cond_glover_within_range_of_point',
     'GloverLevel.PuzzleCondBallWithinRangeOfPoint': 'glover_level.puzzle_cond_ball_within_range_of_point',
     'GloverLevel.PuzzleCondCameraWithinRangeOfPoint': 'glover_level.puzzle_cond_camera_within_range_of_point',
-    'GloverLevel.PuzzleCondE': 'glover_level.puzzle_cond_e',
+    'GloverLevel.PuzzleCondGloverWithinRangeOfPoint2': 'glover_level.puzzle_cond_glover_within_range_of_point_2',
     'GloverLevel.PuzzleAction': 'glover_level.puzzle_action',
     'GloverLevel.PuzzleAction0x4f': 'glover_level.puzzle_action_0x4f',
     'GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40': 'glover_level.puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40',
@@ -5249,5 +5246,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = 'a0004a6097058aa2c4464ab3efbf3196ad38f68d'
+ksy_hash = '2ce3af9e835747afff711409efa8561db062d49c'
 #############

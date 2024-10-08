@@ -536,7 +536,6 @@ types:
 
 ###############################################################
 ### Cameo
-# TODO: understand what these are
 
   cameo:
     -semantic:
@@ -554,104 +553,102 @@ types:
         type:
           switch-on: inst_type
           cases:
-            0x00: cameo_inst_0
-            0x01: cameo_inst_1
+            0x00: cameo_play_animation
+            0x01: cameo_set_camera_attention
             0x02: cameo_inst_2
-            0x03: cameo_inst_3
-            0x04: cameo_inst_4
-            0x05: cameo_inst_5
-            0x06: cameo_inst_6
+            0x03: cameo_spin
+            0x04: cameo_grab_todo
+            0x05: cameo_set_enemy_flag_todo
+            0x06: cameo_lightning_flash
             _: cameo_inst_default
 
-  cameo_inst_0:
+  cameo_play_animation:
     seq:
-      - id: h_0x00
+      - id: enemy_idx
         type: u2
-      - id: h_0x02
+      - id: anim_idx
         type: u2
-      - id: h_0x04
+      - id: start_playing
         type: u2
-      - id: i_0x06
-        type: u4
-      - id: h_0x0a
-        type: u2
-      - id: h_0x0c
-        type: u2
+      - id: playback_speed
+        type: f4
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
-  cameo_inst_1:
+  cameo_set_camera_attention:
     seq:
-      - id: h_0x00
+      - id: enemy_idx
         type: u2
-      - id: i_0x02
-        type: u4
-      - id: i_0x06
-        type: u4
-      - id: i_0x0a
-        type: u4
-      - id: h_0x0e
-        type: u2
-      - id: h_0x10
-        type: u2
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
   cameo_inst_2:
     seq:
-      - id: h_0x00
+      - id: subcommand
         type: u2
       - id: i_0x02
-        type: u4
+        type: f4
       - id: i_0x06
-        type: u4
+        type: f4
       - id: i_0x0a
-        type: u4
+        type: f4
       - id: i_0x0e
         type: u4
-      - id: h_0x12
-        type: u2
-      - id: h_0x14
-        type: u2
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
-  cameo_inst_3:
+  cameo_spin:
     seq:
-      - id: h_0x00
+      - id: enemy_idx
         type: u2
-      - id: i_0x02
-        type: u4
-      - id: h_0x06
-        type: u2
-      - id: h_0x08
-        type: u2
+      - id: speed
+        type: f4
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
-  cameo_inst_4:
+  cameo_grab_todo:
     seq:
-      - id: h_0x00
+      - id: grabbing_enemy_idx
         type: u2
-      - id: h_0x02
+      - id: grabbed_enemy_idx
         type: u2
-      - id: h_0x04
+      - id: linkage_point_idx
         type: u2
-      - id: h_0x06
-        type: u2
-      - id: h_0x08
-        type: u2
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
-  cameo_inst_5:
+  cameo_set_enemy_flag_todo: # TODO: what does this do?
     seq:
-      - id: h_0x00
+      - id: enemy_idx
         type: u2
-      - id: h_0x02
-        type: u2
-      - id: h_0x04
-        type: u2
+      - id: frame_count
+        type: s2
+      - id: preceding_instr_idx
+        type: s2
 
-  cameo_inst_6:
+  cameo_lightning_flash:
     seq:
-      - id: h_0x00
+      - id: reserved
         type: u2
-      - id: h_0x02
+      - id: duration_min
         type: u2
-      - id: h_0x04
-        type: u2
-      - id: h_0x06
+      - id: duration_range
         type: u2
 
   cameo_inst_default:
@@ -742,7 +739,7 @@ types:
             0x26: puzzle_cond_ball_within_range_of_point
             0x28: puzzle_cond_camera_within_range_of_point
 
-            0x29: puzzle_cond_e
+            0x29: puzzle_cond_glover_within_range_of_point_2
 
             _: puzzle_cond_a
 
@@ -1021,19 +1018,19 @@ types:
       - id: range
         type: f4
 
-  puzzle_cond_e:
+  puzzle_cond_glover_within_range_of_point_2:
     seq:
-      - id: i_0x00
-        type: u4
-      - id: i_0x04
-        type: u4
-      - id: i_0x08
-        type: u4
+      - id: x
+        type: f4
+      - id: z
+        type: f4
+      - id: range
+        type: f4
 
-      - id: i_0x0c
-        type: u4
-      - id: i_0x10
-        type: u4
+      - id: max_y
+        type: f4
+      - id: min_y
+        type: f4
 
   puzzle_action: # 0x96
     # TODO: identify what each of the action types are
