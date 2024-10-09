@@ -13,9 +13,9 @@ A landscape file includes the following information:
   collectibles, enemies, level exits/loading zones, positional sound sources,
   etc.)
 - Atmospheric settings (lighting, fog, backdrops, gravity)
-- Scripts to govern puzzles and interactive level elements
+- Scripts to govern interactive level elements ("puzzles")
 - Per-enemy AI scripts
-- Cutscene scripts
+- Cutscene scripts ("cameos")
 - Level exit destination (TODO, confirm if this is true)
 
 Notably, this does _not_ include the following:
@@ -268,17 +268,43 @@ TODO
 ## Scripting
 
 ### Puzzle scripts
-TODO
+
+"Puzzles" are scripts that run during regular gameplay and are responsible for most stateful interactive elements of the level (button presses, rockets taking off, etc.).  Puzzles are composed of the following data:
+
+* A condition list
+* An activation critereon
+* An action list
+
+They start in an idle state until some number of conditions in their condition list become true, after which they "activate" and execute their action list. The number of conditions required to activate is controlled by the activation critereon, which can be one of:
+
+* "OR": _Any_ of the conditions being true on a given frame activates the script
+* "AND": _All_ of the conditions being true on a given frame activates the script
+* "ANY": Given a threshold N, if at least N conditions are true (eg, "if _any N of the conditions are true_") on a given frame, activate the script
+
+All puzzles run in parallel, though they can be configured using conditions to "wait" for other puzzles to complete.
 
 <!--
-0x04: puzzle
-0x05: puzzle_and
-0x06: puzzle_or
+TODO:
 0x07: puzzle_numtimes
-0x08: puzzle_any
-0x95: puzzle_cond
-0x96: puzzle_action
  -->
+
+#### Puzzle conditions
+
+TODO
+
+#### Puzzle actions
+
+TODO
+
+### Cameo scripts
+
+"Cameos" are scripts that run at the beginning of a level and control in-game cutscenes like those seen at the beginning of the bosses and many bonus stages. The intro and outro cutscenes are notably *not* cameos.
+
+A cameo is composed of a list of up to 20 instructions, each of which starts "disabled" and can be configured to start running either after another instruction completes or after a specified number of frames into the cutscene. All active instructions are run in parallel, facilitating for instance simultaneous camera movement and character animation. All cameos are also run in parallel, though in the vanilla game there is usually at most only one cameo per level.
+
+#### Cameo instructions
+
+TODO
 
 ### Enemy AI scripts
 TODO
@@ -292,11 +318,6 @@ TODO
 0x9c: enemy_attack_instruction
  -->
 
-### Cameo scripts
-TODO
-
-<!-- 0xAA: cameo
-0xAB: cameo_inst -->
 
 ## File Format
 
