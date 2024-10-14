@@ -1272,7 +1272,7 @@
               <param name="pattern">34|0x0*22</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondB"/>
+          <ref name="PuzzleCond0x22"/>
         </group>
         <group>
           <!--Case 0x23-->
@@ -1338,11 +1338,20 @@
           <ref name="PuzzleCondGloverWithinRangeOfPoint2"/>
         </group>
         <group>
+          <!--Case 0x2A-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">42|0x0*2[Aa]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondPlatformDoesntExist"/>
+        </group>
+        <group>
           <!--Default case (only for types not listed above!)-->
           <attribute name="cond_type">
             <text/>
           </attribute>
-          <ref name="PuzzleCondA"/>
+          <ref name="PuzzleCondDefault"/>
         </group>
       </choice>
     </element>
@@ -1527,8 +1536,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondA">
-    <element name="PuzzleCondA">
+  <define name="PuzzleCondDefault">
+    <element name="PuzzleCondDefault">
       <attribute name="u32_0x24">
         <text/>
       </attribute>
@@ -1537,8 +1546,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondB">
-    <element name="PuzzleCondB">
+  <define name="PuzzleCond0x22">
+    <element name="PuzzleCond0x22">
       <attribute name="i_0x00">
         <text/>
       </attribute>
@@ -1695,6 +1704,16 @@
       </attribute>
     </element>
   </define>
+  <define name="PuzzleCondPlatformDoesntExist">
+    <element name="PuzzleCondPlatformDoesntExist">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="reserved">
+        <text/>
+      </attribute>
+    </element>
+  </define>
   <define name="PuzzleAction">
     <element name="PuzzleAction">
       <choice>
@@ -1708,13 +1727,40 @@
           <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
         </group>
         <group>
+          <!--Case 0x38-->
+          <attribute name="action_type">
+            <data type="string">
+              <param name="pattern">56|0x0*38</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleActionRegSet"/>
+        </group>
+        <group>
+          <!--Case 0x39-->
+          <attribute name="action_type">
+            <data type="string">
+              <param name="pattern">57|0x0*39</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleActionRegAdd"/>
+        </group>
+        <group>
+          <!--Case 0x3A-->
+          <attribute name="action_type">
+            <data type="string">
+              <param name="pattern">58|0x0*3[Aa]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleActionRegSub"/>
+        </group>
+        <group>
           <!--Case 0x3B-->
           <attribute name="action_type">
             <data type="string">
               <param name="pattern">59|0x0*3[Bb]</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
+          <ref name="PuzzleActionSpawnPowerup"/>
         </group>
         <group>
           <!--Case 0x3C-->
@@ -1723,7 +1769,7 @@
               <param name="pattern">60|0x0*3[Cc]</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
+          <ref name="PuzzleActionSpawnEnemy"/>
         </group>
         <group>
           <!--Case 0x3D-->
@@ -1741,7 +1787,7 @@
               <param name="pattern">62|0x0*3[Ee]</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
+          <ref name="PuzzleActionCameraLookAtPlatform"/>
         </group>
         <group>
           <!--Case 0x3F-->
@@ -1750,7 +1796,7 @@
               <param name="pattern">63|0x0*3[Ff]</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
+          <ref name="PuzzleActionCameraLookAtPoint2"/>
         </group>
         <group>
           <!--Case 0x40-->
@@ -1759,7 +1805,7 @@
               <param name="pattern">64|0x0*40</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40"/>
+          <ref name="PuzzleActionCameraLookAtPoint1"/>
         </group>
         <group>
           <!--Case 0x4F-->
@@ -1879,6 +1925,54 @@
       </choice>
     </element>
   </define>
+  <define name="PuzzleActionRegSet">
+    <element name="PuzzleActionRegSet">
+      <attribute name="imm_val_or_src_reg">
+        <text/>
+      </attribute>
+      <attribute name="dst_reg">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionRegAdd">
+    <element name="PuzzleActionRegAdd">
+      <attribute name="imm_val_or_src_reg">
+        <text/>
+      </attribute>
+      <attribute name="dst_reg">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionRegSub">
+    <element name="PuzzleActionRegSub">
+      <attribute name="imm_val_or_src_reg">
+        <text/>
+      </attribute>
+      <attribute name="dst_reg">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
   <define name="PuzzleAction0x4f">
     <element name="PuzzleAction0x4f">
       <attribute name="u32_0x14">
@@ -1897,6 +1991,131 @@
         <text/>
       </attribute>
       <attribute name="u32_0x20">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionSpawnPowerup">
+    <element name="PuzzleActionSpawnPowerup">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="u32_0x10">
+        <text/>
+      </attribute>
+      <attribute name="type">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="u32_0x20">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionSpawnEnemy">
+    <element name="PuzzleActionSpawnEnemy">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="reserved">
+        <text/>
+      </attribute>
+      <attribute name="puzzle_tag">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionCameraLookAtPlatform">
+    <element name="PuzzleActionCameraLookAtPlatform">
+      <attribute name="x">
+        <text/>
+      </attribute>
+      <attribute name="y">
+        <text/>
+      </attribute>
+      <attribute name="z">
+        <text/>
+      </attribute>
+      <attribute name="duration">
+        <text/>
+      </attribute>
+      <attribute name="platform_tag">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionCameraLookAtPoint1">
+    <element name="PuzzleActionCameraLookAtPoint1">
+      <attribute name="cam_x">
+        <text/>
+      </attribute>
+      <attribute name="cam_y">
+        <text/>
+      </attribute>
+      <attribute name="cam_z">
+        <text/>
+      </attribute>
+      <attribute name="reserved">
+        <text/>
+      </attribute>
+      <attribute name="reserved_2">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleActionCameraLookAtPoint2">
+    <element name="PuzzleActionCameraLookAtPoint2">
+      <attribute name="lookat_x">
+        <text/>
+      </attribute>
+      <attribute name="lookat_y">
+        <text/>
+      </attribute>
+      <attribute name="lookat_z">
+        <text/>
+      </attribute>
+      <attribute name="duration">
+        <text/>
+      </attribute>
+      <attribute name="reserved">
+        <text/>
+      </attribute>
+      <attribute name="activation_delay">
+        <text/>
+      </attribute>
+      <attribute name="flags">
         <text/>
       </attribute>
     </element>
@@ -3588,7 +3807,7 @@
       <attribute name="type">
         <text/>
       </attribute>
-      <attribute name="u1">
+      <attribute name="puzzle_tag">
         <text/>
       </attribute>
       <attribute name="x">

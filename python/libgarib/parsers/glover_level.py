@@ -322,6 +322,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['invert_result']['end'] = self._io.pos()
 
 
+    class PuzzleCondPlatformDoesntExist(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "reserved"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['reserved']['start'] = self._io.pos()
+            self.reserved = self._io.read_u2be()
+            self._debug['reserved']['end'] = self._io.pos()
+
+
     class PlatPathAcceleration(KaitaiStruct):
         SEQ_FIELDS = ["acceleration"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -397,6 +415,39 @@ class GloverLevel(KaitaiStruct):
             self._debug['draw_thickness']['end'] = self._io.pos()
 
 
+    class PuzzleActionCameraLookAtPoint2(KaitaiStruct):
+        SEQ_FIELDS = ["lookat_x", "lookat_y", "lookat_z", "duration", "reserved", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['lookat_x']['start'] = self._io.pos()
+            self.lookat_x = self._io.read_f4be()
+            self._debug['lookat_x']['end'] = self._io.pos()
+            self._debug['lookat_y']['start'] = self._io.pos()
+            self.lookat_y = self._io.read_f4be()
+            self._debug['lookat_y']['end'] = self._io.pos()
+            self._debug['lookat_z']['start'] = self._io.pos()
+            self.lookat_z = self._io.read_f4be()
+            self._debug['lookat_z']['end'] = self._io.pos()
+            self._debug['duration']['start'] = self._io.pos()
+            self.duration = self._io.read_f4be()
+            self._debug['duration']['end'] = self._io.pos()
+            self._debug['reserved']['start'] = self._io.pos()
+            self.reserved = self._io.read_u2be()
+            self._debug['reserved']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
+
+
     class PuzzleAny(KaitaiStruct):
         SEQ_FIELDS = ["op"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -467,6 +518,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['body']['end'] = self._io.pos()
 
 
+    class PuzzleCondDefault(KaitaiStruct):
+        SEQ_FIELDS = ["u32_0x24", "u16_0x0a"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['u32_0x24']['start'] = self._io.pos()
+            self.u32_0x24 = self._io.read_u2be()
+            self._debug['u32_0x24']['end'] = self._io.pos()
+            self._debug['u16_0x0a']['start'] = self._io.pos()
+            self.u16_0x0a = self._io.read_u2be()
+            self._debug['u16_0x0a']['end'] = self._io.pos()
+
+
     class PlatTurnTowardsPathPoint(KaitaiStruct):
         SEQ_FIELDS = ["input_1", "input_2"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -522,6 +591,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x3c']['start'] = self._io.pos()
             self.u32_0x3c = self._io.read_u4be()
             self._debug['u32_0x3c']['end'] = self._io.pos()
+
+
+    class PuzzleActionRegSet(KaitaiStruct):
+        SEQ_FIELDS = ["imm_val_or_src_reg", "dst_reg", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['imm_val_or_src_reg']['start'] = self._io.pos()
+            self.imm_val_or_src_reg = self._io.read_f4be()
+            self._debug['imm_val_or_src_reg']['end'] = self._io.pos()
+            self._debug['dst_reg']['start'] = self._io.pos()
+            self.dst_reg = self._io.read_u2be()
+            self._debug['dst_reg']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
 
 
     class PlatOrbit(KaitaiStruct):
@@ -1105,6 +1198,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x1c']['end'] = self._io.pos()
 
 
+    class PuzzleActionRegAdd(KaitaiStruct):
+        SEQ_FIELDS = ["imm_val_or_src_reg", "dst_reg", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['imm_val_or_src_reg']['start'] = self._io.pos()
+            self.imm_val_or_src_reg = self._io.read_f4be()
+            self._debug['imm_val_or_src_reg']['end'] = self._io.pos()
+            self._debug['dst_reg']['start'] = self._io.pos()
+            self.dst_reg = self._io.read_u2be()
+            self._debug['dst_reg']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
+
+
     class PlatSpinSound0xc5(KaitaiStruct):
         SEQ_FIELDS = ["sound_id", "volume", "pitch"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1346,6 +1463,8 @@ class GloverLevel(KaitaiStruct):
                 self.body = GloverLevel.PuzzleCondPlatformSpinTodo(self._io, self, self._root)
             elif _on == 17:
                 self.body = GloverLevel.PuzzleCondBallPlatformTodo(self._io, self, self._root)
+            elif _on == 42:
+                self.body = GloverLevel.PuzzleCondPlatformDoesntExist(self._io, self, self._root)
             elif _on == 39:
                 self.body = GloverLevel.PuzzleCondCameraWithinVolume(self._io, self, self._root)
             elif _on == 24:
@@ -1387,13 +1506,13 @@ class GloverLevel(KaitaiStruct):
             elif _on == 31:
                 self.body = GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge(self._io, self, self._root)
             elif _on == 34:
-                self.body = GloverLevel.PuzzleCondB(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCond0x22(self._io, self, self._root)
             elif _on == 25:
                 self.body = GloverLevel.PuzzleCondEnemyIsTouchingPlatform(self._io, self, self._root)
             elif _on == 22:
                 self.body = GloverLevel.PuzzleCondGloverChangedTouchingPlatform(self._io, self, self._root)
             else:
-                self.body = GloverLevel.PuzzleCondA(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondDefault(self._io, self, self._root)
             self._debug['body']['end'] = self._io.pos()
 
 
@@ -1504,7 +1623,7 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             self._debug['subcommand']['start'] = self._io.pos()
-            self.subcommand = self._io.read_u2be()
+            self.subcommand = self._io.read_s2be()
             self._debug['subcommand']['end'] = self._io.pos()
             self._debug['i_0x02']['start'] = self._io.pos()
             self.i_0x02 = self._io.read_f4be()
@@ -1646,6 +1765,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x0e']['start'] = self._io.pos()
             self.u32_0x0e = self._io.read_u4be()
             self._debug['u32_0x0e']['end'] = self._io.pos()
+
+
+    class PuzzleActionRegSub(KaitaiStruct):
+        SEQ_FIELDS = ["imm_val_or_src_reg", "dst_reg", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['imm_val_or_src_reg']['start'] = self._io.pos()
+            self.imm_val_or_src_reg = self._io.read_f4be()
+            self._debug['imm_val_or_src_reg']['end'] = self._io.pos()
+            self._debug['dst_reg']['start'] = self._io.pos()
+            self.dst_reg = self._io.read_u2be()
+            self._debug['dst_reg']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
 
 
     class PuzzleAnd(KaitaiStruct):
@@ -2350,6 +2493,39 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x10']['end'] = self._io.pos()
 
 
+    class PuzzleCond0x22(KaitaiStruct):
+        SEQ_FIELDS = ["i_0x00", "i_0x04", "i_0x08", "i_0x0c", "i_0x10", "i_0x14", "i_0x18"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['i_0x00']['start'] = self._io.pos()
+            self.i_0x00 = self._io.read_u4be()
+            self._debug['i_0x00']['end'] = self._io.pos()
+            self._debug['i_0x04']['start'] = self._io.pos()
+            self.i_0x04 = self._io.read_u4be()
+            self._debug['i_0x04']['end'] = self._io.pos()
+            self._debug['i_0x08']['start'] = self._io.pos()
+            self.i_0x08 = self._io.read_u4be()
+            self._debug['i_0x08']['end'] = self._io.pos()
+            self._debug['i_0x0c']['start'] = self._io.pos()
+            self.i_0x0c = self._io.read_u4be()
+            self._debug['i_0x0c']['end'] = self._io.pos()
+            self._debug['i_0x10']['start'] = self._io.pos()
+            self.i_0x10 = self._io.read_u4be()
+            self._debug['i_0x10']['end'] = self._io.pos()
+            self._debug['i_0x14']['start'] = self._io.pos()
+            self.i_0x14 = self._io.read_u4be()
+            self._debug['i_0x14']['end'] = self._io.pos()
+            self._debug['i_0x18']['start'] = self._io.pos()
+            self.i_0x18 = self._io.read_u4be()
+            self._debug['i_0x18']['end'] = self._io.pos()
+
+
     class PlatDestructible(KaitaiStruct):
         SEQ_FIELDS = ["flags", "num_fragments", "fragment_object_id", "name"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2375,6 +2551,13 @@ class GloverLevel(KaitaiStruct):
 
 
     class PuzzleAction(KaitaiStruct):
+
+        class Flags(Enum):
+            puzzle_camera_freeze_player = 1
+            puzzle_camera_freeze_particles = 2
+            puzzle_camera_freeze_enemies = 4
+            puzzle_register_indirect_argument = 128
+            puzzle_action_random_activation_delay = 512
         SEQ_FIELDS = ["action_type", "body"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
@@ -2394,29 +2577,35 @@ class GloverLevel(KaitaiStruct):
             elif _on == 73:
                 self.body = GloverLevel.PuzzleAction0x490x4d(self._io, self, self._root)
             elif _on == 60:
-                self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionSpawnEnemy(self._io, self, self._root)
             elif _on == 62:
-                self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionCameraLookAtPlatform(self._io, self, self._root)
             elif _on == 77:
                 self.body = GloverLevel.PuzzleAction0x490x4d(self._io, self, self._root)
+            elif _on == 56:
+                self.body = GloverLevel.PuzzleActionRegSet(self._io, self, self._root)
             elif _on == 85:
                 self.body = GloverLevel.PuzzleAction0x55(self._io, self, self._root)
             elif _on == 59:
-                self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionSpawnPowerup(self._io, self, self._root)
+            elif _on == 58:
+                self.body = GloverLevel.PuzzleActionRegSub(self._io, self, self._root)
             elif _on == 86:
                 self.body = GloverLevel.PuzzleAction0x56(self._io, self, self._root)
             elif _on == 84:
                 self.body = GloverLevel.PuzzleAction0x54(self._io, self, self._root)
             elif _on == 63:
-                self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionCameraLookAtPoint2(self._io, self, self._root)
             elif _on == 53:
                 self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
             elif _on == 64:
-                self.body = GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionCameraLookAtPoint1(self._io, self, self._root)
             elif _on == 76:
                 self.body = GloverLevel.PuzzleAction0x4b0x4c(self._io, self, self._root)
             elif _on == 79:
                 self.body = GloverLevel.PuzzleAction0x4f(self._io, self, self._root)
+            elif _on == 57:
+                self.body = GloverLevel.PuzzleActionRegAdd(self._io, self, self._root)
             elif _on == 72:
                 self.body = GloverLevel.PuzzleAction0x460x470x48(self._io, self, self._root)
             elif _on == 71:
@@ -2430,6 +2619,39 @@ class GloverLevel(KaitaiStruct):
             else:
                 self.body = GloverLevel.PuzzleActionDefault(self._io, self, self._root)
             self._debug['body']['end'] = self._io.pos()
+
+
+    class PuzzleActionSpawnPowerup(KaitaiStruct):
+        SEQ_FIELDS = ["x", "y", "z", "u32_0x10", "type", "activation_delay", "u32_0x20"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['y']['start'] = self._io.pos()
+            self.y = self._io.read_f4be()
+            self._debug['y']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+            self._debug['u32_0x10']['start'] = self._io.pos()
+            self.u32_0x10 = self._io.read_f4be()
+            self._debug['u32_0x10']['end'] = self._io.pos()
+            self._debug['type']['start'] = self._io.pos()
+            self.type = self._io.read_u2be()
+            self._debug['type']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['u32_0x20']['start'] = self._io.pos()
+            self.u32_0x20 = self._io.read_u4be()
+            self._debug['u32_0x20']['end'] = self._io.pos()
 
 
     class Noop(KaitaiStruct):
@@ -2500,6 +2722,39 @@ class GloverLevel(KaitaiStruct):
             self._debug['z']['start'] = self._io.pos()
             self.z = self._io.read_f4be()
             self._debug['z']['end'] = self._io.pos()
+
+
+    class PuzzleActionSpawnEnemy(KaitaiStruct):
+        SEQ_FIELDS = ["x", "y", "z", "reserved", "puzzle_tag", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['y']['start'] = self._io.pos()
+            self.y = self._io.read_f4be()
+            self._debug['y']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+            self._debug['reserved']['start'] = self._io.pos()
+            self.reserved = self._io.read_u4be()
+            self._debug['reserved']['end'] = self._io.pos()
+            self._debug['puzzle_tag']['start'] = self._io.pos()
+            self.puzzle_tag = self._io.read_u2be()
+            self._debug['puzzle_tag']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
 
 
     class PuzzleAction0x4f(KaitaiStruct):
@@ -2796,7 +3051,7 @@ class GloverLevel(KaitaiStruct):
             boxthing = 56
             bug = 57
             nmefrog = 58
-        SEQ_FIELDS = ["type", "u1", "x", "y", "z", "y_rotation"]
+        SEQ_FIELDS = ["type", "puzzle_tag", "x", "y", "z", "y_rotation"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -2808,9 +3063,9 @@ class GloverLevel(KaitaiStruct):
             self._debug['type']['start'] = self._io.pos()
             self.type = KaitaiStream.resolve_enum(GloverLevel.Enemy.EnemyType, self._io.read_u2be())
             self._debug['type']['end'] = self._io.pos()
-            self._debug['u1']['start'] = self._io.pos()
-            self.u1 = self._io.read_u2be()
-            self._debug['u1']['end'] = self._io.pos()
+            self._debug['puzzle_tag']['start'] = self._io.pos()
+            self.puzzle_tag = self._io.read_u2be()
+            self._debug['puzzle_tag']['end'] = self._io.pos()
             self._debug['x']['start'] = self._io.pos()
             self.x = self._io.read_f4be()
             self._debug['x']['end'] = self._io.pos()
@@ -3098,24 +3353,6 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             pass
-
-
-    class PuzzleCondA(KaitaiStruct):
-        SEQ_FIELDS = ["u32_0x24", "u16_0x0a"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u32_0x24']['start'] = self._io.pos()
-            self.u32_0x24 = self._io.read_u2be()
-            self._debug['u32_0x24']['end'] = self._io.pos()
-            self._debug['u16_0x0a']['start'] = self._io.pos()
-            self.u16_0x0a = self._io.read_u2be()
-            self._debug['u16_0x0a']['end'] = self._io.pos()
 
 
     class CameoSpin(KaitaiStruct):
@@ -3849,6 +4086,39 @@ class GloverLevel(KaitaiStruct):
             self._debug['name']['end'] = self._io.pos()
 
 
+    class PuzzleActionCameraLookAtPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["x", "y", "z", "duration", "platform_tag", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['x']['start'] = self._io.pos()
+            self.x = self._io.read_f4be()
+            self._debug['x']['end'] = self._io.pos()
+            self._debug['y']['start'] = self._io.pos()
+            self.y = self._io.read_f4be()
+            self._debug['y']['end'] = self._io.pos()
+            self._debug['z']['start'] = self._io.pos()
+            self.z = self._io.read_f4be()
+            self._debug['z']['end'] = self._io.pos()
+            self._debug['duration']['start'] = self._io.pos()
+            self.duration = self._io.read_f4be()
+            self._debug['duration']['end'] = self._io.pos()
+            self._debug['platform_tag']['start'] = self._io.pos()
+            self.platform_tag = self._io.read_u2be()
+            self._debug['platform_tag']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
+
+
     class PlatPos0xa7(KaitaiStruct):
         SEQ_FIELDS = ["u8_idx"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4111,39 +4381,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['component_d']['start'] = self._io.pos()
             self.component_d = self._io.read_f4be()
             self._debug['component_d']['end'] = self._io.pos()
-
-
-    class PuzzleCondB(KaitaiStruct):
-        SEQ_FIELDS = ["i_0x00", "i_0x04", "i_0x08", "i_0x0c", "i_0x10", "i_0x14", "i_0x18"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['i_0x00']['start'] = self._io.pos()
-            self.i_0x00 = self._io.read_u4be()
-            self._debug['i_0x00']['end'] = self._io.pos()
-            self._debug['i_0x04']['start'] = self._io.pos()
-            self.i_0x04 = self._io.read_u4be()
-            self._debug['i_0x04']['end'] = self._io.pos()
-            self._debug['i_0x08']['start'] = self._io.pos()
-            self.i_0x08 = self._io.read_u4be()
-            self._debug['i_0x08']['end'] = self._io.pos()
-            self._debug['i_0x0c']['start'] = self._io.pos()
-            self.i_0x0c = self._io.read_u4be()
-            self._debug['i_0x0c']['end'] = self._io.pos()
-            self._debug['i_0x10']['start'] = self._io.pos()
-            self.i_0x10 = self._io.read_u4be()
-            self._debug['i_0x10']['end'] = self._io.pos()
-            self._debug['i_0x14']['start'] = self._io.pos()
-            self.i_0x14 = self._io.read_u4be()
-            self._debug['i_0x14']['end'] = self._io.pos()
-            self._debug['i_0x18']['start'] = self._io.pos()
-            self.i_0x18 = self._io.read_u4be()
-            self._debug['i_0x18']['end'] = self._io.pos()
 
 
     class PlatStr0x7a(KaitaiStruct):
@@ -4465,6 +4702,39 @@ class GloverLevel(KaitaiStruct):
             self._debug['depth']['end'] = self._io.pos()
 
 
+    class PuzzleActionCameraLookAtPoint1(KaitaiStruct):
+        SEQ_FIELDS = ["cam_x", "cam_y", "cam_z", "reserved", "reserved_2", "activation_delay", "flags"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['cam_x']['start'] = self._io.pos()
+            self.cam_x = self._io.read_f4be()
+            self._debug['cam_x']['end'] = self._io.pos()
+            self._debug['cam_y']['start'] = self._io.pos()
+            self.cam_y = self._io.read_f4be()
+            self._debug['cam_y']['end'] = self._io.pos()
+            self._debug['cam_z']['start'] = self._io.pos()
+            self.cam_z = self._io.read_f4be()
+            self._debug['cam_z']['end'] = self._io.pos()
+            self._debug['reserved']['start'] = self._io.pos()
+            self.reserved = self._io.read_u4be()
+            self._debug['reserved']['end'] = self._io.pos()
+            self._debug['reserved_2']['start'] = self._io.pos()
+            self.reserved_2 = self._io.read_u2be()
+            self._debug['reserved_2']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
+            self._debug['flags']['start'] = self._io.pos()
+            self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.Flags, self._io.read_u4be())
+            self._debug['flags']['end'] = self._io.pos()
+
+
 
 
 #############
@@ -4759,7 +5029,7 @@ switch_fields = {
                 0x1a: GloverLevel.PuzzleCondEnemyChangedTouchingPlatform,
                 0x1f: GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge,
                 0x20: GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge,
-                0x22: GloverLevel.PuzzleCondB,
+                0x22: GloverLevel.PuzzleCond0x22,
                 0x23: GloverLevel.PuzzleCondGloverWithinVolume,
                 0x25: GloverLevel.PuzzleCondBallWithinVolume,
                 0x27: GloverLevel.PuzzleCondCameraWithinVolume,
@@ -4767,7 +5037,8 @@ switch_fields = {
                 0x26: GloverLevel.PuzzleCondBallWithinRangeOfPoint,
                 0x28: GloverLevel.PuzzleCondCameraWithinRangeOfPoint,
                 0x29: GloverLevel.PuzzleCondGloverWithinRangeOfPoint2,
-                None: GloverLevel.PuzzleCondA,
+                0x2a: GloverLevel.PuzzleCondPlatformDoesntExist,
+                None: GloverLevel.PuzzleCondDefault,
             },
             'type-to-code': {
                 GloverLevel.PuzzleCondPlatformPathAtPointAtRest: 0x9,
@@ -4788,7 +5059,7 @@ switch_fields = {
                 GloverLevel.PuzzleCondEnemyChangedTouchingPlatform: 0x1a,
                 GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge: 0x1f,
                 GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge: 0x20,
-                GloverLevel.PuzzleCondB: 0x22,
+                GloverLevel.PuzzleCond0x22: 0x22,
                 GloverLevel.PuzzleCondGloverWithinVolume: 0x23,
                 GloverLevel.PuzzleCondBallWithinVolume: 0x25,
                 GloverLevel.PuzzleCondCameraWithinVolume: 0x27,
@@ -4796,7 +5067,8 @@ switch_fields = {
                 GloverLevel.PuzzleCondBallWithinRangeOfPoint: 0x26,
                 GloverLevel.PuzzleCondCameraWithinRangeOfPoint: 0x28,
                 GloverLevel.PuzzleCondGloverWithinRangeOfPoint2: 0x29,
-                GloverLevel.PuzzleCondA: None,
+                GloverLevel.PuzzleCondPlatformDoesntExist: 0x2a,
+                GloverLevel.PuzzleCondDefault: None,
             }
         },
     },
@@ -4805,12 +5077,15 @@ switch_fields = {
             'field': 'action_type',
             'code-to-type': {
                 0x35: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
-                0x3b: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
-                0x3c: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
+                0x38: GloverLevel.PuzzleActionRegSet,
+                0x39: GloverLevel.PuzzleActionRegAdd,
+                0x3a: GloverLevel.PuzzleActionRegSub,
+                0x3b: GloverLevel.PuzzleActionSpawnPowerup,
+                0x3c: GloverLevel.PuzzleActionSpawnEnemy,
                 0x3d: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
-                0x3e: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
-                0x3f: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
-                0x40: GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40,
+                0x3e: GloverLevel.PuzzleActionCameraLookAtPlatform,
+                0x3f: GloverLevel.PuzzleActionCameraLookAtPoint2,
+                0x40: GloverLevel.PuzzleActionCameraLookAtPoint1,
                 0x4f: GloverLevel.PuzzleAction0x4f,
                 0x46: GloverLevel.PuzzleAction0x460x470x48,
                 0x47: GloverLevel.PuzzleAction0x460x470x48,
@@ -4826,7 +5101,15 @@ switch_fields = {
                 None: GloverLevel.PuzzleActionDefault,
             },
             'type-to-code': {
-                GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40: [53, 59, 60, 61, 62, 63, 64],
+                GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40: [53, 61],
+                GloverLevel.PuzzleActionRegSet: 0x38,
+                GloverLevel.PuzzleActionRegAdd: 0x39,
+                GloverLevel.PuzzleActionRegSub: 0x3a,
+                GloverLevel.PuzzleActionSpawnPowerup: 0x3b,
+                GloverLevel.PuzzleActionSpawnEnemy: 0x3c,
+                GloverLevel.PuzzleActionCameraLookAtPlatform: 0x3e,
+                GloverLevel.PuzzleActionCameraLookAtPoint2: 0x3f,
+                GloverLevel.PuzzleActionCameraLookAtPoint1: 0x40,
                 GloverLevel.PuzzleAction0x4f: 0x4f,
                 GloverLevel.PuzzleAction0x460x470x48: [70, 71, 72],
                 GloverLevel.PuzzleAction0x490x4d: [73, 77],
@@ -4942,8 +5225,8 @@ original_names = {
     'GloverLevel.PuzzleCondEnemyChangedTouchingPlatform': 'glover_level.puzzle_cond_enemy_changed_touching_platform',
     'GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge': 'glover_level.puzzle_platform_touching_conf_boundary_edge',
     'GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge': 'glover_level.puzzle_platform_close_to_conf_boundary_edge',
-    'GloverLevel.PuzzleCondA': 'glover_level.puzzle_cond_a',
-    'GloverLevel.PuzzleCondB': 'glover_level.puzzle_cond_b',
+    'GloverLevel.PuzzleCondDefault': 'glover_level.puzzle_cond_default',
+    'GloverLevel.PuzzleCond0x22': 'glover_level.puzzle_cond_0x22',
     'GloverLevel.PuzzleCondGloverWithinVolume': 'glover_level.puzzle_cond_glover_within_volume',
     'GloverLevel.PuzzleCondBallWithinVolume': 'glover_level.puzzle_cond_ball_within_volume',
     'GloverLevel.PuzzleCondCameraWithinVolume': 'glover_level.puzzle_cond_camera_within_volume',
@@ -4951,8 +5234,17 @@ original_names = {
     'GloverLevel.PuzzleCondBallWithinRangeOfPoint': 'glover_level.puzzle_cond_ball_within_range_of_point',
     'GloverLevel.PuzzleCondCameraWithinRangeOfPoint': 'glover_level.puzzle_cond_camera_within_range_of_point',
     'GloverLevel.PuzzleCondGloverWithinRangeOfPoint2': 'glover_level.puzzle_cond_glover_within_range_of_point_2',
+    'GloverLevel.PuzzleCondPlatformDoesntExist': 'glover_level.puzzle_cond_platform_doesnt_exist',
     'GloverLevel.PuzzleAction': 'glover_level.puzzle_action',
+    'GloverLevel.PuzzleActionRegSet': 'glover_level.puzzle_action_reg_set',
+    'GloverLevel.PuzzleActionRegAdd': 'glover_level.puzzle_action_reg_add',
+    'GloverLevel.PuzzleActionRegSub': 'glover_level.puzzle_action_reg_sub',
     'GloverLevel.PuzzleAction0x4f': 'glover_level.puzzle_action_0x4f',
+    'GloverLevel.PuzzleActionSpawnPowerup': 'glover_level.puzzle_action_spawn_powerup',
+    'GloverLevel.PuzzleActionSpawnEnemy': 'glover_level.puzzle_action_spawn_enemy',
+    'GloverLevel.PuzzleActionCameraLookAtPlatform': 'glover_level.puzzle_action_camera_look_at_platform',
+    'GloverLevel.PuzzleActionCameraLookAtPoint1': 'glover_level.puzzle_action_camera_look_at_point_1',
+    'GloverLevel.PuzzleActionCameraLookAtPoint2': 'glover_level.puzzle_action_camera_look_at_point_2',
     'GloverLevel.PuzzleAction0x350x3b0x3c0x3d0x3e0x3f0x40': 'glover_level.puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40',
     'GloverLevel.PuzzleActionDefault': 'glover_level.puzzle_action_default',
     'GloverLevel.PuzzleAction0x460x470x48': 'glover_level.puzzle_action_0x46_0x47_0x48',
@@ -5246,5 +5538,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '2ce3af9e835747afff711409efa8561db062d49c'
+ksy_hash = '4a2969c43114bfd6d281e4763e95108b74ae0f06'
 #############
