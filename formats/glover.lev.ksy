@@ -125,7 +125,7 @@ types:
             0x65: plat_destructible
             0xc8: plat_destructible_sound
             0x9d: plat_0x9d
-            0x66: plat_0x66
+            0x66: plat_reverse_at_ends_of_path
             0x6a: plat_actor_surface_type
             0x6f: plat_set_tag
             0x82: plat_spike
@@ -1500,10 +1500,17 @@ types:
     seq:
       - id: target_tag
         type: u2
-      - id: u16_0x0c
+
+      #######
+      # TODO: there's some weird funny-business going on in the
+      #       upper byte of these two args. figure out what's going on
+      #       there...
+      - id: out_framecount
         type: u2
-      - id: u16_0x10
+      - id: in_framecount
         type: u2
+      #######
+
       - id: u16_0x12
         type: u2
 
@@ -2045,7 +2052,7 @@ types:
       modifies: PLATFORM
     seq: []
 
-  plat_0x66: # 0x66
+  plat_reverse_at_ends_of_path: # 0x66
     -semantic:
       modifies: PLATFORM
     seq: []
