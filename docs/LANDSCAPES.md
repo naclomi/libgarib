@@ -298,7 +298,7 @@ TODO
 
 ### Cameo scripts
 
-"Cameos" are scripts that run at the beginning of a level and control in-game cutscenes like those seen at the beginning of the bosses and many bonus stages. The intro and outro cutscenes are notably *not* cameos.
+"Cameos" are scripts that control non-interactive in-game cutscenes, usually at the beginning of the level, like those seen at the beginning of the boss stages. The intro and outro cutscenes are notably *not* cameos.
 
 A cameo is composed of a list of up to 20 instructions, each of which starts "disabled" and can be configured to start running either after another instruction completes or after a specified number of frames into the cutscene. All active instructions are run in parallel, facilitating for instance simultaneous camera movement and character animation. All cameos are also run in parallel, though in the vanilla game there is usually at most only one cameo per level.
 

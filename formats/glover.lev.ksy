@@ -595,7 +595,7 @@ types:
   cameo_inst_2:
     seq:
       - id: subcommand
-        type: u2
+        type: s2
       - id: i_0x02
         type: f4
       - id: i_0x06
@@ -729,7 +729,7 @@ types:
             0x1f: puzzle_platform_touching_conf_boundary_edge
             0x20: puzzle_platform_close_to_conf_boundary_edge
 
-            0x22: puzzle_cond_b
+            0x22: puzzle_cond_0x22
 
             0x23: puzzle_cond_glover_within_volume
             0x25: puzzle_cond_ball_within_volume
@@ -740,8 +740,10 @@ types:
             0x28: puzzle_cond_camera_within_range_of_point
 
             0x29: puzzle_cond_glover_within_range_of_point_2
+            
+            0x2a: puzzle_cond_platform_doesnt_exist
 
-            _: puzzle_cond_a
+            _: puzzle_cond_default
 
   puzzle_cond_platform_path_at_point_at_rest:
     seq:
@@ -888,14 +890,16 @@ types:
         5: z_plus_d
 
 
-  puzzle_cond_a:
+  puzzle_cond_default:
+    # TODO: reverse
     seq:
       - id: u32_0x24
         type: u2
       - id: u16_0x0a
         type: u2
 
-  puzzle_cond_b:
+  puzzle_cond_0x22:
+    # TODO: reverse
     seq:
       - id: i_0x00
         type: u4
@@ -1032,6 +1036,14 @@ types:
       - id: min_y
         type: f4
 
+  puzzle_cond_platform_doesnt_exist: # 0x2a
+    seq:
+      - id: plat_tag
+        type: u2
+      - id: reserved
+        type: u2
+
+
   puzzle_action: # 0x96
     # TODO: identify what each of the action types are
     #       (at least to a rough approximation)
@@ -1046,12 +1058,15 @@ types:
           switch-on: action_type
           cases:
             0x35: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
-            0x3b: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
-            0x3c: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
+            0x38: puzzle_action_reg_set
+            0x39: puzzle_action_reg_add
+            0x3a: puzzle_action_reg_sub
+            0x3b: puzzle_action_spawn_powerup
+            0x3c: puzzle_action_spawn_enemy
             0x3d: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
-            0x3e: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
-            0x3f: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
-            0x40: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
+            0x3e: puzzle_action_camera_look_at_platform
+            0x3f: puzzle_action_camera_look_at_point_2
+            0x40: puzzle_action_camera_look_at_point_1
 
             0x4F:  puzzle_action_0x4f
 
@@ -1074,6 +1089,64 @@ types:
             0x56: puzzle_action_0x56
 
             _:  puzzle_action_default
+    enums:
+      flags:
+        0x1: puzzle_camera_freeze_player
+        0x2: puzzle_camera_freeze_particles
+        0x4: puzzle_camera_freeze_enemies
+        0x80: puzzle_register_indirect_argument
+        0x200: puzzle_action_random_activation_delay
+
+  puzzle_action_reg_set:
+    seq:
+      # Interpretation of this value depends on the
+      # PUZZLE_REGISTER_INDIRECT_ARGUMENT flag being set:
+      - id: imm_val_or_src_reg
+        type: f4
+
+      - id: dst_reg
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags      
+
+  puzzle_action_reg_add:
+    seq:
+      # Interpretation of this value depends on the
+      # PUZZLE_REGISTER_INDIRECT_ARGUMENT flag being set:
+      - id: imm_val_or_src_reg
+        type: f4
+
+      - id: dst_reg
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags      
+
+  puzzle_action_reg_sub:
+    seq:
+      # Interpretation of this value depends on the
+      # PUZZLE_REGISTER_INDIRECT_ARGUMENT flag being set:
+      - id: imm_val_or_src_reg
+        type: f4
+
+      - id: dst_reg
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
 
   puzzle_action_0x4f:
     seq:
@@ -1093,6 +1166,126 @@ types:
 
       - id: u32_0x20
         type: u4
+
+  puzzle_action_spawn_powerup:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      - id: u32_0x10 # TODO: possibly puzzle tag?
+        type: f4
+
+      - id: type
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: u32_0x20 # TODO: possibly lifetime?
+        type: u4
+
+  puzzle_action_spawn_enemy:
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      - id: reserved
+        type: u4
+
+      - id: puzzle_tag
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+
+  puzzle_action_camera_look_at_platform:
+    # If position is (0,0,0), fix camera at its current position
+    seq:
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+
+      - id: duration
+        type: f4
+
+      - id: platform_tag
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+
+  puzzle_action_camera_look_at_point_1:
+    # Doesn't do anything on its own; must be followed by a
+    # puzzle_action_camera_look_at_point_2 on the same frame.
+    # Camera flags should be passed to
+    # puzzle_action_camera_look_at_point_2, not here
+    seq:
+      - id: cam_x
+        type: f4
+      - id: cam_y
+        type: f4
+      - id: cam_z
+        type: f4
+
+      - id: reserved
+        type: u4
+
+      - id: reserved_2
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_camera_look_at_point_2:
+    # Point camera at arbitrary point. If you want to set
+    # camera position as well, MUST be combined with a
+    # "puzzle_action_camera_look_at_point_1" action that
+    # triggers on the same frame
+    seq:
+      - id: lookat_x
+        type: f4
+      - id: lookat_y
+        type: f4
+      - id: lookat_z
+        type: f4
+
+      - id: duration
+        type: f4
+
+      - id: reserved
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
 
 
   puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40:
@@ -2310,7 +2503,8 @@ types:
       - id: type
         type: u2
         enum: enemy_type
-      - id: u1
+
+      - id: puzzle_tag
         type: u2
 
       - id: x

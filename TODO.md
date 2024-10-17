@@ -1,6 +1,9 @@
 
 # general
 
+- current kaitai format seems to produce broken construct code by introducing
+  enum too late into file. file bug with kaitai and patch in temporary fix.
+
 # rom-asset-tool
 
 # texbank-tool
