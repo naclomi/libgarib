@@ -1057,38 +1057,43 @@ types:
         type:
           switch-on: action_type
           cases:
+            # TODO: Any more?
             0x34: puzzle_action_control_active_elements
-            0x35: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
+            0x35: puzzle_action_set_conveyor
+            # 0x36
+            # 0x37
             0x38: puzzle_action_reg_set
             0x39: puzzle_action_reg_add
             0x3a: puzzle_action_reg_sub
             0x3b: puzzle_action_spawn_powerup
             0x3c: puzzle_action_spawn_enemy
-            0x3d: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
+            0x3d: puzzle_action_set_platform_velocity
             0x3e: puzzle_action_camera_look_at_platform
             0x3f: puzzle_action_camera_look_at_point_2
             0x40: puzzle_action_camera_look_at_point_1
-
-            0x4F:  puzzle_action_0x4f
-
+            # 0x41
+            # 0x42
+            # 0x43
+            # 0x44
+            # 0x45
             0x46: puzzle_action_0x46_0x47_0x48
             0x47: puzzle_action_0x46_0x47_0x48
             0x48: puzzle_action_0x46_0x47_0x48
-
             0x49: puzzle_action_0x49_0x4d
-            0x4D: puzzle_action_0x49_0x4d
-
             0x4A: puzzle_action_0x4a
-
             0x4B: puzzle_action_0x4b_0x4c
             0x4C: puzzle_action_0x4b_0x4c
-
+            0x4D: puzzle_action_0x49_0x4d
+            # 0x4E
+            0x4F:  puzzle_action_0x4f
+            # 0x50
+            # 0x51
+            0x52: puzzle_action_set_platform_path_direction
+            # 0x53
             0x54: puzzle_action_0x54
-
             0x55: puzzle_action_0x55
-
             0x56: puzzle_action_0x56
-
+            # TODO: Any more?
             _:  puzzle_action_default
     enums:
       flags:
@@ -1294,27 +1299,64 @@ types:
         type: u4
         enum: puzzle_action::flags
 
-
-  puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40:
+  puzzle_action_set_conveyor:
     seq:
-      - id: u32_0x14
-        type: u4
-      - id: u32_0x18
-        type: u4
-      - id: u32_0x1c
+      - id: vel_x
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_z
+        type: f4
+
+      - id: reserved
         type: u4
 
-      - id: u32_0x10
-        type: u4
-
-      - id: u16_0x0e
+      - id: puzzle_tag
         type: u2
 
-      - id: u16_0x0a
+      - id: activation_delay
         type: u2
 
-      - id: u32_0x20
+      - id: flags
         type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_set_platform_velocity:
+    seq:
+      - id: vel_x
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_z
+        type: f4
+
+      - id: reserved
+        type: u4
+
+      - id: puzzle_tag
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_set_platform_path_direction: # 0x52
+    seq:
+      - id: direction
+        type: u4
+
+      - id: puzzle_tag
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
 
   puzzle_action_control_active_elements: # 0x34
     # Turns on/off physics elements. Use flags to control what types of object
