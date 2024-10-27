@@ -1057,6 +1057,7 @@ types:
         type:
           switch-on: action_type
           cases:
+            0x34: puzzle_action_control_active_elements
             0x35: puzzle_action_0x35_0x3b_0x3c_0x3d_0x3e_0x3f_0x40
             0x38: puzzle_action_reg_set
             0x39: puzzle_action_reg_add
@@ -1094,8 +1095,14 @@ types:
         0x1: puzzle_camera_freeze_player
         0x2: puzzle_camera_freeze_particles
         0x4: puzzle_camera_freeze_enemies
+        0x8: puzzle_action_include_fans_and_magnets
+        0x10: puzzle_action_include_teleports
+        0x20: puzzle_action_include_catapults
+        0x40: puzzle_action_include_damage_platforms
         0x80: puzzle_register_indirect_argument
+        0x100: puzzle_action_include_vents
         0x200: puzzle_action_random_activation_delay
+        0x400: puzzle_action_include_buzzers
 
   puzzle_action_reg_set:
     seq:
@@ -1129,7 +1136,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags      
+        enum: puzzle_action::flags
 
   puzzle_action_reg_sub:
     seq:
@@ -1308,6 +1315,33 @@ types:
 
       - id: u32_0x20
         type: u4
+
+  puzzle_action_control_active_elements: # 0x34
+    # Turns on/off physics elements. Use flags to control what types of object
+    # the tag refers to --
+    #   - vents
+    #   - buzzers
+    #   - fans/magnets
+    #   - teleporters
+    #   - catapults
+    #   - damage platforms
+    # In most cases, set value to "0" to turn object off and "1" to turn on
+    # For fans/magnets, "2.0" is a special value that toggles between on/off
+    #
+    # TODO: investigate flag 0x40
+    seq:
+      - id: value
+        type: f4
+
+      - id: puzzle_tag
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
 
   puzzle_action_default:
     seq:
@@ -1810,9 +1844,8 @@ types:
       - id: u32_0x70
         type: u4
 
-  plat_special_0x8e: # 0x8e
-    # TODO: if enable is nonzero, ORs 0x4000 into plat->u32_0x14
-    #       figure out what this does
+  plat_cause_damage: # 0x8e
+    # Platform causes damage to player/ball on contact
     -semantic:
       modifies: PLATFORM
     seq:
@@ -2449,7 +2482,7 @@ types:
     seq:
       - id: type
         type: u2
-      - id: u16_0x0a
+      - id: puzzle_tag
         type: u2
       - id: parent_tag
         type: u2
