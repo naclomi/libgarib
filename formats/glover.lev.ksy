@@ -21,8 +21,8 @@ types:
         type:
           switch-on: type_code
           cases:
-            0xBD: unknown_sound_0xbd
-            0xBE: environmental_sound
+            0xBD: ambient_sound
+            0xBE: ambient_sound_at_point
             0xA9: set_gravity
             0xBB: mr_tip
             0x97: diffuse_light
@@ -184,18 +184,18 @@ types:
 ###############################################################
 ### Landscape
 
-  unknown_sound_0xbd:
-    # TODO
+  # TODO: unclear how most of these sound parameters work
+
+  ambient_sound: # 0xbd
     seq:
-      - id: h_0x00
+      - id: sound_id
         type: u2
-      - id: h_0x02
+      - id: volume
         type: u2
-      - id: h_0x04
+      - id: flags
         type: u2
 
-  environmental_sound: # 0xbe
-    # TODO: unclear how flags works, or any of the unknown halfs
+  ambient_sound_at_point: # 0xbe
     seq:
       - id: sound_id
         type: u2
@@ -209,7 +209,7 @@ types:
         type: u2
       - id: h_0x0a
         type: u2
-      - id: h_0x0c
+      - id: platform_tag
         type: u2
       - id: h_0x0e
         type: u2
@@ -1058,6 +1058,13 @@ types:
           switch-on: action_type
           cases:
             # TODO: Any more?
+            0x2d: puzzle_action_platform_nudge
+            # 0x2e
+            # 0x2f
+            # 0x30
+            # 0x31
+            # 0x32
+            # 0x33
             0x34: puzzle_action_control_active_elements
             0x35: puzzle_action_set_conveyor
             # 0x36
@@ -1097,15 +1104,29 @@ types:
             _:  puzzle_action_default
     enums:
       flags:
+        # For camera actions
         0x1: puzzle_camera_freeze_player
         0x2: puzzle_camera_freeze_particles
         0x4: puzzle_camera_freeze_enemies
+<<<<<<< HEAD
         0x8: puzzle_action_include_fans_and_magnets
         0x10: puzzle_action_include_teleports
         0x20: puzzle_action_include_catapults
         0x40: puzzle_action_include_damage_platforms
         0x80: puzzle_register_indirect_argument
         0x100: puzzle_action_include_vents
+=======
+
+        # For platform movement actions
+        0x1: puzzle_platform_halt_at_end_of_first_segment_only
+        0x2: puzzle_platform_halt_at_segment_end
+        0x4: puzzle_platform_clip_current_velocity
+
+        # For register actions
+        0x80: puzzle_register_indirect_argument
+
+        # For all actions
+>>>>>>> f6b2254d65f28bcb778d5fda2033bae9954bc6d1
         0x200: puzzle_action_random_activation_delay
         0x400: puzzle_action_include_buzzers
 
@@ -1377,6 +1398,28 @@ types:
 
       - id: puzzle_tag
         type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_platform_nudge:
+    # If platform tag is negative, gives an impulse to said platform's
+    # Y velocity of the specified magnitude.
+    # If platform tag is positive, velocity argument is ignored and
+    # (TODO: double check the following) the platform is "nudged" so
+    # that it starts moving again if it stopped because it hit a path
+    # point that had a negative duration. In this case, flags can
+    # be used to control how much further along its path it moves.
+    seq:
+      - id: velocity
+        type: f4
+
+      - id: platform_tag
+        type: s2
 
       - id: activation_delay
         type: u2
@@ -1794,30 +1837,31 @@ types:
     -semantic:
       modifies: PLATFORM
     seq:
-      - id: u16_0x0c
+      - id: enabled
         type: u2
 
-      - id: u32_0x48
-        type: u4
-      - id: u32_0x4c
-        type: u4
-      - id: u32_0x50
-        type: u4
+      - id: force_vector_x
+        type: f4
+      - id: force_vector_y
+        type: f4
+      - id: force_vector_z
+        type: f4
 
 
       - id: u32_0x10
         type: u4
 
-      - id: u32_0x14
-        type: u4
+      - id: force_min_threshold
+        type: f4
 
       - id: u32_0x18
         type: u4
 
-      - id: u32_0x1c
-        type: u4
+      - id: force_vector_magnitude
+        type: f4
 
   plat_magnet_0x8b: # 0x8b
+    # TODO: Internally almost exactly the same as plat_fan_0x8a
     -semantic:
       modifies: PLATFORM
     seq:
