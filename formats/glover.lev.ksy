@@ -1067,8 +1067,8 @@ types:
             # 0x33
             0x34: puzzle_action_control_active_elements
             0x35: puzzle_action_set_conveyor
-            # 0x36
-            # 0x37
+            0x36: puzzle_action_hide_platform
+            0x37: puzzle_action_toggle_platform_physics
             0x38: puzzle_action_reg_set
             0x39: puzzle_action_reg_add
             0x3a: puzzle_action_reg_sub
@@ -1083,9 +1083,9 @@ types:
             # 0x43
             # 0x44
             # 0x45
-            0x46: puzzle_action_0x46_0x47_0x48
-            0x47: puzzle_action_0x46_0x47_0x48
-            0x48: puzzle_action_0x46_0x47_0x48
+            0x46: puzzle_action_camera_adjust_pitch
+            0x47: puzzle_action_camera_adjust_distance
+            0x48: puzzle_action_0x48
             0x49: puzzle_action_0x49_0x4d
             0x4A: puzzle_action_0x4a
             0x4B: puzzle_action_0x4b_0x4c
@@ -1108,25 +1108,23 @@ types:
         0x1: puzzle_camera_freeze_player
         0x2: puzzle_camera_freeze_particles
         0x4: puzzle_camera_freeze_enemies
-<<<<<<< HEAD
-        0x8: puzzle_action_include_fans_and_magnets
-        0x10: puzzle_action_include_teleports
-        0x20: puzzle_action_include_catapults
-        0x40: puzzle_action_include_damage_platforms
-        0x80: puzzle_register_indirect_argument
-        0x100: puzzle_action_include_vents
-=======
 
         # For platform movement actions
         0x1: puzzle_platform_halt_at_end_of_first_segment_only
         0x2: puzzle_platform_halt_at_segment_end
         0x4: puzzle_platform_clip_current_velocity
 
+        # For platform property-enabling actions
+        0x8: puzzle_action_include_fans_and_magnets
+        0x10: puzzle_action_include_teleports
+        0x20: puzzle_action_include_catapults
+        0x40: puzzle_action_include_damage_platforms
+        0x100: puzzle_action_include_vents
+
         # For register actions
         0x80: puzzle_register_indirect_argument
 
         # For all actions
->>>>>>> f6b2254d65f28bcb778d5fda2033bae9954bc6d1
         0x200: puzzle_action_random_activation_delay
         0x400: puzzle_action_include_buzzers
 
@@ -1145,7 +1143,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags      
+        enum: puzzle_action::flags
 
   puzzle_action_reg_add:
     seq:
@@ -1428,6 +1426,36 @@ types:
         type: u4
         enum: puzzle_action::flags
 
+  puzzle_action_hide_platform: # 0x36
+    seq:
+      - id: hide_enabled
+        type: u4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_toggle_platform_physics: # 0x37
+    seq:
+      - id: physics_enabled
+        type: u4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
   puzzle_action_default:
     seq:
       - id: u32_0x10
@@ -1442,12 +1470,26 @@ types:
       - id: u32_0x20
         type: u4
 
-  puzzle_action_0x46_0x47_0x48:
+  puzzle_action_camera_adjust_pitch: # 0x46
     seq:
-      - id: u32_0x24
-        type: u4
-      - id: u16_0x0a
+      - id: pitch_adjust
+        type: f4
+      - id: activation_delay
         type: u2
+
+  puzzle_action_camera_adjust_distance: # 0x47
+      seq:
+        - id: distance
+          type: f4
+        - id: activation_delay
+          type: u2
+
+  puzzle_action_0x48:
+      seq:
+        - id: u32_0x24
+          type: f4
+        - id: activation_delay
+          type: u2
 
   puzzle_action_0x49_0x4d:
     seq:
@@ -2329,14 +2371,12 @@ types:
     seq: []
 
   plat_destructible: # 0x65
-    # TODO: figure flags out
-    # valid flag bits are 0, 1, and 2
-    # flag bit 0 means glover can fist-pound it apart
     -semantic:
       modifies: PLATFORM
     seq:
       - id: flags
         type: u2
+        enum: destructible_flags
       - id: num_fragments
         type: u4
       - id: fragment_object_id
@@ -2347,6 +2387,11 @@ types:
         type: str
         encoding: ASCII
         size: 8
+    enums:
+      destructible_flags:
+        # 0x1: TODO???? old notes say this flag means glover can fist-pound it apart
+        # 0x2: TODO????
+        0x4: spawn_particles_on_destruction
 
   plat_destructible_sound: # 0xc8
     -semantic:
