@@ -1059,8 +1059,8 @@ types:
           cases:
             # TODO: Any more?
             0x2d: puzzle_action_platform_nudge
-            # 0x2e
-            # 0x2f
+            0x2e: puzzle_action_platform_config_spin
+            0x2f: puzzle_action_platform_config_orbit
             0x30: puzzle_action_platform_move_to_point_idx_minus_one
             # 0x31
             # 0x32
@@ -1078,17 +1078,17 @@ types:
             0x3e: puzzle_action_camera_look_at_platform
             0x3f: puzzle_action_camera_look_at_point_2
             0x40: puzzle_action_camera_look_at_point_1
-            # 0x41
-            # 0x42
+            0x41: puzzle_action_camera_set_distance
+            # 0x42 todo: something to do with overriding camera y adjustment
             0x43: puzzle_action_enemy_set_ai_instruction
             0x44: puzzle_action_toggle_wind
             0x45: puzzle_action_spawn_garib_group
-            0x46: puzzle_action_camera_adjust_pitch
-            0x47: puzzle_action_camera_adjust_distance
+            0x46: puzzle_action_camera_tween_y_adjust
+            0x47: puzzle_action_camera_tween_distance
             0x48: puzzle_action_camera_turn_towards_focus
-            0x49: puzzle_action_camera_fly_towards
-            0x4A: puzzle_action_0x4a
-            0x4B: puzzle_action_0x4b_0x4c
+            0x49: puzzle_action_camera_fly_towards_point
+            0x4A: puzzle_action_camera_look_at_glover
+            0x4B: puzzle_action_0x4b_0x4c # TODO: ...unused?
             0x4C: puzzle_action_0x4b_0x4c
             0x4D: puzzle_action_0x4d
             # 0x4E
@@ -1109,7 +1109,7 @@ types:
         0x2: puzzle_camera_freeze_particles
         0x4: puzzle_camera_freeze_enemies
 
-        # For platform movement actions
+        # For platform path/spin/orbit actions
         0x1: puzzle_platform_halt_at_end_of_first_segment_only
         0x2: puzzle_platform_halt_at_segment_end
         0x4: puzzle_platform_clip_current_velocity
@@ -1404,7 +1404,7 @@ types:
         type: u4
         enum: puzzle_action::flags
 
-  puzzle_action_platform_nudge:
+  puzzle_action_platform_nudge: # 0x2d
     # If platform tag is negative, gives an impulse to said platform's
     # Y velocity of the specified magnitude.
     # If platform tag is positive, velocity argument is ignored and
@@ -1412,6 +1412,41 @@ types:
     # that it starts moving again if it stopped because it hit a path
     # point that had a negative duration. In this case, flags can
     # be used to control how much further along its path it moves.
+    seq:
+      - id: velocity
+        type: f4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+
+  puzzle_action_platform_config_spin: # 0x2e
+    # Use to set spin speed and/or get platform to stop after spin
+    # is complete (depending on flags)
+    seq:
+      - id: velocity
+        type: f4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_platform_config_orbit: # 0x2f
+    # Use to set orbit speed and/or get platform to stop after orbit
+    # is complete (depending on flags)
     seq:
       - id: velocity
         type: f4
@@ -1501,7 +1536,7 @@ types:
         type: u4
         enum: puzzle_action::flags
 
-  puzzle_action_toggle_wind: 0x44
+  puzzle_action_toggle_wind: # 0x44
     seq:
       - id: enabled
         type: u4
@@ -1530,6 +1565,21 @@ types:
       - id: num_spawns
         type: s4
 
+  puzzle_action_camera_set_distance:
+    seq:
+      - id: distance
+        type: f4
+
+      - id: reserved
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
   puzzle_action_default:
     seq:
       - id: field_0
@@ -1546,14 +1596,14 @@ types:
         enum: puzzle_action::flags
 
 
-  puzzle_action_camera_adjust_pitch: # 0x46
+  puzzle_action_camera_tween_y_adjust: # 0x46
     seq:
-      - id: pitch_adjust
+      - id: y_adjust
         type: f4
       - id: activation_delay
         type: u2
 
-  puzzle_action_camera_adjust_distance: # 0x47
+  puzzle_action_camera_tween_distance: # 0x47
       seq:
         - id: distance
           type: f4
@@ -1567,7 +1617,7 @@ types:
         - id: activation_delay
           type: u2
 
-  puzzle_action_camera_fly_towards
+  puzzle_action_camera_fly_towards_point:
     seq:
       - id: x
         type: f4
@@ -1589,15 +1639,18 @@ types:
       - id: activation_delay
         type: u2
 
-  puzzle_action_0x4a:
+  puzzle_action_camera_look_at_glover: # 0x4a
+    # If distance is negative, its absolute value is used and the action will
+    # additionally _force_ the camera to look at Glover despite possibly being
+    # in some other state (TODO: that is, it forces camera mode variable at
+    # RAM addr 0x8028fb7c to 0...not _exactly_ sure what this does)
     seq:
-      - id: u32_0x24
-        type: u4
-      - id: u32_0x24_0x0c
-        type: u4
-      - id: u16_0x0a
+      - id: angle
+        type: f4
+      - id: distance
+        type: f4
+      - id: activation_delay
         type: u2
-
 
   puzzle_action_0x54:
     seq:

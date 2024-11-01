@@ -19,7 +19,7 @@ parsers:
 	mkdir -p js/parsers
 
 	mkdir -p build_artifacts
-	
+
 	$(KAITAI_BIN) --read-pos --outdir ./build_artifacts \
 		$(KAITAI_LANGUAGES) \
 		formats/glover.lev.ksy \
