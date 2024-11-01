@@ -1061,10 +1061,10 @@ types:
             0x2d: puzzle_action_platform_nudge
             # 0x2e
             # 0x2f
-            # 0x30
+            0x30: puzzle_action_platform_move_to_point_idx_minus_one
             # 0x31
             # 0x32
-            # 0x33
+            0x33: puzzle_action_platform_spin_along_axis
             0x34: puzzle_action_control_active_elements
             0x35: puzzle_action_set_conveyor
             0x36: puzzle_action_hide_platform
@@ -1080,17 +1080,17 @@ types:
             0x40: puzzle_action_camera_look_at_point_1
             # 0x41
             # 0x42
-            # 0x43
-            # 0x44
-            # 0x45
+            0x43: puzzle_action_enemy_set_ai_instruction
+            0x44: puzzle_action_toggle_wind
+            0x45: puzzle_action_spawn_garib_group
             0x46: puzzle_action_camera_adjust_pitch
             0x47: puzzle_action_camera_adjust_distance
-            0x48: puzzle_action_0x48
-            0x49: puzzle_action_0x49_0x4d
+            0x48: puzzle_action_camera_turn_towards_focus
+            0x49: puzzle_action_camera_fly_towards
             0x4A: puzzle_action_0x4a
             0x4B: puzzle_action_0x4b_0x4c
             0x4C: puzzle_action_0x4b_0x4c
-            0x4D: puzzle_action_0x49_0x4d
+            0x4D: puzzle_action_0x4d
             # 0x4E
             0x4F:  puzzle_action_0x4f
             # 0x50
@@ -1456,19 +1456,95 @@ types:
         type: u4
         enum: puzzle_action::flags
 
+  puzzle_action_platform_move_to_point_idx_minus_one: # 0x30
+    seq:
+      - id: point_idx
+        type: u4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_platform_spin_along_axis: # 0x33
+    seq:
+      - id: axis_idx
+        type: u4
+
+      - id: platform_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_enemy_set_ai_instruction: # 0x43
+    seq:
+      - id: instruction_idx
+        type: u4
+
+      - id: puzzle_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_toggle_wind: 0x44
+    seq:
+      - id: enabled
+        type: u4
+
+      - id: puzzle_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_spawn_garib_group: # 0x45
+    seq:
+      - id: y
+        type: f4
+
+      - id: group_id
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: num_spawns
+        type: s4
+
   puzzle_action_default:
     seq:
-      - id: u32_0x10
+      - id: field_0
         type: u4
 
-      - id: u16_0x0e
+      - id: field_1
+        type: s2
+
+      - id: activation_delay
         type: u2
 
-      - id: u16_0x0a
-        type: u2
-
-      - id: u32_0x20
+      - id: flags
         type: u4
+        enum: puzzle_action::flags
+
 
   puzzle_action_camera_adjust_pitch: # 0x46
     seq:
@@ -1484,22 +1560,33 @@ types:
         - id: activation_delay
           type: u2
 
-  puzzle_action_0x48:
+  puzzle_action_camera_turn_towards_focus: # 0x48
       seq:
-        - id: u32_0x24
+        - id: reserved
           type: f4
         - id: activation_delay
           type: u2
 
-  puzzle_action_0x49_0x4d:
+  puzzle_action_camera_fly_towards
     seq:
-      - id: u32_0x24
-        type: u4
-      - id: u32_0x28
-        type: u4
-      - id: u32_0x2c
-        type: u4
-      - id: u16_0x0a
+      - id: x
+        type: f4
+      - id: y
+        type: f4
+      - id: z
+        type: f4
+      - id: activation_delay
+        type: u2
+
+  puzzle_action_0x4d:
+    seq:
+      - id: x
+        type: f4
+      - id: z
+        type: f4
+      - id: distance
+        type: f4
+      - id: activation_delay
         type: u2
 
   puzzle_action_0x4a:
