@@ -1089,17 +1089,18 @@ types:
             0x49: puzzle_action_camera_fly_towards_point
             0x4A: puzzle_action_camera_look_at_glover
             0x4B: puzzle_action_0x4b_0x4c # TODO: ...unused?
-            0x4C: puzzle_action_0x4b_0x4c
-            0x4D: puzzle_action_0x4d
-            # 0x4E
-            0x4F:  puzzle_action_0x4f
-            # 0x50
-            # 0x51
+            0x4C: puzzle_action_0x4b_0x4c # TODO: seems to use unintialized data, is this actually used anywher?
+            0x4D: puzzle_action_camera_fly_towards_point_relative_to_glover
+            0x4E: puzzle_action_change_water_height
+            0x4F: puzzle_action_0x4f
+            0x50: puzzle_action_set_gravity
+            0x51: puzzle_action_start_cameo
             0x52: puzzle_action_set_platform_path_direction
-            # 0x53
-            0x54: puzzle_action_0x54
-            0x55: puzzle_action_0x55
-            0x56: puzzle_action_0x56
+            0x53: puzzle_action_make_ball_interactive
+            0x54: puzzle_action_0x54 # TODO something involving sound
+            0x55: puzzle_action_set_background
+            0x56: puzzle_action_set_fog
+            # 0x57
             # TODO: Any more?
             _:  puzzle_action_default
     enums:
@@ -1580,6 +1581,66 @@ types:
         type: u4
         enum: puzzle_action::flags
 
+  puzzle_action_change_water_height:
+    seq:
+      - id: y
+        type: f4
+
+      - id: puzzle_tag
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_set_gravity: # 0x50
+    seq:
+      - id: value
+        type: f4
+
+      - id: reserved
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_start_cameo: # 0x51
+    seq:
+      - id: reserved
+        type: u4
+
+      - id: cameo_idx
+        type: s2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
+  puzzle_action_make_ball_interactive: # 0x53
+    seq:
+      - id: reserved
+        type: u4
+
+      - id: reserved_2
+        type: u2
+
+      - id: activation_delay
+        type: u2
+
+      - id: flags
+        type: u4
+        enum: puzzle_action::flags
+
   puzzle_action_default:
     seq:
       - id: field_0
@@ -1628,7 +1689,7 @@ types:
       - id: activation_delay
         type: u2
 
-  puzzle_action_0x4d:
+  puzzle_action_camera_fly_towards_point_relative_to_glover:
     seq:
       - id: x
         type: f4
@@ -1679,23 +1740,27 @@ types:
       - id: u16_0x0a
         type: u2
 
-  puzzle_action_0x55:
+  puzzle_action_set_background: # 0x55
     seq:
-      - id: u32_0x24
+      - id: texture_id
         type: u4
-      - id: u16_0x0a
+      - id: activation_delay
         type: u2
 
-  puzzle_action_0x56:
+  puzzle_action_set_fog: # 0x56
     seq:
-      - id: u32_0x14
-        type: u4
-      - id: u32_0x18
-        type: u4
+      - id: r
+        type: u2
+      - id: g
+        type: u2
+      - id: b
+        type: u2
+      - id: min_z
+        type: u2
       - id: u16_0x1c
         type: u2
 
-      - id: u16_0x0a
+      - id: activation_delay
         type: u2
 
   puzzle_action_0x4b_0x4c:
