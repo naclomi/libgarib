@@ -24,7 +24,10 @@ parsers:
 		$(KAITAI_LANGUAGES) \
 		formats/glover.lev.ksy \
 		formats/glover.objbank.ksy \
-		formats/glover.texbank.ksy
+		formats/glover.texbank.ksy \
+		2>&1 | ./python/scripts/kaitai-warning-filter.py \
+		attr-id
+
 
 	$(PYTHON-BIN) ./python/scripts/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
 

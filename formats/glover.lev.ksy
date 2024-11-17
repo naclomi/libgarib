@@ -84,7 +84,7 @@ types:
             0x67: plat_crumb_0x67
             0xc7: plat_special_0xc7
             0x6e: plat_special_0x6e
-            0x8e: plat_special_0x8e
+            0x8e: plat_cause_damage
             0x5b: plat_push_0x5b
             0x72: plat_conf_boundary_volume
 
@@ -705,44 +705,42 @@ types:
         type:
           switch-on: cond_type
           cases:
+            # any more?
             0x9: puzzle_cond_platform_path_at_point_at_rest
             0xa: puzzle_cond_platform_spin_todo
             0xb: puzzle_cond_platform_orbit_todo
             0xc: puzzle_cond_platform_path_at_point_2
             0xd: puzzle_cond_platform_spin_2_todo
             0xe: puzzle_cond_platform_orbit_2_todo
-
-            0xf: puzzle_cond_glover_platform_todo
+            0xf: puzzle_cond_glover_standing_on_platform
             0x10: puzzle_cond_glover_platform_2_todo
-
             0x11: puzzle_cond_ball_platform_todo
             0x12: puzzle_cond_ball_platform_2_todo
-
+            # 0x13
+            # 0x14
             0x15: puzzle_cond_glover_is_touching_platform
             0x16: puzzle_cond_glover_changed_touching_platform
             0x17: puzzle_cond_ball_is_touching_platform
             0x18: puzzle_cond_ball_changed_touching_platform
-
             0x19: puzzle_cond_enemy_is_touching_platform
             0x1a: puzzle_cond_enemy_changed_touching_platform
-
+            # 0x1b
+            # 0x1c
+            # 0x1d
+            # 0x1e
             0x1f: puzzle_platform_touching_conf_boundary_edge
             0x20: puzzle_platform_close_to_conf_boundary_edge
-
+            # 0x21
             0x22: puzzle_cond_0x22
-
             0x23: puzzle_cond_glover_within_volume
-            0x25: puzzle_cond_ball_within_volume
-            0x27: puzzle_cond_camera_within_volume
-
             0x24: puzzle_cond_glover_within_range_of_point
+            0x25: puzzle_cond_ball_within_volume
             0x26: puzzle_cond_ball_within_range_of_point
+            0x27: puzzle_cond_camera_within_volume
             0x28: puzzle_cond_camera_within_range_of_point
-
             0x29: puzzle_cond_glover_within_range_of_point_2
-            
             0x2a: puzzle_cond_platform_doesnt_exist
-
+            # todo: any more?
             _: puzzle_cond_default
 
   puzzle_cond_platform_path_at_point_at_rest:
@@ -787,7 +785,7 @@ types:
       - id: arg2
         type: s2
 
-  puzzle_cond_glover_platform_todo:
+  puzzle_cond_glover_standing_on_platform:
     seq:
     - id: plat_tag
       type: u2
@@ -1104,30 +1102,43 @@ types:
             # TODO: Any more?
             _:  puzzle_action_default
     enums:
-      flags:
+      camera_flags:
         # For camera actions
         0x1: puzzle_camera_freeze_player
         0x2: puzzle_camera_freeze_particles
         0x4: puzzle_camera_freeze_enemies
 
+        # For all actions
+        0x200: puzzle_action_random_activation_delay
+
+      platform_movement_flags:
         # For platform path/spin/orbit actions
         0x1: puzzle_platform_halt_at_end_of_first_segment_only
         0x2: puzzle_platform_halt_at_segment_end
         0x4: puzzle_platform_clip_current_velocity
 
+        # For all actions
+        0x200: puzzle_action_random_activation_delay
+
+      platform_toggle_flags:
         # For platform property-enabling actions
         0x8: puzzle_action_include_fans_and_magnets
         0x10: puzzle_action_include_teleports
         0x20: puzzle_action_include_catapults
         0x40: puzzle_action_include_damage_platforms
         0x100: puzzle_action_include_vents
-
-        # For register actions
-        0x80: puzzle_register_indirect_argument
+        0x400: puzzle_action_include_buzzers
 
         # For all actions
         0x200: puzzle_action_random_activation_delay
-        0x400: puzzle_action_include_buzzers
+
+      register_flags:
+        # For register actions
+        0x80: puzzle_register_indirect_argument
+
+      generic_flags:
+        # For all actions
+        0x200: puzzle_action_random_activation_delay
 
   puzzle_action_reg_set:
     seq:
@@ -1144,7 +1155,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::register_flags
 
   puzzle_action_reg_add:
     seq:
@@ -1161,7 +1172,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::register_flags
 
   puzzle_action_reg_sub:
     seq:
@@ -1178,7 +1189,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::register_flags
 
   puzzle_action_0x4f:
     seq:
@@ -1240,7 +1251,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
 
   puzzle_action_camera_look_at_platform:
@@ -1264,7 +1275,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::camera_flags
 
 
   puzzle_action_camera_look_at_point_1:
@@ -1291,7 +1302,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::camera_flags
 
   puzzle_action_camera_look_at_point_2:
     # Point camera at arbitrary point. If you want to set
@@ -1317,7 +1328,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::camera_flags
 
   puzzle_action_set_conveyor:
     seq:
@@ -1339,7 +1350,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::camera_flags
 
   puzzle_action_set_platform_velocity:
     seq:
@@ -1361,7 +1372,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_movement_flags
 
   puzzle_action_set_platform_path_direction: # 0x52
     seq:
@@ -1376,7 +1387,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_movement_flags
 
   puzzle_action_control_active_elements: # 0x34
     # Turns on/off physics elements. Use flags to control what types of object
@@ -1403,7 +1414,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_toggle_flags
 
   puzzle_action_platform_nudge: # 0x2d
     # If platform tag is negative, gives an impulse to said platform's
@@ -1425,7 +1436,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_movement_flags
 
 
   puzzle_action_platform_config_spin: # 0x2e
@@ -1443,7 +1454,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_movement_flags
 
   puzzle_action_platform_config_orbit: # 0x2f
     # Use to set orbit speed and/or get platform to stop after orbit
@@ -1460,7 +1471,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::platform_movement_flags
 
   puzzle_action_hide_platform: # 0x36
     seq:
@@ -1475,7 +1486,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_toggle_platform_physics: # 0x37
     seq:
@@ -1490,7 +1501,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_platform_move_to_point_idx_minus_one: # 0x30
     seq:
@@ -1505,7 +1516,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_platform_spin_along_axis: # 0x33
     seq:
@@ -1520,7 +1531,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_enemy_set_ai_instruction: # 0x43
     seq:
@@ -1535,7 +1546,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_toggle_wind: # 0x44
     seq:
@@ -1550,7 +1561,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_spawn_garib_group: # 0x45
     seq:
@@ -1579,7 +1590,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::camera_flags
 
   puzzle_action_change_water_height:
     seq:
@@ -1594,7 +1605,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_set_gravity: # 0x50
     seq:
@@ -1609,7 +1620,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_start_cameo: # 0x51
     seq:
@@ -1624,7 +1635,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_make_ball_interactive: # 0x53
     seq:
@@ -1639,7 +1650,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
   puzzle_action_default:
     seq:
@@ -1654,7 +1665,7 @@ types:
 
       - id: flags
         type: u4
-        enum: puzzle_action::flags
+        enum: puzzle_action::generic_flags
 
 
   puzzle_action_camera_tween_y_adjust: # 0x46
@@ -1757,7 +1768,7 @@ types:
         type: u2
       - id: min_z
         type: u2
-      - id: u16_0x1c
+      - id: u16_0x1c # TODO: how is this used?
         type: u2
 
       - id: activation_delay
