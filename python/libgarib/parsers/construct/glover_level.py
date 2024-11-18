@@ -1,6 +1,180 @@
 from construct import *
 from construct.lib import *
 
+def glover_level__plat_constant_spin__axis(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+	)
+
+def glover_level__puzzle_platform_close_to_conf_boundary_edge__edge_type(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+		x_plus_w=3,
+		y_plus_h=4,
+		z_plus_d=5,
+	)
+
+def glover_level__set_exit__exit_type(subcon):
+	return Enum(subcon,
+		loading_zone=0,
+		solid_platform=1,
+	)
+
+def glover_level__plat_destructible__destructible_flags(subcon):
+	return Enum(subcon,
+		spawn_particles_on_destruction=4,
+	)
+
+def glover_level__puzzle_action__generic_flags(subcon):
+	return Enum(subcon,
+		puzzle_action_random_activation_delay=512,
+	)
+
+def glover_level__puzzle_action__camera_flags(subcon):
+	return Enum(subcon,
+		puzzle_camera_freeze_player=1,
+		puzzle_camera_freeze_particles=2,
+		puzzle_camera_freeze_enemies=4,
+		puzzle_action_random_activation_delay=512,
+	)
+
+def glover_level__puzzle_action__platform_movement_flags(subcon):
+	return Enum(subcon,
+		puzzle_platform_halt_at_end_of_first_segment_only=1,
+		puzzle_platform_halt_at_segment_end=2,
+		puzzle_platform_clip_current_velocity=4,
+		puzzle_action_random_activation_delay=512,
+	)
+
+def glover_level__puzzle_action__platform_toggle_flags(subcon):
+	return Enum(subcon,
+		puzzle_action_include_fans_and_magnets=8,
+		puzzle_action_include_teleports=16,
+		puzzle_action_include_catapults=32,
+		puzzle_action_include_damage_platforms=64,
+		puzzle_action_include_vents=256,
+		puzzle_action_random_activation_delay=512,
+		puzzle_action_include_buzzers=1024,
+	)
+
+def glover_level__puzzle_action__register_flags(subcon):
+	return Enum(subcon,
+		puzzle_register_indirect_argument=128,
+	)
+
+def glover_level__enemy__enemy_type(subcon):
+	return Enum(subcon,
+		bovva=7,
+		cannon=8,
+		samtex=9,
+		mallet=10,
+		generalw=11,
+		lionfish=12,
+		chester=13,
+		keg=14,
+		reggie=15,
+		swish=16,
+		thrice=17,
+		robes=18,
+		fumble=19,
+		mike=20,
+		raptor=21,
+		crumpet=22,
+		tracey=23,
+		yoofow=24,
+		opec=25,
+		cymon=26,
+		sucker=27,
+		bugle=28,
+		dennis=29,
+		chuck=30,
+		hubchicken1=31,
+		frankie2=32,
+		kloset=33,
+		willy=34,
+		joff=35,
+		cancer=36,
+		kirk=37,
+		robot=38,
+		evilrobot=39,
+		spank=40,
+		babyspk2=41,
+		evilglove=42,
+		dibber=43,
+		brundle=44,
+		malcom=45,
+		spotty=46,
+		gordon=47,
+		sidney=48,
+		weevil=49,
+		chopstik=50,
+		butterfly=51,
+		spider=52,
+		bat=53,
+		frog=54,
+		dragfly=55,
+		boxthing=56,
+		bug=57,
+		nmefrog=58,
+	)
+
+def glover_level__garib__garib_type(subcon):
+	return Enum(subcon,
+		garib=0,
+		bang_500pt=1,
+		extra_life=2,
+		mad_garib=3,
+	)
+
+def glover_level__puzzle_platform_touching_conf_boundary_edge__edge_type(subcon):
+	return Enum(subcon,
+		x=0,
+		y=1,
+		z=2,
+		x_plus_w=3,
+		y_plus_h=4,
+		z_plus_d=5,
+	)
+
+def glover_level__enemy_instruction__execution_condition_type(subcon):
+	return Enum(subcon,
+		ball_within_range=0,
+		ball_within_ground_range=1,
+		glover_within_range=2,
+		glover_within_ground_range=3,
+		ball_or_glover_within_range=4,
+		ball_or_glover_within_ground_range=5,
+		ball_within_angle_of_view=6,
+		glover_within_angle_of_view=7,
+		ball_or_glover_within_angle_of_view=8,
+		periodic=9,
+		roll_angle_within_range_and_periodic=10,
+		glover_holding_ball=11,
+		glover_not_holding_ball=12,
+		enemy_holding_ball=13,
+		enemy_not_holding_ball=14,
+		glover_holding_enemy=15,
+		glover_not_holding_enemy=16,
+		on_ball=17,
+		on_glover=18,
+		enemy_within_attention_bbox=19,
+		always=20,
+		never=21,
+		random_chance_param_a_over_1000=22,
+	)
+
+def glover_level__enemy_instruction__instruction_flags(subcon):
+	return Enum(subcon,
+		face_player=1048576,
+		face_ball=2097152,
+		face_closer_of_player_or_ball=4194304,
+	)
+
+
 glover_level__puzzle_cond_glover_changed_touching_platform = Struct(
 	'plat_tag' / Int16ub,
 	'started_or_stopped' / Int16sb,
@@ -297,12 +471,6 @@ glover_level__puzzle_cond_enemy_is_touching_platform = Struct(
 	'invert_result' / Int16sb,
 )
 
-def glover_level__plat_constant_spin__axis(subcon):
-	return Enum(subcon,
-		x=0,
-		y=1,
-		z=2,
-	)
 
 glover_level__plat_constant_spin = Struct(
 	'axis' / glover_level__plat_constant_spin__axis(Int16ub),
@@ -317,15 +485,6 @@ glover_level__puzzle_action_platform_spin_along_axis = Struct(
 	'flags' / glover_level__puzzle_action__generic_flags(Int32ub),
 )
 
-def glover_level__puzzle_platform_close_to_conf_boundary_edge__edge_type(subcon):
-	return Enum(subcon,
-		x=0,
-		y=1,
-		z=2,
-		x_plus_w=3,
-		y_plus_h=4,
-		z_plus_d=5,
-	)
 
 glover_level__puzzle_platform_close_to_conf_boundary_edge = Struct(
 	'plat_tag' / Int16ub,
@@ -554,11 +713,6 @@ glover_level__puzzle_cond_platform_path_at_point_2 = Struct(
 	'arg2' / Int16sb,
 )
 
-def glover_level__set_exit__exit_type(subcon):
-	return Enum(subcon,
-		loading_zone=0,
-		solid_platform=1,
-	)
 
 glover_level__set_exit = Struct(
 	'behavior' / Int16ub,
@@ -737,10 +891,6 @@ glover_level__puzzle_cond_0x22 = Struct(
 	'i_0x18' / Int32ub,
 )
 
-def glover_level__plat_destructible__destructible_flags(subcon):
-	return Enum(subcon,
-		spawn_particles_on_destruction=4,
-	)
 
 glover_level__plat_destructible = Struct(
 	'flags' / glover_level__plat_destructible__destructible_flags(Int16ub),
@@ -749,42 +899,10 @@ glover_level__plat_destructible = Struct(
 	'name' / FixedSized(8, GreedyString(encoding='ASCII')),
 )
 
-def glover_level__puzzle_action__generic_flags(subcon):
-	return Enum(subcon,
-		puzzle_action_random_activation_delay=512,
-	)
 
-def glover_level__puzzle_action__camera_flags(subcon):
-	return Enum(subcon,
-		puzzle_camera_freeze_player=1,
-		puzzle_camera_freeze_particles=2,
-		puzzle_camera_freeze_enemies=4,
-		puzzle_action_random_activation_delay=512,
-	)
 
-def glover_level__puzzle_action__platform_movement_flags(subcon):
-	return Enum(subcon,
-		puzzle_platform_halt_at_end_of_first_segment_only=1,
-		puzzle_platform_halt_at_segment_end=2,
-		puzzle_platform_clip_current_velocity=4,
-		puzzle_action_random_activation_delay=512,
-	)
 
-def glover_level__puzzle_action__platform_toggle_flags(subcon):
-	return Enum(subcon,
-		puzzle_action_include_fans_and_magnets=8,
-		puzzle_action_include_teleports=16,
-		puzzle_action_include_catapults=32,
-		puzzle_action_include_damage_platforms=64,
-		puzzle_action_include_vents=256,
-		puzzle_action_random_activation_delay=512,
-		puzzle_action_include_buzzers=1024,
-	)
 
-def glover_level__puzzle_action__register_flags(subcon):
-	return Enum(subcon,
-		puzzle_register_indirect_argument=128,
-	)
 
 glover_level__puzzle_action = Struct(
 	'action_type' / Int16ub,
@@ -904,61 +1022,6 @@ glover_level__ambient_light = Struct(
 	'b' / Int16ub,
 )
 
-def glover_level__enemy__enemy_type(subcon):
-	return Enum(subcon,
-		bovva=7,
-		cannon=8,
-		samtex=9,
-		mallet=10,
-		generalw=11,
-		lionfish=12,
-		chester=13,
-		keg=14,
-		reggie=15,
-		swish=16,
-		thrice=17,
-		robes=18,
-		fumble=19,
-		mike=20,
-		raptor=21,
-		crumpet=22,
-		tracey=23,
-		yoofow=24,
-		opec=25,
-		cymon=26,
-		sucker=27,
-		bugle=28,
-		dennis=29,
-		chuck=30,
-		hubchicken1=31,
-		frankie2=32,
-		kloset=33,
-		willy=34,
-		joff=35,
-		cancer=36,
-		kirk=37,
-		robot=38,
-		evilrobot=39,
-		spank=40,
-		babyspk2=41,
-		evilglove=42,
-		dibber=43,
-		brundle=44,
-		malcom=45,
-		spotty=46,
-		gordon=47,
-		sidney=48,
-		weevil=49,
-		chopstik=50,
-		butterfly=51,
-		spider=52,
-		bat=53,
-		frog=54,
-		dragfly=55,
-		boxthing=56,
-		bug=57,
-		nmefrog=58,
-	)
 
 glover_level__enemy = Struct(
 	'type' / glover_level__enemy__enemy_type(Int16ub),
@@ -1001,13 +1064,6 @@ glover_level__ambient_sound = Struct(
 	'flags' / Int16ub,
 )
 
-def glover_level__garib__garib_type(subcon):
-	return Enum(subcon,
-		garib=0,
-		bang_500pt=1,
-		extra_life=2,
-		mad_garib=3,
-	)
 
 glover_level__garib = Struct(
 	'x' / Float32b,
@@ -1239,15 +1295,6 @@ glover_level__plat_go_forwards_0x5f = Struct(
 	'u32_0x2c_0x34' / Int32ub,
 )
 
-def glover_level__puzzle_platform_touching_conf_boundary_edge__edge_type(subcon):
-	return Enum(subcon,
-		x=0,
-		y=1,
-		z=2,
-		x_plus_w=3,
-		y_plus_h=4,
-		z_plus_d=5,
-	)
 
 glover_level__puzzle_platform_touching_conf_boundary_edge = Struct(
 	'plat_tag' / Int16ub,
@@ -1261,39 +1308,7 @@ glover_level__plat_special_0x9e = Struct(
 	'u32_0x68' / Int32ub,
 )
 
-def glover_level__enemy_instruction__execution_condition_type(subcon):
-	return Enum(subcon,
-		ball_within_range=0,
-		ball_within_ground_range=1,
-		glover_within_range=2,
-		glover_within_ground_range=3,
-		ball_or_glover_within_range=4,
-		ball_or_glover_within_ground_range=5,
-		ball_within_angle_of_view=6,
-		glover_within_angle_of_view=7,
-		ball_or_glover_within_angle_of_view=8,
-		periodic=9,
-		roll_angle_within_range_and_periodic=10,
-		glover_holding_ball=11,
-		glover_not_holding_ball=12,
-		enemy_holding_ball=13,
-		enemy_not_holding_ball=14,
-		glover_holding_enemy=15,
-		glover_not_holding_enemy=16,
-		on_ball=17,
-		on_glover=18,
-		enemy_within_attention_bbox=19,
-		always=20,
-		never=21,
-		random_chance_param_a_over_1000=22,
-	)
 
-def glover_level__enemy_instruction__instruction_flags(subcon):
-	return Enum(subcon,
-		face_player=1048576,
-		face_ball=2097152,
-		face_closer_of_player_or_ball=4194304,
-	)
 
 glover_level__enemy_instruction = Struct(
 	'instr_type' / Int16ub,

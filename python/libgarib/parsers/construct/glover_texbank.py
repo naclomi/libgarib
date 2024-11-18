@@ -18,6 +18,9 @@ def glover_texbank__texture_color_format(subcon):
 		i=4,
 	)
 
+
+
+
 glover_texbank__texture = Struct(
 	'id' / Int32ub,
 	'palette_anim_idx_min' / Int8ub,

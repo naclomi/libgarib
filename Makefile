@@ -31,6 +31,8 @@ parsers:
 
 	$(PYTHON-BIN) ./python/scripts/ksy-patcher.py formats/*.ksy --compiled-directory build_artifacts/python
 
+	$(PYTHON-BIN) ./python/scripts/ksy-construct-enum-fix.py build_artifacts/construct/*.py
+
 	mv build_artifacts/python/* python/libgarib/parsers
 	mv build_artifacts/construct/* python/libgarib/parsers/construct
 	mv build_artifacts/javascript/* js/parsers
