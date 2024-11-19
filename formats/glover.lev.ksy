@@ -714,24 +714,24 @@ types:
             0xd: puzzle_cond_platform_spin_2_todo
             0xe: puzzle_cond_platform_orbit_2_todo
             0xf: puzzle_cond_glover_standing_on_platform
-            0x10: puzzle_cond_glover_platform_2_todo
-            0x11: puzzle_cond_ball_platform_todo
-            0x12: puzzle_cond_ball_platform_2_todo
-            # 0x13
-            # 0x14
+            0x10: puzzle_cond_glover_changed_standing_on_platform
+            0x11: puzzle_cond_ball_standing_on_platform
+            0x12: puzzle_cond_ball_changed_standing_on_platform
+            0x13: puzzle_cond_enemy_standing_on_platform
+            0x14: puzzle_cond_enemy_changed_standing_on_platform
             0x15: puzzle_cond_glover_is_touching_platform
             0x16: puzzle_cond_glover_changed_touching_platform
             0x17: puzzle_cond_ball_is_touching_platform
             0x18: puzzle_cond_ball_changed_touching_platform
             0x19: puzzle_cond_enemy_is_touching_platform
             0x1a: puzzle_cond_enemy_changed_touching_platform
-            # 0x1b
-            # 0x1c
-            # 0x1d
-            # 0x1e
-            0x1f: puzzle_platform_touching_conf_boundary_edge
-            0x20: puzzle_platform_close_to_conf_boundary_edge
-            # 0x21
+            0x1b: puzzle_cond_reg_eq
+            0x1c: puzzle_cond_reg_ne
+            0x1d: puzzle_cond_reg_gt
+            0x1e: puzzle_cond_reg_lt
+            0x1f: puzzle_cond_platform_touching_conf_boundary_edge
+            0x20: puzzle_cond_platform_close_to_conf_boundary_edge
+            0x21: puzzle_cond_specific_enemy_exists
             0x22: puzzle_cond_0x22
             0x23: puzzle_cond_glover_within_volume
             0x24: puzzle_cond_glover_within_range_of_point
@@ -793,25 +793,39 @@ types:
     - id: invert_result
       type: s2
 
-  puzzle_cond_glover_platform_2_todo:
-    seq:
-    - id: plat_tag
-      type: u2
-    - id: arg2
-      type: s2
-
-  puzzle_cond_ball_platform_todo:
+  puzzle_cond_glover_changed_standing_on_platform:
     seq:
     - id: plat_tag
       type: u2
     - id: invert_result
       type: s2
 
-  puzzle_cond_ball_platform_2_todo:
+  puzzle_cond_ball_standing_on_platform:
     seq:
     - id: plat_tag
       type: u2
-    - id: arg2
+    - id: invert_result
+      type: s2
+
+  puzzle_cond_ball_changed_standing_on_platform:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: invert_result
+      type: s2
+
+  puzzle_cond_enemy_standing_on_platform:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: invert_result
+      type: s2
+
+  puzzle_cond_enemy_changed_standing_on_platform:
+    seq:
+    - id: plat_tag
+      type: u2
+    - id: invert_result
       type: s2
 
   puzzle_cond_glover_is_touching_platform: # 0x15
@@ -856,7 +870,7 @@ types:
       - id: started_or_stopped
         type: s2
 
-  puzzle_platform_touching_conf_boundary_edge: # 0x1f
+  puzzle_cond_platform_touching_conf_boundary_edge: # 0x1f
     seq:
       - id: plat_tag
         type: u2
@@ -872,7 +886,7 @@ types:
         4: y_plus_h
         5: z_plus_d
 
-  puzzle_platform_close_to_conf_boundary_edge: # 0x20
+  puzzle_cond_platform_close_to_conf_boundary_edge: # 0x20
     seq:
       - id: plat_tag
         type: u2
@@ -887,10 +901,50 @@ types:
         3: x_plus_w
         4: y_plus_h
         5: z_plus_d
+
+  puzzle_cond_specific_enemy_exists: # 0x21
+    seq:
+      - id: puzzle_tag
+        type: u2
+      - id: invert_result
+        type: s2
+
+  puzzle_cond_reg_eq: # 0x1b
+    # If reg_a < 100: (regs[reg_a] == imm)
+    # If reg_a >= 100: (regs[reg_a - 100] == regs[reg_b])
+    seq:
+      - id: reg_a
+        type: s2
+      - id: imm_or_reg_b
+        type: s2
+  puzzle_cond_reg_ne: # 0x1c
+    # If reg_a < 100: (regs[reg_a] != imm)
+    # If reg_a >= 100: (regs[reg_a - 100] != regs[reg_b])
+    seq:
+      - id: reg_a
+        type: s2
+      - id: imm_or_reg_b
+        type: s2
+  puzzle_cond_reg_gt: # 0x1d
+    # If reg_a < 99: (regs[reg_a] > imm)
+    # If reg_a >= 99: (regs[reg_a - 100] > regs[reg_b])
+    seq:
+      - id: reg_a
+        type: s2
+      - id: imm_or_reg_b
+        type: s2
+  puzzle_cond_reg_lt: # 0x1e
+    # If reg_a < 99: (regs[reg_a] < imm)
+    # If reg_a >= 99: (regs[reg_a - 100] < regs[reg_b])
+    seq:
+      - id: reg_a
+        type: s2
+      - id: imm_or_reg_b
+        type: s2
 
 
   puzzle_cond_default:
-    # TODO: reverse
+    # TODO: reverse engineer
     seq:
       - id: u32_0x24
         type: u2
@@ -898,7 +952,7 @@ types:
         type: u2
 
   puzzle_cond_0x22:
-    # TODO: reverse
+    # TODO: reverse engineer
     seq:
       - id: i_0x00
         type: u4
