@@ -196,6 +196,7 @@ types:
         type: u2
 
   ambient_sound_at_point: # 0xbe
+    # Puzzle tag is for sound emitter, can be used to turn sound off
     seq:
       - id: sound_id
         type: u2
@@ -211,7 +212,7 @@ types:
         type: u2
       - id: platform_tag
         type: u2
-      - id: h_0x0e
+      - id: puzzle_tag
         type: u2
       - id: x
         type: f4
@@ -1087,7 +1088,7 @@ types:
             0x49: puzzle_action_camera_fly_towards_point
             0x4A: puzzle_action_camera_look_at_glover
             0x4B: puzzle_action_0x4b_0x4c # TODO: ...unused?
-            0x4C: puzzle_action_0x4b_0x4c # TODO: seems to use unintialized data, is this actually used anywher?
+            0x4C: puzzle_action_0x4b_0x4c # TODO: seems to use uninitialized data. shows up in AT2, PH3 and CK3
             0x4D: puzzle_action_camera_fly_towards_point_relative_to_glover
             0x4E: puzzle_action_change_water_height
             0x4F: puzzle_action_0x4f
@@ -1095,7 +1096,7 @@ types:
             0x51: puzzle_action_start_cameo
             0x52: puzzle_action_set_platform_path_direction
             0x53: puzzle_action_make_ball_interactive
-            0x54: puzzle_action_0x54 # TODO something involving sound
+            0x54: puzzle_action_sound_control
             0x55: puzzle_action_set_background
             0x56: puzzle_action_set_fog
             # 0x57
@@ -1724,12 +1725,22 @@ types:
       - id: activation_delay
         type: u2
 
-  puzzle_action_0x54:
+  puzzle_action_sound_control: # 0x54
+    # TODO
+    # figure out exactly how args work (0x8018ecb0):
+    # if volume is positive, create new sound at pos_x/y/z with
+    # puzzle tag 'sound_tag'
+    #
+    # if volume is 0, stops sound with the puzzle tag specified
+    # by  'sound_tag'
+    #
+    # if volume is negative....
+    # 
     seq:
-      - id: u32_0x14
+      - id: sound_id
         type: u2
-      - id: u32_0x16
-        type: u2
+      - id: volume
+        type: s2
       - id: u32_0x18
         type: u2
       - id: u32_0x1a
@@ -1738,17 +1749,17 @@ types:
         type: u2
       - id: u32_0x1e
         type: u2
-      - id: u32_0x10
+      - id: platform_tag
         type: u2
-      - id: u16_0x0e
+      - id: sound_tag
         type: u2
-      - id: u32_0x24
-        type: u4
-      - id: u32_0x28
-        type: u4
-      - id: u32_0x2c
-        type: u4
-      - id: u16_0x0a
+      - id: pos_x
+        type: f4
+      - id: pos_y
+        type: f4
+      - id: pos_z
+        type: f4
+      - id: activation_delay
         type: u2
 
   puzzle_action_set_background: # 0x55
