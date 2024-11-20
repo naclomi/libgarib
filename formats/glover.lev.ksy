@@ -64,9 +64,9 @@ types:
             0x74: plat_mvspn_0x74
             0x7b: plat_copy_spin_from_parent
 
-            0xb8: plat_special_0xb8
+            0xb8: plat_static_collision
             0xb3: plat_actor_enable_water_animation
-            0xb7: set_global_0xb7
+            0xb7: plat_set_collision_y_offset
 
             0xb5: buzzer
             0xb6: buzzer_duty_cycle
@@ -1975,7 +1975,8 @@ types:
 ###############################################################
 ### Platform special
 
-  plat_special_0xb8: # 0xb8
+  plat_static_collision: # 0xb8
+    # Don't update platform's collision data after level load
     -semantic:
       modifies: PLATFORM
     seq: []
@@ -1985,11 +1986,15 @@ types:
       modifies: [PLATFORM, LAND_ACTOR, BG_ACTOR, ANIMATED_BG_ACTOR]
     seq: []
 
-  set_global_0xb7: # 0xb7
-    # TODO: writes value to RAM 0x801efcf4, only use is to set some behavior for setting platform's initial position
+  plat_set_collision_y_offset: # 0xb7
+    # TODO: Sets a y offset value for collision calculations done by
+    #       command plat_set_initial_pos (opcode 0xA6). This offset is
+    #       reset to 0 when creating a new platform (opcode 0x62).
+    #       Investigate what exactly that y offset does, in func
+    #       0x8017d558
     seq:
-      - id: value
-        type: u4
+      - id: y_offset
+        type: f4
 
   buzzer: # 0xb5
     # Creates a linear electric arc enemy
