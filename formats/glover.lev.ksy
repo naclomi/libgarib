@@ -1992,6 +1992,8 @@ types:
     #       reset to 0 when creating a new platform (opcode 0x62).
     #       Investigate what exactly that y offset does, in func
     #       0x8017d558
+    -semantic:
+      modifies: PLATFORM
     seq:
       - id: y_offset
         type: f4

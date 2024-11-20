@@ -131,13 +131,13 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSpecial0xb8"/>
+          <ref name="PlatStaticCollision"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="SetGlobal0xb7"/>
+          <ref name="PlatSetCollisionYOffset"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="Buzzer"/>
@@ -403,7 +403,7 @@
       <attribute name="platform_tag">
         <text/>
       </attribute>
-      <attribute name="h_0x0e">
+      <attribute name="puzzle_tag">
         <text/>
       </attribute>
       <attribute name="x">
@@ -1173,7 +1173,7 @@
               <param name="pattern">16|0x0*10</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondGloverPlatform2Todo"/>
+          <ref name="PuzzleCondGloverChangedStandingOnPlatform"/>
         </group>
         <group>
           <!--Case 0x11-->
@@ -1182,7 +1182,7 @@
               <param name="pattern">17|0x0*11</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondBallPlatformTodo"/>
+          <ref name="PuzzleCondBallStandingOnPlatform"/>
         </group>
         <group>
           <!--Case 0x12-->
@@ -1191,7 +1191,25 @@
               <param name="pattern">18|0x0*12</param>
             </data>
           </attribute>
-          <ref name="PuzzleCondBallPlatform2Todo"/>
+          <ref name="PuzzleCondBallChangedStandingOnPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x13-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">19|0x0*13</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondEnemyStandingOnPlatform"/>
+        </group>
+        <group>
+          <!--Case 0x14-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">20|0x0*14</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondEnemyChangedStandingOnPlatform"/>
         </group>
         <group>
           <!--Case 0x15-->
@@ -1248,13 +1266,49 @@
           <ref name="PuzzleCondEnemyChangedTouchingPlatform"/>
         </group>
         <group>
+          <!--Case 0x1B-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">27|0x0*1[Bb]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondRegEq"/>
+        </group>
+        <group>
+          <!--Case 0x1C-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">28|0x0*1[Cc]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondRegNe"/>
+        </group>
+        <group>
+          <!--Case 0x1D-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">29|0x0*1[Dd]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondRegGt"/>
+        </group>
+        <group>
+          <!--Case 0x1E-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">30|0x0*1[Ee]</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondRegLt"/>
+        </group>
+        <group>
           <!--Case 0x1F-->
           <attribute name="cond_type">
             <data type="string">
               <param name="pattern">31|0x0*1[Ff]</param>
             </data>
           </attribute>
-          <ref name="PuzzlePlatformTouchingConfBoundaryEdge"/>
+          <ref name="PuzzleCondPlatformTouchingConfBoundaryEdge"/>
         </group>
         <group>
           <!--Case 0x20-->
@@ -1263,7 +1317,16 @@
               <param name="pattern">32|0x0*20</param>
             </data>
           </attribute>
-          <ref name="PuzzlePlatformCloseToConfBoundaryEdge"/>
+          <ref name="PuzzleCondPlatformCloseToConfBoundaryEdge"/>
+        </group>
+        <group>
+          <!--Case 0x21-->
+          <attribute name="cond_type">
+            <data type="string">
+              <param name="pattern">33|0x0*21</param>
+            </data>
+          </attribute>
+          <ref name="PuzzleCondSpecificEnemyExists"/>
         </group>
         <group>
           <!--Case 0x22-->
@@ -1426,18 +1489,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondGloverPlatform2Todo">
-    <element name="PuzzleCondGloverPlatform2Todo">
-      <attribute name="plat_tag">
-        <text/>
-      </attribute>
-      <attribute name="arg2">
-        <text/>
-      </attribute>
-    </element>
-  </define>
-  <define name="PuzzleCondBallPlatformTodo">
-    <element name="PuzzleCondBallPlatformTodo">
+  <define name="PuzzleCondGloverChangedStandingOnPlatform">
+    <element name="PuzzleCondGloverChangedStandingOnPlatform">
       <attribute name="plat_tag">
         <text/>
       </attribute>
@@ -1446,12 +1499,42 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleCondBallPlatform2Todo">
-    <element name="PuzzleCondBallPlatform2Todo">
+  <define name="PuzzleCondBallStandingOnPlatform">
+    <element name="PuzzleCondBallStandingOnPlatform">
       <attribute name="plat_tag">
         <text/>
       </attribute>
-      <attribute name="arg2">
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondBallChangedStandingOnPlatform">
+    <element name="PuzzleCondBallChangedStandingOnPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondEnemyStandingOnPlatform">
+    <element name="PuzzleCondEnemyStandingOnPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondEnemyChangedStandingOnPlatform">
+    <element name="PuzzleCondEnemyChangedStandingOnPlatform">
+      <attribute name="plat_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
         <text/>
       </attribute>
     </element>
@@ -1516,8 +1599,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzlePlatformTouchingConfBoundaryEdge">
-    <element name="PuzzlePlatformTouchingConfBoundaryEdge">
+  <define name="PuzzleCondPlatformTouchingConfBoundaryEdge">
+    <element name="PuzzleCondPlatformTouchingConfBoundaryEdge">
       <attribute name="plat_tag">
         <text/>
       </attribute>
@@ -1526,12 +1609,62 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzlePlatformCloseToConfBoundaryEdge">
-    <element name="PuzzlePlatformCloseToConfBoundaryEdge">
+  <define name="PuzzleCondPlatformCloseToConfBoundaryEdge">
+    <element name="PuzzleCondPlatformCloseToConfBoundaryEdge">
       <attribute name="plat_tag">
         <text/>
       </attribute>
       <attribute name="edge">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondSpecificEnemyExists">
+    <element name="PuzzleCondSpecificEnemyExists">
+      <attribute name="puzzle_tag">
+        <text/>
+      </attribute>
+      <attribute name="invert_result">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondRegEq">
+    <element name="PuzzleCondRegEq">
+      <attribute name="reg_a">
+        <text/>
+      </attribute>
+      <attribute name="imm_or_reg_b">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondRegNe">
+    <element name="PuzzleCondRegNe">
+      <attribute name="reg_a">
+        <text/>
+      </attribute>
+      <attribute name="imm_or_reg_b">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondRegGt">
+    <element name="PuzzleCondRegGt">
+      <attribute name="reg_a">
+        <text/>
+      </attribute>
+      <attribute name="imm_or_reg_b">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="PuzzleCondRegLt">
+    <element name="PuzzleCondRegLt">
+      <attribute name="reg_a">
+        <text/>
+      </attribute>
+      <attribute name="imm_or_reg_b">
         <text/>
       </attribute>
     </element>
@@ -2048,7 +2181,7 @@
               <param name="pattern">84|0x0*54</param>
             </data>
           </attribute>
-          <ref name="PuzzleAction0x54"/>
+          <ref name="PuzzleActionSoundControl"/>
         </group>
         <group>
           <!--Case 0x55-->
@@ -2686,12 +2819,12 @@
       </attribute>
     </element>
   </define>
-  <define name="PuzzleAction0x54">
-    <element name="PuzzleAction0x54">
-      <attribute name="u32_0x14">
+  <define name="PuzzleActionSoundControl">
+    <element name="PuzzleActionSoundControl">
+      <attribute name="sound_id">
         <text/>
       </attribute>
-      <attribute name="u32_0x16">
+      <attribute name="volume">
         <text/>
       </attribute>
       <attribute name="u32_0x18">
@@ -2706,22 +2839,22 @@
       <attribute name="u32_0x1e">
         <text/>
       </attribute>
-      <attribute name="u32_0x10">
+      <attribute name="platform_tag">
         <text/>
       </attribute>
-      <attribute name="u16_0x0e">
+      <attribute name="sound_tag">
         <text/>
       </attribute>
-      <attribute name="u32_0x24">
+      <attribute name="pos_x">
         <text/>
       </attribute>
-      <attribute name="u32_0x28">
+      <attribute name="pos_y">
         <text/>
       </attribute>
-      <attribute name="u32_0x2c">
+      <attribute name="pos_z">
         <text/>
       </attribute>
-      <attribute name="u16_0x0a">
+      <attribute name="activation_delay">
         <text/>
       </attribute>
     </element>
@@ -2901,8 +3034,8 @@
       <empty/>
     </element>
   </define>
-  <define name="PlatSpecial0xb8">
-    <element name="PlatSpecial0xb8">
+  <define name="PlatStaticCollision">
+    <element name="PlatStaticCollision">
       <empty/>
     </element>
   </define>
@@ -2911,9 +3044,9 @@
       <empty/>
     </element>
   </define>
-  <define name="SetGlobal0xb7">
-    <element name="SetGlobal0xb7">
-      <attribute name="value">
+  <define name="PlatSetCollisionYOffset">
+    <element name="PlatSetCollisionYOffset">
+      <attribute name="y_offset">
         <text/>
       </attribute>
     </element>
@@ -3923,10 +4056,13 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSpecial0xb8"/>
+          <ref name="PlatStaticCollision"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetCollisionYOffset"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="SetObjectSparkle"/>
@@ -4121,10 +4257,13 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSpecial0xb8"/>
+          <ref name="PlatStaticCollision"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="PlatSetCollisionYOffset"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="SetObjectSparkle"/>

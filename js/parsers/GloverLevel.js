@@ -61,58 +61,6 @@ var GloverLevel = (function() {
     return PuzzleCondGloverChangedTouchingPlatform;
   })();
 
-  var PuzzleAction0x54 = GloverLevel.PuzzleAction0x54 = (function() {
-    function PuzzleAction0x54(_io, _parent, _root) {
-      this.__type = 'PuzzleAction0x54';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzleAction0x54.prototype._read = function() {
-      this._debug.u320x14 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x14 = this._io.readU2be();
-      this._debug.u320x14.end = this._io.pos;
-      this._debug.u320x16 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x16 = this._io.readU2be();
-      this._debug.u320x16.end = this._io.pos;
-      this._debug.u320x18 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x18 = this._io.readU2be();
-      this._debug.u320x18.end = this._io.pos;
-      this._debug.u320x1a = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x1a = this._io.readU2be();
-      this._debug.u320x1a.end = this._io.pos;
-      this._debug.u320x1c = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x1c = this._io.readU2be();
-      this._debug.u320x1c.end = this._io.pos;
-      this._debug.u320x1e = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x1e = this._io.readU2be();
-      this._debug.u320x1e.end = this._io.pos;
-      this._debug.u320x10 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x10 = this._io.readU2be();
-      this._debug.u320x10.end = this._io.pos;
-      this._debug.u160x0e = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u160x0e = this._io.readU2be();
-      this._debug.u160x0e.end = this._io.pos;
-      this._debug.u320x24 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x24 = this._io.readU4be();
-      this._debug.u320x24.end = this._io.pos;
-      this._debug.u320x28 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x28 = this._io.readU4be();
-      this._debug.u320x28.end = this._io.pos;
-      this._debug.u320x2c = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u320x2c = this._io.readU4be();
-      this._debug.u320x2c.end = this._io.pos;
-      this._debug.u160x0a = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.u160x0a = this._io.readU2be();
-      this._debug.u160x0a.end = this._io.pos;
-    }
-
-    return PuzzleAction0x54;
-  })();
-
   var PlatSound0xc2 = GloverLevel.PlatSound0xc2 = (function() {
     function PlatSound0xc2(_io, _parent, _root) {
       this.__type = 'PlatSound0xc2';
@@ -1323,44 +1271,6 @@ var GloverLevel = (function() {
     return PuzzleActionPlatformSpinAlongAxis;
   })();
 
-  var PuzzlePlatformCloseToConfBoundaryEdge = GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge = (function() {
-    PuzzlePlatformCloseToConfBoundaryEdge.EdgeType = Object.freeze({
-      X: 0,
-      Y: 1,
-      Z: 2,
-      X_PLUS_W: 3,
-      Y_PLUS_H: 4,
-      Z_PLUS_D: 5,
-
-      0: "X",
-      1: "Y",
-      2: "Z",
-      3: "X_PLUS_W",
-      4: "Y_PLUS_H",
-      5: "Z_PLUS_D",
-    });
-
-    function PuzzlePlatformCloseToConfBoundaryEdge(_io, _parent, _root) {
-      this.__type = 'PuzzlePlatformCloseToConfBoundaryEdge';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzlePlatformCloseToConfBoundaryEdge.prototype._read = function() {
-      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platTag = this._io.readU2be();
-      this._debug.platTag.end = this._io.pos;
-      this._debug.edge = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge.EdgeType" };
-      this.edge = this._io.readU2be();
-      this._debug.edge.end = this._io.pos;
-    }
-
-    return PuzzlePlatformCloseToConfBoundaryEdge;
-  })();
-
   var VentDutyCycle = GloverLevel.VentDutyCycle = (function() {
     function VentDutyCycle(_io, _parent, _root) {
       this.__type = 'VentDutyCycle';
@@ -1441,6 +1351,28 @@ var GloverLevel = (function() {
     }
 
     return EndLevelData;
+  })();
+
+  var PuzzleCondEnemyStandingOnPlatform = GloverLevel.PuzzleCondEnemyStandingOnPlatform = (function() {
+    function PuzzleCondEnemyStandingOnPlatform(_io, _parent, _root) {
+      this.__type = 'PuzzleCondEnemyStandingOnPlatform';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondEnemyStandingOnPlatform.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondEnemyStandingOnPlatform;
   })();
 
   var PuzzleActionPlatformMoveToPointIdxMinusOne = GloverLevel.PuzzleActionPlatformMoveToPointIdxMinusOne = (function() {
@@ -1661,6 +1593,28 @@ var GloverLevel = (function() {
     return CameoLightningFlash;
   })();
 
+  var PuzzleCondEnemyChangedStandingOnPlatform = GloverLevel.PuzzleCondEnemyChangedStandingOnPlatform = (function() {
+    function PuzzleCondEnemyChangedStandingOnPlatform(_io, _parent, _root) {
+      this.__type = 'PuzzleCondEnemyChangedStandingOnPlatform';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondEnemyChangedStandingOnPlatform.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondEnemyChangedStandingOnPlatform;
+  })();
+
   var PuzzleActionEnemySetAiInstruction = GloverLevel.PuzzleActionEnemySetAiInstruction = (function() {
     function PuzzleActionEnemySetAiInstruction(_io, _parent, _root) {
       this.__type = 'PuzzleActionEnemySetAiInstruction';
@@ -1767,6 +1721,22 @@ var GloverLevel = (function() {
     return PuzzleCondBallWithinRangeOfPoint;
   })();
 
+  var PlatStaticCollision = GloverLevel.PlatStaticCollision = (function() {
+    function PlatStaticCollision(_io, _parent, _root) {
+      this.__type = 'PlatStaticCollision';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PlatStaticCollision.prototype._read = function() {
+    }
+
+    return PlatStaticCollision;
+  })();
+
   var PuzzleActionCameraFlyTowardsPointRelativeToGlover = GloverLevel.PuzzleActionCameraFlyTowardsPointRelativeToGlover = (function() {
     function PuzzleActionCameraFlyTowardsPointRelativeToGlover(_io, _parent, _root) {
       this.__type = 'PuzzleActionCameraFlyTowardsPointRelativeToGlover';
@@ -1827,9 +1797,9 @@ var GloverLevel = (function() {
       this._debug.platformTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.platformTag = this._io.readU2be();
       this._debug.platformTag.end = this._io.pos;
-      this._debug.h0x0e = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.h0x0e = this._io.readU2be();
-      this._debug.h0x0e.end = this._io.pos;
+      this._debug.puzzleTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.puzzleTag = this._io.readU2be();
+      this._debug.puzzleTag.end = this._io.pos;
       this._debug.x = { start: this._io.pos, ioOffset: this._io.byteOffset };
       this.x = this._io.readF4be();
       this._debug.x.end = this._io.pos;
@@ -1845,6 +1815,58 @@ var GloverLevel = (function() {
     }
 
     return AmbientSoundAtPoint;
+  })();
+
+  var PuzzleActionSoundControl = GloverLevel.PuzzleActionSoundControl = (function() {
+    function PuzzleActionSoundControl(_io, _parent, _root) {
+      this.__type = 'PuzzleActionSoundControl';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleActionSoundControl.prototype._read = function() {
+      this._debug.soundId = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.soundId = this._io.readU2be();
+      this._debug.soundId.end = this._io.pos;
+      this._debug.volume = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.volume = this._io.readS2be();
+      this._debug.volume.end = this._io.pos;
+      this._debug.u320x18 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.u320x18 = this._io.readU2be();
+      this._debug.u320x18.end = this._io.pos;
+      this._debug.u320x1a = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.u320x1a = this._io.readU2be();
+      this._debug.u320x1a.end = this._io.pos;
+      this._debug.u320x1c = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.u320x1c = this._io.readU2be();
+      this._debug.u320x1c.end = this._io.pos;
+      this._debug.u320x1e = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.u320x1e = this._io.readU2be();
+      this._debug.u320x1e.end = this._io.pos;
+      this._debug.platformTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platformTag = this._io.readU2be();
+      this._debug.platformTag.end = this._io.pos;
+      this._debug.soundTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.soundTag = this._io.readU2be();
+      this._debug.soundTag.end = this._io.pos;
+      this._debug.posX = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.posX = this._io.readF4be();
+      this._debug.posX.end = this._io.pos;
+      this._debug.posY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.posY = this._io.readF4be();
+      this._debug.posY.end = this._io.pos;
+      this._debug.posZ = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.posZ = this._io.readF4be();
+      this._debug.posZ.end = this._io.pos;
+      this._debug.activationDelay = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.activationDelay = this._io.readU2be();
+      this._debug.activationDelay.end = this._io.pos;
+    }
+
+    return PuzzleActionSoundControl;
   })();
 
   var PuzzleActionCameraTurnTowardsFocus = GloverLevel.PuzzleActionCameraTurnTowardsFocus = (function() {
@@ -2032,7 +2054,7 @@ var GloverLevel = (function() {
         this.body = new PuzzleCondPlatformSpinTodo(this._io, this, this._root);
         break;
       case 17:
-        this.body = new PuzzleCondBallPlatformTodo(this._io, this, this._root);
+        this.body = new PuzzleCondBallStandingOnPlatform(this._io, this, this._root);
         break;
       case 42:
         this.body = new PuzzleCondPlatformDoesntExist(this._io, this, this._root);
@@ -2046,8 +2068,14 @@ var GloverLevel = (function() {
       case 35:
         this.body = new PuzzleCondGloverWithinVolume(this._io, this, this._root);
         break;
+      case 20:
+        this.body = new PuzzleCondEnemyChangedStandingOnPlatform(this._io, this, this._root);
+        break;
       case 32:
-        this.body = new PuzzlePlatformCloseToConfBoundaryEdge(this._io, this, this._root);
+        this.body = new PuzzleCondPlatformCloseToConfBoundaryEdge(this._io, this, this._root);
+        break;
+      case 27:
+        this.body = new PuzzleCondRegEq(this._io, this, this._root);
         break;
       case 13:
         this.body = new PuzzleCondPlatformSpin2Todo(this._io, this, this._root);
@@ -2057,6 +2085,12 @@ var GloverLevel = (function() {
         break;
       case 12:
         this.body = new PuzzleCondPlatformPathAtPoint2(this._io, this, this._root);
+        break;
+      case 33:
+        this.body = new PuzzleCondSpecificEnemyExists(this._io, this, this._root);
+        break;
+      case 19:
+        this.body = new PuzzleCondEnemyStandingOnPlatform(this._io, this, this._root);
         break;
       case 23:
         this.body = new PuzzleCondBallIsTouchingPlatform(this._io, this, this._root);
@@ -2085,26 +2119,35 @@ var GloverLevel = (function() {
       case 36:
         this.body = new PuzzleCondGloverWithinRangeOfPoint(this._io, this, this._root);
         break;
+      case 28:
+        this.body = new PuzzleCondRegNe(this._io, this, this._root);
+        break;
       case 16:
-        this.body = new PuzzleCondGloverPlatform2Todo(this._io, this, this._root);
+        this.body = new PuzzleCondGloverChangedStandingOnPlatform(this._io, this, this._root);
         break;
       case 18:
-        this.body = new PuzzleCondBallPlatform2Todo(this._io, this, this._root);
+        this.body = new PuzzleCondBallChangedStandingOnPlatform(this._io, this, this._root);
         break;
       case 26:
         this.body = new PuzzleCondEnemyChangedTouchingPlatform(this._io, this, this._root);
         break;
       case 31:
-        this.body = new PuzzlePlatformTouchingConfBoundaryEdge(this._io, this, this._root);
+        this.body = new PuzzleCondPlatformTouchingConfBoundaryEdge(this._io, this, this._root);
         break;
       case 34:
         this.body = new PuzzleCond0x22(this._io, this, this._root);
+        break;
+      case 29:
+        this.body = new PuzzleCondRegGt(this._io, this, this._root);
         break;
       case 25:
         this.body = new PuzzleCondEnemyIsTouchingPlatform(this._io, this, this._root);
         break;
       case 22:
         this.body = new PuzzleCondGloverChangedTouchingPlatform(this._io, this, this._root);
+        break;
+      case 30:
+        this.body = new PuzzleCondRegLt(this._io, this, this._root);
         break;
       default:
         this.body = new PuzzleCondDefault(this._io, this, this._root);
@@ -2387,6 +2430,44 @@ var GloverLevel = (function() {
     return SetExit;
   })();
 
+  var PuzzleCondPlatformTouchingConfBoundaryEdge = GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge = (function() {
+    PuzzleCondPlatformTouchingConfBoundaryEdge.EdgeType = Object.freeze({
+      X: 0,
+      Y: 1,
+      Z: 2,
+      X_PLUS_W: 3,
+      Y_PLUS_H: 4,
+      Z_PLUS_D: 5,
+
+      0: "X",
+      1: "Y",
+      2: "Z",
+      3: "X_PLUS_W",
+      4: "Y_PLUS_H",
+      5: "Z_PLUS_D",
+    });
+
+    function PuzzleCondPlatformTouchingConfBoundaryEdge(_io, _parent, _root) {
+      this.__type = 'PuzzleCondPlatformTouchingConfBoundaryEdge';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondPlatformTouchingConfBoundaryEdge.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.edge = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge.EdgeType" };
+      this.edge = this._io.readU2be();
+      this._debug.edge.end = this._io.pos;
+    }
+
+    return PuzzleCondPlatformTouchingConfBoundaryEdge;
+  })();
+
   var PuzzleActionSetPlatformVelocity = GloverLevel.PuzzleActionSetPlatformVelocity = (function() {
     function PuzzleActionSetPlatformVelocity(_io, _parent, _root) {
       this.__type = 'PuzzleActionSetPlatformVelocity';
@@ -2447,6 +2528,28 @@ var GloverLevel = (function() {
     }
 
     return PlatSound0xc1;
+  })();
+
+  var PuzzleCondRegEq = GloverLevel.PuzzleCondRegEq = (function() {
+    function PuzzleCondRegEq(_io, _parent, _root) {
+      this.__type = 'PuzzleCondRegEq';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondRegEq.prototype._read = function() {
+      this._debug.regA = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.regA = this._io.readS2be();
+      this._debug.regA.end = this._io.pos;
+      this._debug.immOrRegB = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.immOrRegB = this._io.readS2be();
+      this._debug.immOrRegB.end = this._io.pos;
+    }
+
+    return PuzzleCondRegEq;
   })();
 
   var PlatActorEnableWaterAnimation = GloverLevel.PlatActorEnableWaterAnimation = (function() {
@@ -2557,28 +2660,6 @@ var GloverLevel = (function() {
     }
 
     return PuzzleActionCameraSetDistance;
-  })();
-
-  var PuzzleCondGloverPlatform2Todo = GloverLevel.PuzzleCondGloverPlatform2Todo = (function() {
-    function PuzzleCondGloverPlatform2Todo(_io, _parent, _root) {
-      this.__type = 'PuzzleCondGloverPlatform2Todo';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzleCondGloverPlatform2Todo.prototype._read = function() {
-      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platTag = this._io.readU2be();
-      this._debug.platTag.end = this._io.pos;
-      this._debug.arg2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.arg2 = this._io.readS2be();
-      this._debug.arg2.end = this._io.pos;
-    }
-
-    return PuzzleCondGloverPlatform2Todo;
   })();
 
   var PlatSpecial0xc7 = GloverLevel.PlatSpecial0xc7 = (function() {
@@ -2900,7 +2981,7 @@ var GloverLevel = (function() {
         this.params = new PlatSound0xc2(this._io, this, this._root);
         break;
       case 184:
-        this.params = new PlatSpecial0xb8(this._io, this, this._root);
+        this.params = new PlatStaticCollision(this._io, this, this._root);
         break;
       case 105:
         this.params = new PlatCat0x69(this._io, this, this._root);
@@ -3215,7 +3296,7 @@ var GloverLevel = (function() {
         this.params = new PlatOrbitSound0xc4(this._io, this, this._root);
         break;
       case 183:
-        this.params = new SetGlobal0xb7(this._io, this, this._root);
+        this.params = new PlatSetCollisionYOffset(this._io, this, this._root);
         break;
       case 128:
         this.params = new PlatSpin0x80(this._io, this, this._root);
@@ -3603,7 +3684,7 @@ var GloverLevel = (function() {
         this.body = new PuzzleActionSetFog(this._io, this, this._root);
         break;
       case 84:
-        this.body = new PuzzleAction0x54(this._io, this, this._root);
+        this.body = new PuzzleActionSoundControl(this._io, this, this._root);
         break;
       case 63:
         this.body = new PuzzleActionCameraLookAtPoint2(this._io, this, this._root);
@@ -3964,9 +4045,25 @@ var GloverLevel = (function() {
     return PuzzleActionSetBackground;
   })();
 
-  var PlatSpecial0xb8 = GloverLevel.PlatSpecial0xb8 = (function() {
-    function PlatSpecial0xb8(_io, _parent, _root) {
-      this.__type = 'PlatSpecial0xb8';
+  var PuzzleCondPlatformCloseToConfBoundaryEdge = GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge = (function() {
+    PuzzleCondPlatformCloseToConfBoundaryEdge.EdgeType = Object.freeze({
+      X: 0,
+      Y: 1,
+      Z: 2,
+      X_PLUS_W: 3,
+      Y_PLUS_H: 4,
+      Z_PLUS_D: 5,
+
+      0: "X",
+      1: "Y",
+      2: "Z",
+      3: "X_PLUS_W",
+      4: "Y_PLUS_H",
+      5: "Z_PLUS_D",
+    });
+
+    function PuzzleCondPlatformCloseToConfBoundaryEdge(_io, _parent, _root) {
+      this.__type = 'PuzzleCondPlatformCloseToConfBoundaryEdge';
       this._io = _io;
       this._parent = _parent;
       this._root = _root || this;
@@ -3974,10 +4071,16 @@ var GloverLevel = (function() {
 
       this._read();
     }
-    PlatSpecial0xb8.prototype._read = function() {
+    PuzzleCondPlatformCloseToConfBoundaryEdge.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.edge = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge.EdgeType" };
+      this.edge = this._io.readU2be();
+      this._debug.edge.end = this._io.pos;
     }
 
-    return PlatSpecial0xb8;
+    return PuzzleCondPlatformCloseToConfBoundaryEdge;
   })();
 
   var PlatOrbitSound0xc4 = GloverLevel.PlatOrbitSound0xc4 = (function() {
@@ -4330,6 +4433,28 @@ var GloverLevel = (function() {
     }
 
     return PlatOrbitPause;
+  })();
+
+  var PuzzleCondSpecificEnemyExists = GloverLevel.PuzzleCondSpecificEnemyExists = (function() {
+    function PuzzleCondSpecificEnemyExists(_io, _parent, _root) {
+      this.__type = 'PuzzleCondSpecificEnemyExists';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondSpecificEnemyExists.prototype._read = function() {
+      this._debug.puzzleTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.puzzleTag = this._io.readU2be();
+      this._debug.puzzleTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondSpecificEnemyExists;
   })();
 
   var PlatCrumb0x67 = GloverLevel.PlatCrumb0x67 = (function() {
@@ -4703,6 +4828,28 @@ var GloverLevel = (function() {
     return CameoSpin;
   })();
 
+  var PuzzleCondRegGt = GloverLevel.PuzzleCondRegGt = (function() {
+    function PuzzleCondRegGt(_io, _parent, _root) {
+      this.__type = 'PuzzleCondRegGt';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondRegGt.prototype._read = function() {
+      this._debug.regA = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.regA = this._io.readS2be();
+      this._debug.regA.end = this._io.pos;
+      this._debug.immOrRegB = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.immOrRegB = this._io.readS2be();
+      this._debug.immOrRegB.end = this._io.pos;
+    }
+
+    return PuzzleCondRegGt;
+  })();
+
   var PlatSine = GloverLevel.PlatSine = (function() {
     function PlatSine(_io, _parent, _root) {
       this.__type = 'PlatSine';
@@ -4793,6 +4940,28 @@ var GloverLevel = (function() {
     }
 
     return PlatCat0x69;
+  })();
+
+  var PuzzleCondBallChangedStandingOnPlatform = GloverLevel.PuzzleCondBallChangedStandingOnPlatform = (function() {
+    function PuzzleCondBallChangedStandingOnPlatform(_io, _parent, _root) {
+      this.__type = 'PuzzleCondBallChangedStandingOnPlatform';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondBallChangedStandingOnPlatform.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondBallChangedStandingOnPlatform;
   })();
 
   var PuzzleActionToggleWind = GloverLevel.PuzzleActionToggleWind = (function() {
@@ -5095,6 +5264,28 @@ var GloverLevel = (function() {
     return BuzzerDutyCycle;
   })();
 
+  var PuzzleCondBallStandingOnPlatform = GloverLevel.PuzzleCondBallStandingOnPlatform = (function() {
+    function PuzzleCondBallStandingOnPlatform(_io, _parent, _root) {
+      this.__type = 'PuzzleCondBallStandingOnPlatform';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondBallStandingOnPlatform.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondBallStandingOnPlatform;
+  })();
+
   var CameoPlayAnimation = GloverLevel.CameoPlayAnimation = (function() {
     function CameoPlayAnimation(_io, _parent, _root) {
       this.__type = 'CameoPlayAnimation';
@@ -5127,6 +5318,28 @@ var GloverLevel = (function() {
     }
 
     return CameoPlayAnimation;
+  })();
+
+  var PuzzleCondRegNe = GloverLevel.PuzzleCondRegNe = (function() {
+    function PuzzleCondRegNe(_io, _parent, _root) {
+      this.__type = 'PuzzleCondRegNe';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondRegNe.prototype._read = function() {
+      this._debug.regA = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.regA = this._io.readS2be();
+      this._debug.regA.end = this._io.pos;
+      this._debug.immOrRegB = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.immOrRegB = this._io.readS2be();
+      this._debug.immOrRegB.end = this._io.pos;
+    }
+
+    return PuzzleCondRegNe;
   })();
 
   var PuzzleActionSetConveyor = GloverLevel.PuzzleActionSetConveyor = (function() {
@@ -5341,44 +5554,6 @@ var GloverLevel = (function() {
     }
 
     return PlatGoForwards0x5f;
-  })();
-
-  var PuzzlePlatformTouchingConfBoundaryEdge = GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge = (function() {
-    PuzzlePlatformTouchingConfBoundaryEdge.EdgeType = Object.freeze({
-      X: 0,
-      Y: 1,
-      Z: 2,
-      X_PLUS_W: 3,
-      Y_PLUS_H: 4,
-      Z_PLUS_D: 5,
-
-      0: "X",
-      1: "Y",
-      2: "Z",
-      3: "X_PLUS_W",
-      4: "Y_PLUS_H",
-      5: "Z_PLUS_D",
-    });
-
-    function PuzzlePlatformTouchingConfBoundaryEdge(_io, _parent, _root) {
-      this.__type = 'PuzzlePlatformTouchingConfBoundaryEdge';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzlePlatformTouchingConfBoundaryEdge.prototype._read = function() {
-      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platTag = this._io.readU2be();
-      this._debug.platTag.end = this._io.pos;
-      this._debug.edge = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge.EdgeType" };
-      this.edge = this._io.readU2be();
-      this._debug.edge.end = this._io.pos;
-    }
-
-    return PuzzlePlatformTouchingConfBoundaryEdge;
   })();
 
   var PlatSpecial0x9e = GloverLevel.PlatSpecial0x9e = (function() {
@@ -5607,25 +5782,6 @@ var GloverLevel = (function() {
     return PuzzleCondPlatformSpinTodo;
   })();
 
-  var SetGlobal0xb7 = GloverLevel.SetGlobal0xb7 = (function() {
-    function SetGlobal0xb7(_io, _parent, _root) {
-      this.__type = 'SetGlobal0xb7';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    SetGlobal0xb7.prototype._read = function() {
-      this._debug.value = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.value = this._io.readU4be();
-      this._debug.value.end = this._io.pos;
-    }
-
-    return SetGlobal0xb7;
-  })();
-
   var PuzzleActionCameraTweenYAdjust = GloverLevel.PuzzleActionCameraTweenYAdjust = (function() {
     function PuzzleActionCameraTweenYAdjust(_io, _parent, _root) {
       this.__type = 'PuzzleActionCameraTweenYAdjust';
@@ -5646,6 +5802,50 @@ var GloverLevel = (function() {
     }
 
     return PuzzleActionCameraTweenYAdjust;
+  })();
+
+  var PuzzleCondRegLt = GloverLevel.PuzzleCondRegLt = (function() {
+    function PuzzleCondRegLt(_io, _parent, _root) {
+      this.__type = 'PuzzleCondRegLt';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondRegLt.prototype._read = function() {
+      this._debug.regA = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.regA = this._io.readS2be();
+      this._debug.regA.end = this._io.pos;
+      this._debug.immOrRegB = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.immOrRegB = this._io.readS2be();
+      this._debug.immOrRegB.end = this._io.pos;
+    }
+
+    return PuzzleCondRegLt;
+  })();
+
+  var PuzzleCondGloverChangedStandingOnPlatform = GloverLevel.PuzzleCondGloverChangedStandingOnPlatform = (function() {
+    function PuzzleCondGloverChangedStandingOnPlatform(_io, _parent, _root) {
+      this.__type = 'PuzzleCondGloverChangedStandingOnPlatform';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PuzzleCondGloverChangedStandingOnPlatform.prototype._read = function() {
+      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.platTag = this._io.readU2be();
+      this._debug.platTag.end = this._io.pos;
+      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.invertResult = this._io.readS2be();
+      this._debug.invertResult.end = this._io.pos;
+    }
+
+    return PuzzleCondGloverChangedStandingOnPlatform;
   })();
 
   var Platform = GloverLevel.Platform = (function() {
@@ -5866,28 +6066,6 @@ var GloverLevel = (function() {
     return PuzzleCondCameraWithinRangeOfPoint;
   })();
 
-  var PuzzleCondBallPlatform2Todo = GloverLevel.PuzzleCondBallPlatform2Todo = (function() {
-    function PuzzleCondBallPlatform2Todo(_io, _parent, _root) {
-      this.__type = 'PuzzleCondBallPlatform2Todo';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzleCondBallPlatform2Todo.prototype._read = function() {
-      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platTag = this._io.readU2be();
-      this._debug.platTag.end = this._io.pos;
-      this._debug.arg2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.arg2 = this._io.readS2be();
-      this._debug.arg2.end = this._io.pos;
-    }
-
-    return PuzzleCondBallPlatform2Todo;
-  })();
-
   var CameoInstDefault = GloverLevel.CameoInstDefault = (function() {
     function CameoInstDefault(_io, _parent, _root) {
       this.__type = 'CameoInstDefault';
@@ -5930,6 +6108,25 @@ var GloverLevel = (function() {
     }
 
     return PuzzleCondPlatformPathAtPointAtRest;
+  })();
+
+  var PlatSetCollisionYOffset = GloverLevel.PlatSetCollisionYOffset = (function() {
+    function PlatSetCollisionYOffset(_io, _parent, _root) {
+      this.__type = 'PlatSetCollisionYOffset';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    PlatSetCollisionYOffset.prototype._read = function() {
+      this._debug.yOffset = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.yOffset = this._io.readF4be();
+      this._debug.yOffset.end = this._io.pos;
+    }
+
+    return PlatSetCollisionYOffset;
   })();
 
   var PlatOrbitAroundPoint = GloverLevel.PlatOrbitAroundPoint = (function() {
@@ -6175,28 +6372,6 @@ var GloverLevel = (function() {
     }
 
     return PlatSpecial0xb9;
-  })();
-
-  var PuzzleCondBallPlatformTodo = GloverLevel.PuzzleCondBallPlatformTodo = (function() {
-    function PuzzleCondBallPlatformTodo(_io, _parent, _root) {
-      this.__type = 'PuzzleCondBallPlatformTodo';
-      this._io = _io;
-      this._parent = _parent;
-      this._root = _root || this;
-      this._debug = {};
-
-      this._read();
-    }
-    PuzzleCondBallPlatformTodo.prototype._read = function() {
-      this._debug.platTag = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.platTag = this._io.readU2be();
-      this._debug.platTag.end = this._io.pos;
-      this._debug.invertResult = { start: this._io.pos, ioOffset: this._io.byteOffset };
-      this.invertResult = this._io.readS2be();
-      this._debug.invertResult.end = this._io.pos;
-    }
-
-    return PuzzleCondBallPlatformTodo;
   })();
 
   var EnemyAttackInstruction = GloverLevel.EnemyAttackInstruction = (function() {

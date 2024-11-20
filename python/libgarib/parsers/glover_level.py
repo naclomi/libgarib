@@ -57,54 +57,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['started_or_stopped']['end'] = self._io.pos()
 
 
-    class PuzzleAction0x54(KaitaiStruct):
-        SEQ_FIELDS = ["u32_0x14", "u32_0x16", "u32_0x18", "u32_0x1a", "u32_0x1c", "u32_0x1e", "u32_0x10", "u16_0x0e", "u32_0x24", "u32_0x28", "u32_0x2c", "u16_0x0a"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['u32_0x14']['start'] = self._io.pos()
-            self.u32_0x14 = self._io.read_u2be()
-            self._debug['u32_0x14']['end'] = self._io.pos()
-            self._debug['u32_0x16']['start'] = self._io.pos()
-            self.u32_0x16 = self._io.read_u2be()
-            self._debug['u32_0x16']['end'] = self._io.pos()
-            self._debug['u32_0x18']['start'] = self._io.pos()
-            self.u32_0x18 = self._io.read_u2be()
-            self._debug['u32_0x18']['end'] = self._io.pos()
-            self._debug['u32_0x1a']['start'] = self._io.pos()
-            self.u32_0x1a = self._io.read_u2be()
-            self._debug['u32_0x1a']['end'] = self._io.pos()
-            self._debug['u32_0x1c']['start'] = self._io.pos()
-            self.u32_0x1c = self._io.read_u2be()
-            self._debug['u32_0x1c']['end'] = self._io.pos()
-            self._debug['u32_0x1e']['start'] = self._io.pos()
-            self.u32_0x1e = self._io.read_u2be()
-            self._debug['u32_0x1e']['end'] = self._io.pos()
-            self._debug['u32_0x10']['start'] = self._io.pos()
-            self.u32_0x10 = self._io.read_u2be()
-            self._debug['u32_0x10']['end'] = self._io.pos()
-            self._debug['u16_0x0e']['start'] = self._io.pos()
-            self.u16_0x0e = self._io.read_u2be()
-            self._debug['u16_0x0e']['end'] = self._io.pos()
-            self._debug['u32_0x24']['start'] = self._io.pos()
-            self.u32_0x24 = self._io.read_u4be()
-            self._debug['u32_0x24']['end'] = self._io.pos()
-            self._debug['u32_0x28']['start'] = self._io.pos()
-            self.u32_0x28 = self._io.read_u4be()
-            self._debug['u32_0x28']['end'] = self._io.pos()
-            self._debug['u32_0x2c']['start'] = self._io.pos()
-            self.u32_0x2c = self._io.read_u4be()
-            self._debug['u32_0x2c']['end'] = self._io.pos()
-            self._debug['u16_0x0a']['start'] = self._io.pos()
-            self.u16_0x0a = self._io.read_u2be()
-            self._debug['u16_0x0a']['end'] = self._io.pos()
-
-
     class PlatSound0xc2(KaitaiStruct):
         SEQ_FIELDS = ["sound_id", "volume", "pitch"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1130,32 +1082,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['flags']['end'] = self._io.pos()
 
 
-    class PuzzlePlatformCloseToConfBoundaryEdge(KaitaiStruct):
-
-        class EdgeType(Enum):
-            x = 0
-            y = 1
-            z = 2
-            x_plus_w = 3
-            y_plus_h = 4
-            z_plus_d = 5
-        SEQ_FIELDS = ["plat_tag", "edge"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['plat_tag']['start'] = self._io.pos()
-            self.plat_tag = self._io.read_u2be()
-            self._debug['plat_tag']['end'] = self._io.pos()
-            self._debug['edge']['start'] = self._io.pos()
-            self.edge = KaitaiStream.resolve_enum(GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge.EdgeType, self._io.read_u2be())
-            self._debug['edge']['end'] = self._io.pos()
-
-
     class VentDutyCycle(KaitaiStruct):
         SEQ_FIELDS = ["frames_off", "frames_on"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1221,6 +1147,24 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             pass
+
+
+    class PuzzleCondEnemyStandingOnPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
 
 
     class PuzzleActionPlatformMoveToPointIdxMinusOne(KaitaiStruct):
@@ -1409,6 +1353,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['duration_range']['end'] = self._io.pos()
 
 
+    class PuzzleCondEnemyChangedStandingOnPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
+
+
     class PuzzleActionEnemySetAiInstruction(KaitaiStruct):
         SEQ_FIELDS = ["instruction_idx", "puzzle_tag", "activation_delay", "flags"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1499,6 +1461,19 @@ class GloverLevel(KaitaiStruct):
             self._debug['range']['end'] = self._io.pos()
 
 
+    class PlatStaticCollision(KaitaiStruct):
+        SEQ_FIELDS = []
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            pass
+
+
     class PuzzleActionCameraFlyTowardsPointRelativeToGlover(KaitaiStruct):
         SEQ_FIELDS = ["x", "z", "distance", "activation_delay"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1524,7 +1499,7 @@ class GloverLevel(KaitaiStruct):
 
 
     class AmbientSoundAtPoint(KaitaiStruct):
-        SEQ_FIELDS = ["sound_id", "volume", "flags", "h_0x06", "h_0x08", "h_0x0a", "platform_tag", "h_0x0e", "x", "y", "z", "radius"]
+        SEQ_FIELDS = ["sound_id", "volume", "flags", "h_0x06", "h_0x08", "h_0x0a", "platform_tag", "puzzle_tag", "x", "y", "z", "radius"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -1554,9 +1529,9 @@ class GloverLevel(KaitaiStruct):
             self._debug['platform_tag']['start'] = self._io.pos()
             self.platform_tag = self._io.read_u2be()
             self._debug['platform_tag']['end'] = self._io.pos()
-            self._debug['h_0x0e']['start'] = self._io.pos()
-            self.h_0x0e = self._io.read_u2be()
-            self._debug['h_0x0e']['end'] = self._io.pos()
+            self._debug['puzzle_tag']['start'] = self._io.pos()
+            self.puzzle_tag = self._io.read_u2be()
+            self._debug['puzzle_tag']['end'] = self._io.pos()
             self._debug['x']['start'] = self._io.pos()
             self.x = self._io.read_f4be()
             self._debug['x']['end'] = self._io.pos()
@@ -1569,6 +1544,54 @@ class GloverLevel(KaitaiStruct):
             self._debug['radius']['start'] = self._io.pos()
             self.radius = self._io.read_f4be()
             self._debug['radius']['end'] = self._io.pos()
+
+
+    class PuzzleActionSoundControl(KaitaiStruct):
+        SEQ_FIELDS = ["sound_id", "volume", "u32_0x18", "u32_0x1a", "u32_0x1c", "u32_0x1e", "platform_tag", "sound_tag", "pos_x", "pos_y", "pos_z", "activation_delay"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['sound_id']['start'] = self._io.pos()
+            self.sound_id = self._io.read_u2be()
+            self._debug['sound_id']['end'] = self._io.pos()
+            self._debug['volume']['start'] = self._io.pos()
+            self.volume = self._io.read_s2be()
+            self._debug['volume']['end'] = self._io.pos()
+            self._debug['u32_0x18']['start'] = self._io.pos()
+            self.u32_0x18 = self._io.read_u2be()
+            self._debug['u32_0x18']['end'] = self._io.pos()
+            self._debug['u32_0x1a']['start'] = self._io.pos()
+            self.u32_0x1a = self._io.read_u2be()
+            self._debug['u32_0x1a']['end'] = self._io.pos()
+            self._debug['u32_0x1c']['start'] = self._io.pos()
+            self.u32_0x1c = self._io.read_u2be()
+            self._debug['u32_0x1c']['end'] = self._io.pos()
+            self._debug['u32_0x1e']['start'] = self._io.pos()
+            self.u32_0x1e = self._io.read_u2be()
+            self._debug['u32_0x1e']['end'] = self._io.pos()
+            self._debug['platform_tag']['start'] = self._io.pos()
+            self.platform_tag = self._io.read_u2be()
+            self._debug['platform_tag']['end'] = self._io.pos()
+            self._debug['sound_tag']['start'] = self._io.pos()
+            self.sound_tag = self._io.read_u2be()
+            self._debug['sound_tag']['end'] = self._io.pos()
+            self._debug['pos_x']['start'] = self._io.pos()
+            self.pos_x = self._io.read_f4be()
+            self._debug['pos_x']['end'] = self._io.pos()
+            self._debug['pos_y']['start'] = self._io.pos()
+            self.pos_y = self._io.read_f4be()
+            self._debug['pos_y']['end'] = self._io.pos()
+            self._debug['pos_z']['start'] = self._io.pos()
+            self.pos_z = self._io.read_f4be()
+            self._debug['pos_z']['end'] = self._io.pos()
+            self._debug['activation_delay']['start'] = self._io.pos()
+            self.activation_delay = self._io.read_u2be()
+            self._debug['activation_delay']['end'] = self._io.pos()
 
 
     class PuzzleActionCameraTurnTowardsFocus(KaitaiStruct):
@@ -1730,7 +1753,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 10:
                 self.body = GloverLevel.PuzzleCondPlatformSpinTodo(self._io, self, self._root)
             elif _on == 17:
-                self.body = GloverLevel.PuzzleCondBallPlatformTodo(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondBallStandingOnPlatform(self._io, self, self._root)
             elif _on == 42:
                 self.body = GloverLevel.PuzzleCondPlatformDoesntExist(self._io, self, self._root)
             elif _on == 39:
@@ -1739,14 +1762,22 @@ class GloverLevel(KaitaiStruct):
                 self.body = GloverLevel.PuzzleCondBallChangedTouchingPlatform(self._io, self, self._root)
             elif _on == 35:
                 self.body = GloverLevel.PuzzleCondGloverWithinVolume(self._io, self, self._root)
+            elif _on == 20:
+                self.body = GloverLevel.PuzzleCondEnemyChangedStandingOnPlatform(self._io, self, self._root)
             elif _on == 32:
-                self.body = GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge(self._io, self, self._root)
+            elif _on == 27:
+                self.body = GloverLevel.PuzzleCondRegEq(self._io, self, self._root)
             elif _on == 13:
                 self.body = GloverLevel.PuzzleCondPlatformSpin2Todo(self._io, self, self._root)
             elif _on == 11:
                 self.body = GloverLevel.PuzzleCondPlatformOrbitTodo(self._io, self, self._root)
             elif _on == 12:
                 self.body = GloverLevel.PuzzleCondPlatformPathAtPoint2(self._io, self, self._root)
+            elif _on == 33:
+                self.body = GloverLevel.PuzzleCondSpecificEnemyExists(self._io, self, self._root)
+            elif _on == 19:
+                self.body = GloverLevel.PuzzleCondEnemyStandingOnPlatform(self._io, self, self._root)
             elif _on == 23:
                 self.body = GloverLevel.PuzzleCondBallIsTouchingPlatform(self._io, self, self._root)
             elif _on == 15:
@@ -1765,20 +1796,26 @@ class GloverLevel(KaitaiStruct):
                 self.body = GloverLevel.PuzzleCondGloverWithinRangeOfPoint2(self._io, self, self._root)
             elif _on == 36:
                 self.body = GloverLevel.PuzzleCondGloverWithinRangeOfPoint(self._io, self, self._root)
+            elif _on == 28:
+                self.body = GloverLevel.PuzzleCondRegNe(self._io, self, self._root)
             elif _on == 16:
-                self.body = GloverLevel.PuzzleCondGloverPlatform2Todo(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondGloverChangedStandingOnPlatform(self._io, self, self._root)
             elif _on == 18:
-                self.body = GloverLevel.PuzzleCondBallPlatform2Todo(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondBallChangedStandingOnPlatform(self._io, self, self._root)
             elif _on == 26:
                 self.body = GloverLevel.PuzzleCondEnemyChangedTouchingPlatform(self._io, self, self._root)
             elif _on == 31:
-                self.body = GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge(self._io, self, self._root)
             elif _on == 34:
                 self.body = GloverLevel.PuzzleCond0x22(self._io, self, self._root)
+            elif _on == 29:
+                self.body = GloverLevel.PuzzleCondRegGt(self._io, self, self._root)
             elif _on == 25:
                 self.body = GloverLevel.PuzzleCondEnemyIsTouchingPlatform(self._io, self, self._root)
             elif _on == 22:
                 self.body = GloverLevel.PuzzleCondGloverChangedTouchingPlatform(self._io, self, self._root)
+            elif _on == 30:
+                self.body = GloverLevel.PuzzleCondRegLt(self._io, self, self._root)
             else:
                 self.body = GloverLevel.PuzzleCondDefault(self._io, self, self._root)
             self._debug['body']['end'] = self._io.pos()
@@ -2007,6 +2044,32 @@ class GloverLevel(KaitaiStruct):
             self._debug['type']['end'] = self._io.pos()
 
 
+    class PuzzleCondPlatformTouchingConfBoundaryEdge(KaitaiStruct):
+
+        class EdgeType(Enum):
+            x = 0
+            y = 1
+            z = 2
+            x_plus_w = 3
+            y_plus_h = 4
+            z_plus_d = 5
+        SEQ_FIELDS = ["plat_tag", "edge"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['edge']['start'] = self._io.pos()
+            self.edge = KaitaiStream.resolve_enum(GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge.EdgeType, self._io.read_u2be())
+            self._debug['edge']['end'] = self._io.pos()
+
+
     class PuzzleActionSetPlatformVelocity(KaitaiStruct):
         SEQ_FIELDS = ["vel_x", "vel_y", "vel_z", "reserved", "puzzle_tag", "activation_delay", "flags"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2059,6 +2122,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['pitch']['start'] = self._io.pos()
             self.pitch = self._io.read_u2be()
             self._debug['pitch']['end'] = self._io.pos()
+
+
+    class PuzzleCondRegEq(KaitaiStruct):
+        SEQ_FIELDS = ["reg_a", "imm_or_reg_b"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['reg_a']['start'] = self._io.pos()
+            self.reg_a = self._io.read_s2be()
+            self._debug['reg_a']['end'] = self._io.pos()
+            self._debug['imm_or_reg_b']['start'] = self._io.pos()
+            self.imm_or_reg_b = self._io.read_s2be()
+            self._debug['imm_or_reg_b']['end'] = self._io.pos()
 
 
     class PlatActorEnableWaterAnimation(KaitaiStruct):
@@ -2151,24 +2232,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['flags']['start'] = self._io.pos()
             self.flags = KaitaiStream.resolve_enum(GloverLevel.PuzzleAction.CameraFlags, self._io.read_u4be())
             self._debug['flags']['end'] = self._io.pos()
-
-
-    class PuzzleCondGloverPlatform2Todo(KaitaiStruct):
-        SEQ_FIELDS = ["plat_tag", "arg2"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['plat_tag']['start'] = self._io.pos()
-            self.plat_tag = self._io.read_u2be()
-            self._debug['plat_tag']['end'] = self._io.pos()
-            self._debug['arg2']['start'] = self._io.pos()
-            self.arg2 = self._io.read_s2be()
-            self._debug['arg2']['end'] = self._io.pos()
 
 
     class PlatSpecial0xc7(KaitaiStruct):
@@ -2441,7 +2504,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 194:
                 self.params = GloverLevel.PlatSound0xc2(self._io, self, self._root)
             elif _on == 184:
-                self.params = GloverLevel.PlatSpecial0xb8(self._io, self, self._root)
+                self.params = GloverLevel.PlatStaticCollision(self._io, self, self._root)
             elif _on == 105:
                 self.params = GloverLevel.PlatCat0x69(self._io, self, self._root)
             elif _on == 142:
@@ -2651,7 +2714,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 196:
                 self.params = GloverLevel.PlatOrbitSound0xc4(self._io, self, self._root)
             elif _on == 183:
-                self.params = GloverLevel.SetGlobal0xb7(self._io, self, self._root)
+                self.params = GloverLevel.PlatSetCollisionYOffset(self._io, self, self._root)
             elif _on == 128:
                 self.params = GloverLevel.PlatSpin0x80(self._io, self, self._root)
             elif _on == 90:
@@ -2949,7 +3012,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 86:
                 self.body = GloverLevel.PuzzleActionSetFog(self._io, self, self._root)
             elif _on == 84:
-                self.body = GloverLevel.PuzzleAction0x54(self._io, self, self._root)
+                self.body = GloverLevel.PuzzleActionSoundControl(self._io, self, self._root)
             elif _on == 63:
                 self.body = GloverLevel.PuzzleActionCameraLookAtPoint2(self._io, self, self._root)
             elif _on == 51:
@@ -3247,8 +3310,16 @@ class GloverLevel(KaitaiStruct):
             self._debug['activation_delay']['end'] = self._io.pos()
 
 
-    class PlatSpecial0xb8(KaitaiStruct):
-        SEQ_FIELDS = []
+    class PuzzleCondPlatformCloseToConfBoundaryEdge(KaitaiStruct):
+
+        class EdgeType(Enum):
+            x = 0
+            y = 1
+            z = 2
+            x_plus_w = 3
+            y_plus_h = 4
+            z_plus_d = 5
+        SEQ_FIELDS = ["plat_tag", "edge"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -3257,7 +3328,12 @@ class GloverLevel(KaitaiStruct):
             self._read()
 
         def _read(self):
-            pass
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['edge']['start'] = self._io.pos()
+            self.edge = KaitaiStream.resolve_enum(GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge.EdgeType, self._io.read_u2be())
+            self._debug['edge']['end'] = self._io.pos()
 
 
     class PlatOrbitSound0xc4(KaitaiStruct):
@@ -3517,6 +3593,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['num_pauses']['start'] = self._io.pos()
             self.num_pauses = self._io.read_u2be()
             self._debug['num_pauses']['end'] = self._io.pos()
+
+
+    class PuzzleCondSpecificEnemyExists(KaitaiStruct):
+        SEQ_FIELDS = ["puzzle_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['puzzle_tag']['start'] = self._io.pos()
+            self.puzzle_tag = self._io.read_u2be()
+            self._debug['puzzle_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
 
 
     class PlatCrumb0x67(KaitaiStruct):
@@ -3829,6 +3923,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['preceding_instr_idx']['end'] = self._io.pos()
 
 
+    class PuzzleCondRegGt(KaitaiStruct):
+        SEQ_FIELDS = ["reg_a", "imm_or_reg_b"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['reg_a']['start'] = self._io.pos()
+            self.reg_a = self._io.read_s2be()
+            self._debug['reg_a']['end'] = self._io.pos()
+            self._debug['imm_or_reg_b']['start'] = self._io.pos()
+            self.imm_or_reg_b = self._io.read_s2be()
+            self._debug['imm_or_reg_b']['end'] = self._io.pos()
+
+
     class PlatSine(KaitaiStruct):
         SEQ_FIELDS = ["u32_count", "u32_116", "name", "f_108", "f_104", "f_100", "f_96", "f_92", "f_88", "f_84", "f_80", "u32_176", "u32_172"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -3911,6 +4023,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x1c']['start'] = self._io.pos()
             self.u32_0x1c = self._io.read_u4be()
             self._debug['u32_0x1c']['end'] = self._io.pos()
+
+
+    class PuzzleCondBallChangedStandingOnPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
 
 
     class PuzzleActionToggleWind(KaitaiStruct):
@@ -4166,6 +4296,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['frames_on']['end'] = self._io.pos()
 
 
+    class PuzzleCondBallStandingOnPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
+
+
     class CameoPlayAnimation(KaitaiStruct):
         SEQ_FIELDS = ["enemy_idx", "anim_idx", "start_playing", "playback_speed", "frame_count", "preceding_instr_idx"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4194,6 +4342,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['preceding_instr_idx']['start'] = self._io.pos()
             self.preceding_instr_idx = self._io.read_s2be()
             self._debug['preceding_instr_idx']['end'] = self._io.pos()
+
+
+    class PuzzleCondRegNe(KaitaiStruct):
+        SEQ_FIELDS = ["reg_a", "imm_or_reg_b"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['reg_a']['start'] = self._io.pos()
+            self.reg_a = self._io.read_s2be()
+            self._debug['reg_a']['end'] = self._io.pos()
+            self._debug['imm_or_reg_b']['start'] = self._io.pos()
+            self.imm_or_reg_b = self._io.read_s2be()
+            self._debug['imm_or_reg_b']['end'] = self._io.pos()
 
 
     class PuzzleActionSetConveyor(KaitaiStruct):
@@ -4383,32 +4549,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['u32_0x2c_0x34']['end'] = self._io.pos()
 
 
-    class PuzzlePlatformTouchingConfBoundaryEdge(KaitaiStruct):
-
-        class EdgeType(Enum):
-            x = 0
-            y = 1
-            z = 2
-            x_plus_w = 3
-            y_plus_h = 4
-            z_plus_d = 5
-        SEQ_FIELDS = ["plat_tag", "edge"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['plat_tag']['start'] = self._io.pos()
-            self.plat_tag = self._io.read_u2be()
-            self._debug['plat_tag']['end'] = self._io.pos()
-            self._debug['edge']['start'] = self._io.pos()
-            self.edge = KaitaiStream.resolve_enum(GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge.EdgeType, self._io.read_u2be())
-            self._debug['edge']['end'] = self._io.pos()
-
-
     class PlatSpecial0x9e(KaitaiStruct):
         SEQ_FIELDS = ["u32_0x5c", "u32_0x60", "u32_0x65", "u32_0x68"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4566,21 +4706,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['idx']['end'] = self._io.pos()
 
 
-    class SetGlobal0xb7(KaitaiStruct):
-        SEQ_FIELDS = ["value"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['value']['start'] = self._io.pos()
-            self.value = self._io.read_u4be()
-            self._debug['value']['end'] = self._io.pos()
-
-
     class PuzzleActionCameraTweenYAdjust(KaitaiStruct):
         SEQ_FIELDS = ["y_adjust", "activation_delay"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4597,6 +4722,42 @@ class GloverLevel(KaitaiStruct):
             self._debug['activation_delay']['start'] = self._io.pos()
             self.activation_delay = self._io.read_u2be()
             self._debug['activation_delay']['end'] = self._io.pos()
+
+
+    class PuzzleCondRegLt(KaitaiStruct):
+        SEQ_FIELDS = ["reg_a", "imm_or_reg_b"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['reg_a']['start'] = self._io.pos()
+            self.reg_a = self._io.read_s2be()
+            self._debug['reg_a']['end'] = self._io.pos()
+            self._debug['imm_or_reg_b']['start'] = self._io.pos()
+            self.imm_or_reg_b = self._io.read_s2be()
+            self._debug['imm_or_reg_b']['end'] = self._io.pos()
+
+
+    class PuzzleCondGloverChangedStandingOnPlatform(KaitaiStruct):
+        SEQ_FIELDS = ["plat_tag", "invert_result"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['plat_tag']['start'] = self._io.pos()
+            self.plat_tag = self._io.read_u2be()
+            self._debug['plat_tag']['end'] = self._io.pos()
+            self._debug['invert_result']['start'] = self._io.pos()
+            self.invert_result = self._io.read_s2be()
+            self._debug['invert_result']['end'] = self._io.pos()
 
 
     class Platform(KaitaiStruct):
@@ -4785,24 +4946,6 @@ class GloverLevel(KaitaiStruct):
             self._debug['range']['end'] = self._io.pos()
 
 
-    class PuzzleCondBallPlatform2Todo(KaitaiStruct):
-        SEQ_FIELDS = ["plat_tag", "arg2"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['plat_tag']['start'] = self._io.pos()
-            self.plat_tag = self._io.read_u2be()
-            self._debug['plat_tag']['end'] = self._io.pos()
-            self._debug['arg2']['start'] = self._io.pos()
-            self.arg2 = self._io.read_s2be()
-            self._debug['arg2']['end'] = self._io.pos()
-
-
     class CameoInstDefault(KaitaiStruct):
         SEQ_FIELDS = ["h_0x00", "h_0x02"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4837,6 +4980,21 @@ class GloverLevel(KaitaiStruct):
             self._debug['path_point_idx']['start'] = self._io.pos()
             self.path_point_idx = self._io.read_s2be()
             self._debug['path_point_idx']['end'] = self._io.pos()
+
+
+    class PlatSetCollisionYOffset(KaitaiStruct):
+        SEQ_FIELDS = ["y_offset"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['y_offset']['start'] = self._io.pos()
+            self.y_offset = self._io.read_f4be()
+            self._debug['y_offset']['end'] = self._io.pos()
 
 
     class PlatOrbitAroundPoint(KaitaiStruct):
@@ -5051,24 +5209,6 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             pass
-
-
-    class PuzzleCondBallPlatformTodo(KaitaiStruct):
-        SEQ_FIELDS = ["plat_tag", "invert_result"]
-        def __init__(self, _io, _parent=None, _root=None):
-            self._io = _io
-            self._parent = _parent
-            self._root = _root if _root else self
-            self._debug = collections.defaultdict(dict)
-            self._read()
-
-        def _read(self):
-            self._debug['plat_tag']['start'] = self._io.pos()
-            self.plat_tag = self._io.read_u2be()
-            self._debug['plat_tag']['end'] = self._io.pos()
-            self._debug['invert_result']['start'] = self._io.pos()
-            self.invert_result = self._io.read_s2be()
-            self._debug['invert_result']['end'] = self._io.pos()
 
 
     class EnemyAttackInstruction(KaitaiStruct):
@@ -5347,9 +5487,9 @@ switch_fields = {
                 0x73: GloverLevel.PlatMvspn0x73,
                 0x74: GloverLevel.PlatMvspn0x74,
                 0x7b: GloverLevel.PlatCopySpinFromParent,
-                0xb8: GloverLevel.PlatSpecial0xb8,
+                0xb8: GloverLevel.PlatStaticCollision,
                 0xb3: GloverLevel.PlatActorEnableWaterAnimation,
-                0xb7: GloverLevel.SetGlobal0xb7,
+                0xb7: GloverLevel.PlatSetCollisionYOffset,
                 0xb5: GloverLevel.Buzzer,
                 0xb6: GloverLevel.BuzzerDutyCycle,
                 0xb4: GloverLevel.SetObjectSparkle,
@@ -5465,9 +5605,9 @@ switch_fields = {
                 GloverLevel.PlatMvspn0x73: 0x73,
                 GloverLevel.PlatMvspn0x74: 0x74,
                 GloverLevel.PlatCopySpinFromParent: 0x7b,
-                GloverLevel.PlatSpecial0xb8: 0xb8,
+                GloverLevel.PlatStaticCollision: 0xb8,
                 GloverLevel.PlatActorEnableWaterAnimation: 0xb3,
-                GloverLevel.SetGlobal0xb7: 0xb7,
+                GloverLevel.PlatSetCollisionYOffset: 0xb7,
                 GloverLevel.Buzzer: 0xb5,
                 GloverLevel.BuzzerDutyCycle: 0xb6,
                 GloverLevel.SetObjectSparkle: 0xb4,
@@ -5582,17 +5722,24 @@ switch_fields = {
                 0xd: GloverLevel.PuzzleCondPlatformSpin2Todo,
                 0xe: GloverLevel.PuzzleCondPlatformOrbit2Todo,
                 0xf: GloverLevel.PuzzleCondGloverStandingOnPlatform,
-                0x10: GloverLevel.PuzzleCondGloverPlatform2Todo,
-                0x11: GloverLevel.PuzzleCondBallPlatformTodo,
-                0x12: GloverLevel.PuzzleCondBallPlatform2Todo,
+                0x10: GloverLevel.PuzzleCondGloverChangedStandingOnPlatform,
+                0x11: GloverLevel.PuzzleCondBallStandingOnPlatform,
+                0x12: GloverLevel.PuzzleCondBallChangedStandingOnPlatform,
+                0x13: GloverLevel.PuzzleCondEnemyStandingOnPlatform,
+                0x14: GloverLevel.PuzzleCondEnemyChangedStandingOnPlatform,
                 0x15: GloverLevel.PuzzleCondGloverIsTouchingPlatform,
                 0x16: GloverLevel.PuzzleCondGloverChangedTouchingPlatform,
                 0x17: GloverLevel.PuzzleCondBallIsTouchingPlatform,
                 0x18: GloverLevel.PuzzleCondBallChangedTouchingPlatform,
                 0x19: GloverLevel.PuzzleCondEnemyIsTouchingPlatform,
                 0x1a: GloverLevel.PuzzleCondEnemyChangedTouchingPlatform,
-                0x1f: GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge,
-                0x20: GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge,
+                0x1b: GloverLevel.PuzzleCondRegEq,
+                0x1c: GloverLevel.PuzzleCondRegNe,
+                0x1d: GloverLevel.PuzzleCondRegGt,
+                0x1e: GloverLevel.PuzzleCondRegLt,
+                0x1f: GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge,
+                0x20: GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge,
+                0x21: GloverLevel.PuzzleCondSpecificEnemyExists,
                 0x22: GloverLevel.PuzzleCond0x22,
                 0x23: GloverLevel.PuzzleCondGloverWithinVolume,
                 0x24: GloverLevel.PuzzleCondGloverWithinRangeOfPoint,
@@ -5612,17 +5759,24 @@ switch_fields = {
                 GloverLevel.PuzzleCondPlatformSpin2Todo: 0xd,
                 GloverLevel.PuzzleCondPlatformOrbit2Todo: 0xe,
                 GloverLevel.PuzzleCondGloverStandingOnPlatform: 0xf,
-                GloverLevel.PuzzleCondGloverPlatform2Todo: 0x10,
-                GloverLevel.PuzzleCondBallPlatformTodo: 0x11,
-                GloverLevel.PuzzleCondBallPlatform2Todo: 0x12,
+                GloverLevel.PuzzleCondGloverChangedStandingOnPlatform: 0x10,
+                GloverLevel.PuzzleCondBallStandingOnPlatform: 0x11,
+                GloverLevel.PuzzleCondBallChangedStandingOnPlatform: 0x12,
+                GloverLevel.PuzzleCondEnemyStandingOnPlatform: 0x13,
+                GloverLevel.PuzzleCondEnemyChangedStandingOnPlatform: 0x14,
                 GloverLevel.PuzzleCondGloverIsTouchingPlatform: 0x15,
                 GloverLevel.PuzzleCondGloverChangedTouchingPlatform: 0x16,
                 GloverLevel.PuzzleCondBallIsTouchingPlatform: 0x17,
                 GloverLevel.PuzzleCondBallChangedTouchingPlatform: 0x18,
                 GloverLevel.PuzzleCondEnemyIsTouchingPlatform: 0x19,
                 GloverLevel.PuzzleCondEnemyChangedTouchingPlatform: 0x1a,
-                GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge: 0x1f,
-                GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge: 0x20,
+                GloverLevel.PuzzleCondRegEq: 0x1b,
+                GloverLevel.PuzzleCondRegNe: 0x1c,
+                GloverLevel.PuzzleCondRegGt: 0x1d,
+                GloverLevel.PuzzleCondRegLt: 0x1e,
+                GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge: 0x1f,
+                GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge: 0x20,
+                GloverLevel.PuzzleCondSpecificEnemyExists: 0x21,
                 GloverLevel.PuzzleCond0x22: 0x22,
                 GloverLevel.PuzzleCondGloverWithinVolume: 0x23,
                 GloverLevel.PuzzleCondGloverWithinRangeOfPoint: 0x24,
@@ -5676,7 +5830,7 @@ switch_fields = {
                 0x51: GloverLevel.PuzzleActionStartCameo,
                 0x52: GloverLevel.PuzzleActionSetPlatformPathDirection,
                 0x53: GloverLevel.PuzzleActionMakeBallInteractive,
-                0x54: GloverLevel.PuzzleAction0x54,
+                0x54: GloverLevel.PuzzleActionSoundControl,
                 0x55: GloverLevel.PuzzleActionSetBackground,
                 0x56: GloverLevel.PuzzleActionSetFog,
                 None: GloverLevel.PuzzleActionDefault,
@@ -5717,7 +5871,7 @@ switch_fields = {
                 GloverLevel.PuzzleActionStartCameo: 0x51,
                 GloverLevel.PuzzleActionSetPlatformPathDirection: 0x52,
                 GloverLevel.PuzzleActionMakeBallInteractive: 0x53,
-                GloverLevel.PuzzleAction0x54: 0x54,
+                GloverLevel.PuzzleActionSoundControl: 0x54,
                 GloverLevel.PuzzleActionSetBackground: 0x55,
                 GloverLevel.PuzzleActionSetFog: 0x56,
                 GloverLevel.PuzzleActionDefault: None,
@@ -5816,17 +5970,24 @@ original_names = {
     'GloverLevel.PuzzleCondPlatformSpin2Todo': 'glover_level.puzzle_cond_platform_spin_2_todo',
     'GloverLevel.PuzzleCondPlatformOrbit2Todo': 'glover_level.puzzle_cond_platform_orbit_2_todo',
     'GloverLevel.PuzzleCondGloverStandingOnPlatform': 'glover_level.puzzle_cond_glover_standing_on_platform',
-    'GloverLevel.PuzzleCondGloverPlatform2Todo': 'glover_level.puzzle_cond_glover_platform_2_todo',
-    'GloverLevel.PuzzleCondBallPlatformTodo': 'glover_level.puzzle_cond_ball_platform_todo',
-    'GloverLevel.PuzzleCondBallPlatform2Todo': 'glover_level.puzzle_cond_ball_platform_2_todo',
+    'GloverLevel.PuzzleCondGloverChangedStandingOnPlatform': 'glover_level.puzzle_cond_glover_changed_standing_on_platform',
+    'GloverLevel.PuzzleCondBallStandingOnPlatform': 'glover_level.puzzle_cond_ball_standing_on_platform',
+    'GloverLevel.PuzzleCondBallChangedStandingOnPlatform': 'glover_level.puzzle_cond_ball_changed_standing_on_platform',
+    'GloverLevel.PuzzleCondEnemyStandingOnPlatform': 'glover_level.puzzle_cond_enemy_standing_on_platform',
+    'GloverLevel.PuzzleCondEnemyChangedStandingOnPlatform': 'glover_level.puzzle_cond_enemy_changed_standing_on_platform',
     'GloverLevel.PuzzleCondGloverIsTouchingPlatform': 'glover_level.puzzle_cond_glover_is_touching_platform',
     'GloverLevel.PuzzleCondGloverChangedTouchingPlatform': 'glover_level.puzzle_cond_glover_changed_touching_platform',
     'GloverLevel.PuzzleCondBallIsTouchingPlatform': 'glover_level.puzzle_cond_ball_is_touching_platform',
     'GloverLevel.PuzzleCondBallChangedTouchingPlatform': 'glover_level.puzzle_cond_ball_changed_touching_platform',
     'GloverLevel.PuzzleCondEnemyIsTouchingPlatform': 'glover_level.puzzle_cond_enemy_is_touching_platform',
     'GloverLevel.PuzzleCondEnemyChangedTouchingPlatform': 'glover_level.puzzle_cond_enemy_changed_touching_platform',
-    'GloverLevel.PuzzlePlatformTouchingConfBoundaryEdge': 'glover_level.puzzle_platform_touching_conf_boundary_edge',
-    'GloverLevel.PuzzlePlatformCloseToConfBoundaryEdge': 'glover_level.puzzle_platform_close_to_conf_boundary_edge',
+    'GloverLevel.PuzzleCondPlatformTouchingConfBoundaryEdge': 'glover_level.puzzle_cond_platform_touching_conf_boundary_edge',
+    'GloverLevel.PuzzleCondPlatformCloseToConfBoundaryEdge': 'glover_level.puzzle_cond_platform_close_to_conf_boundary_edge',
+    'GloverLevel.PuzzleCondSpecificEnemyExists': 'glover_level.puzzle_cond_specific_enemy_exists',
+    'GloverLevel.PuzzleCondRegEq': 'glover_level.puzzle_cond_reg_eq',
+    'GloverLevel.PuzzleCondRegNe': 'glover_level.puzzle_cond_reg_ne',
+    'GloverLevel.PuzzleCondRegGt': 'glover_level.puzzle_cond_reg_gt',
+    'GloverLevel.PuzzleCondRegLt': 'glover_level.puzzle_cond_reg_lt',
     'GloverLevel.PuzzleCondDefault': 'glover_level.puzzle_cond_default',
     'GloverLevel.PuzzleCond0x22': 'glover_level.puzzle_cond_0x22',
     'GloverLevel.PuzzleCondGloverWithinVolume': 'glover_level.puzzle_cond_glover_within_volume',
@@ -5873,7 +6034,7 @@ original_names = {
     'GloverLevel.PuzzleActionCameraFlyTowardsPoint': 'glover_level.puzzle_action_camera_fly_towards_point',
     'GloverLevel.PuzzleActionCameraFlyTowardsPointRelativeToGlover': 'glover_level.puzzle_action_camera_fly_towards_point_relative_to_glover',
     'GloverLevel.PuzzleActionCameraLookAtGlover': 'glover_level.puzzle_action_camera_look_at_glover',
-    'GloverLevel.PuzzleAction0x54': 'glover_level.puzzle_action_0x54',
+    'GloverLevel.PuzzleActionSoundControl': 'glover_level.puzzle_action_sound_control',
     'GloverLevel.PuzzleActionSetBackground': 'glover_level.puzzle_action_set_background',
     'GloverLevel.PuzzleActionSetFog': 'glover_level.puzzle_action_set_fog',
     'GloverLevel.PuzzleAction0x4b0x4c': 'glover_level.puzzle_action_0x4b_0x4c',
@@ -5887,9 +6048,9 @@ original_names = {
     'GloverLevel.PlatMvspn0x73': 'glover_level.plat_mvspn_0x73',
     'GloverLevel.PlatMvspn0x74': 'glover_level.plat_mvspn_0x74',
     'GloverLevel.PlatCopySpinFromParent': 'glover_level.plat_copy_spin_from_parent',
-    'GloverLevel.PlatSpecial0xb8': 'glover_level.plat_special_0xb8',
+    'GloverLevel.PlatStaticCollision': 'glover_level.plat_static_collision',
     'GloverLevel.PlatActorEnableWaterAnimation': 'glover_level.plat_actor_enable_water_animation',
-    'GloverLevel.SetGlobal0xb7': 'glover_level.set_global_0xb7',
+    'GloverLevel.PlatSetCollisionYOffset': 'glover_level.plat_set_collision_y_offset',
     'GloverLevel.Buzzer': 'glover_level.buzzer',
     'GloverLevel.BuzzerDutyCycle': 'glover_level.buzzer_duty_cycle',
     'GloverLevel.SetObjectSparkle': 'glover_level.set_object_sparkle',
@@ -6010,8 +6171,9 @@ private_fields = {
     'GloverLevel.PlatMvspn0x73': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatMvspn0x74': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatCopySpinFromParent': {'semantic': {'modifies': 'PLATFORM'}},
-    'GloverLevel.PlatSpecial0xb8': {'semantic': {'modifies': 'PLATFORM'}},
+    'GloverLevel.PlatStaticCollision': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.PlatActorEnableWaterAnimation': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR', 'BG_ACTOR', 'ANIMATED_BG_ACTOR']}},
+    'GloverLevel.PlatSetCollisionYOffset': {'semantic': {'modifies': 'PLATFORM'}},
     'GloverLevel.Buzzer': {'semantic': {'declares': 'BUZZER'}},
     'GloverLevel.BuzzerDutyCycle': {'semantic': {'modifies': 'BUZZER'}},
     'GloverLevel.SetObjectSparkle': {'semantic': {'modifies': ['PLATFORM', 'LAND_ACTOR']}},
@@ -6083,7 +6245,7 @@ private_fields = {
     'GloverLevel.EnemyNormalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'normal_instructions'}},
     'GloverLevel.EnemyConditionalInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'conditional_instructions'}},
     'GloverLevel.EnemyAttackInstruction': {'semantic': {'modifies': 'ENEMY', 'groups-into': 'attack_instructions'}},
-    'GloverLevel': {'_annotated_children': ['GloverLevel.Actor0xbf', 'GloverLevel.AnimatedBackgroundActor', 'GloverLevel.BackgroundActor', 'GloverLevel.LandActor', 'GloverLevel.SetActorRotation', 'GloverLevel.SetActorScale', 'GloverLevel.Cameo', 'GloverLevel.CameoInst', 'GloverLevel.Puzzle', 'GloverLevel.PuzzleAnd', 'GloverLevel.PuzzleOr', 'GloverLevel.PuzzleNumtimes', 'GloverLevel.PuzzleAny', 'GloverLevel.PuzzleCond', 'GloverLevel.PuzzleAction', 'GloverLevel.GaribGroup', 'GloverLevel.Garib', 'GloverLevel.PlatMvspn0x58', 'GloverLevel.PlatMvspn0x59', 'GloverLevel.PlatMvspn0x5a', 'GloverLevel.PlatSetParent', 'GloverLevel.PlatMvspn0x73', 'GloverLevel.PlatMvspn0x74', 'GloverLevel.PlatCopySpinFromParent', 'GloverLevel.PlatSpecial0xb8', 'GloverLevel.PlatActorEnableWaterAnimation', 'GloverLevel.Buzzer', 'GloverLevel.BuzzerDutyCycle', 'GloverLevel.SetObjectSparkle', 'GloverLevel.PlatSpecial0xb9', 'GloverLevel.SetExit', 'GloverLevel.PlatCat0x69', 'GloverLevel.PlatformConveyor', 'GloverLevel.PlatSpecial0x9e', 'GloverLevel.SetTeleport', 'GloverLevel.PlatFan0x8a', 'GloverLevel.PlatMagnet0x8b', 'GloverLevel.PlatCheckpoint', 'GloverLevel.PlatCrumb0x67', 'GloverLevel.PlatSpecial0xc7', 'GloverLevel.PlatSpecial0x6e', 'GloverLevel.PlatCauseDamage', 'GloverLevel.PlatPush0x5b', 'GloverLevel.PlatConfBoundaryVolume', 'GloverLevel.PlatOrbitSound0xc4', 'GloverLevel.Plat0xc6', 'GloverLevel.PlatOrbitAroundPoint', 'GloverLevel.PlatOrbitPause', 'GloverLevel.PlatOrbitFlip0x77', 'GloverLevel.Plat0xc3', 'GloverLevel.PlatSpinSound0xc5', 'GloverLevel.Plat0x9f', 'GloverLevel.PlatSpinPause0x7c', 'GloverLevel.PlatSpinFlip', 'GloverLevel.Plat0x7e', 'GloverLevel.PlatConstantSpin', 'GloverLevel.PlatSpin0x80', 'GloverLevel.PlatTopple0x81', 'GloverLevel.LookAtHand0x60', 'GloverLevel.LookAtBall0x61', 'GloverLevel.PlatRocking', 'GloverLevel.Plat0x78', 'GloverLevel.PlatSound0xc1', 'GloverLevel.PlatSound0xc2', 'GloverLevel.PlatTurnTowardsPathPoint', 'GloverLevel.PlatGoForwards0x5f', 'GloverLevel.PlatPathPoint', 'GloverLevel.PlatMaxVelocity', 'GloverLevel.PlatPathAcceleration', 'GloverLevel.PlatPos0xa7', 'GloverLevel.PlatSetInitialPos', 'GloverLevel.PlatPlayObjectAnimation', 'GloverLevel.Plat0xa4', 'GloverLevel.PlatVentAdvanceFrames', 'GloverLevel.PlatNoClip', 'GloverLevel.PlatDestructible', 'GloverLevel.PlatDestructibleSound', 'GloverLevel.Plat0x9d', 'GloverLevel.PlatReverseAtEndsOfPath', 'GloverLevel.PlatActorSurfaceType', 'GloverLevel.PlatSetTag', 'GloverLevel.PlatSpike', 'GloverLevel.PlatScale', 'GloverLevel.Vent', 'GloverLevel.VentDutyCycle', 'GloverLevel.Platform', 'GloverLevel.NullPlatform', 'GloverLevel.Enemy', 'GloverLevel.EnemySetAttentionBbox', 'GloverLevel.Enemy0xba', 'GloverLevel.EnemyFinalize', 'GloverLevel.EnemyNormalInstruction', 'GloverLevel.EnemyConditionalInstruction', 'GloverLevel.EnemyAttackInstruction']},
+    'GloverLevel': {'_annotated_children': ['GloverLevel.Actor0xbf', 'GloverLevel.AnimatedBackgroundActor', 'GloverLevel.BackgroundActor', 'GloverLevel.LandActor', 'GloverLevel.SetActorRotation', 'GloverLevel.SetActorScale', 'GloverLevel.Cameo', 'GloverLevel.CameoInst', 'GloverLevel.Puzzle', 'GloverLevel.PuzzleAnd', 'GloverLevel.PuzzleOr', 'GloverLevel.PuzzleNumtimes', 'GloverLevel.PuzzleAny', 'GloverLevel.PuzzleCond', 'GloverLevel.PuzzleAction', 'GloverLevel.GaribGroup', 'GloverLevel.Garib', 'GloverLevel.PlatMvspn0x58', 'GloverLevel.PlatMvspn0x59', 'GloverLevel.PlatMvspn0x5a', 'GloverLevel.PlatSetParent', 'GloverLevel.PlatMvspn0x73', 'GloverLevel.PlatMvspn0x74', 'GloverLevel.PlatCopySpinFromParent', 'GloverLevel.PlatStaticCollision', 'GloverLevel.PlatActorEnableWaterAnimation', 'GloverLevel.PlatSetCollisionYOffset', 'GloverLevel.Buzzer', 'GloverLevel.BuzzerDutyCycle', 'GloverLevel.SetObjectSparkle', 'GloverLevel.PlatSpecial0xb9', 'GloverLevel.SetExit', 'GloverLevel.PlatCat0x69', 'GloverLevel.PlatformConveyor', 'GloverLevel.PlatSpecial0x9e', 'GloverLevel.SetTeleport', 'GloverLevel.PlatFan0x8a', 'GloverLevel.PlatMagnet0x8b', 'GloverLevel.PlatCheckpoint', 'GloverLevel.PlatCrumb0x67', 'GloverLevel.PlatSpecial0xc7', 'GloverLevel.PlatSpecial0x6e', 'GloverLevel.PlatCauseDamage', 'GloverLevel.PlatPush0x5b', 'GloverLevel.PlatConfBoundaryVolume', 'GloverLevel.PlatOrbitSound0xc4', 'GloverLevel.Plat0xc6', 'GloverLevel.PlatOrbitAroundPoint', 'GloverLevel.PlatOrbitPause', 'GloverLevel.PlatOrbitFlip0x77', 'GloverLevel.Plat0xc3', 'GloverLevel.PlatSpinSound0xc5', 'GloverLevel.Plat0x9f', 'GloverLevel.PlatSpinPause0x7c', 'GloverLevel.PlatSpinFlip', 'GloverLevel.Plat0x7e', 'GloverLevel.PlatConstantSpin', 'GloverLevel.PlatSpin0x80', 'GloverLevel.PlatTopple0x81', 'GloverLevel.LookAtHand0x60', 'GloverLevel.LookAtBall0x61', 'GloverLevel.PlatRocking', 'GloverLevel.Plat0x78', 'GloverLevel.PlatSound0xc1', 'GloverLevel.PlatSound0xc2', 'GloverLevel.PlatTurnTowardsPathPoint', 'GloverLevel.PlatGoForwards0x5f', 'GloverLevel.PlatPathPoint', 'GloverLevel.PlatMaxVelocity', 'GloverLevel.PlatPathAcceleration', 'GloverLevel.PlatPos0xa7', 'GloverLevel.PlatSetInitialPos', 'GloverLevel.PlatPlayObjectAnimation', 'GloverLevel.Plat0xa4', 'GloverLevel.PlatVentAdvanceFrames', 'GloverLevel.PlatNoClip', 'GloverLevel.PlatDestructible', 'GloverLevel.PlatDestructibleSound', 'GloverLevel.Plat0x9d', 'GloverLevel.PlatReverseAtEndsOfPath', 'GloverLevel.PlatActorSurfaceType', 'GloverLevel.PlatSetTag', 'GloverLevel.PlatSpike', 'GloverLevel.PlatScale', 'GloverLevel.Vent', 'GloverLevel.VentDutyCycle', 'GloverLevel.Platform', 'GloverLevel.NullPlatform', 'GloverLevel.Enemy', 'GloverLevel.EnemySetAttentionBbox', 'GloverLevel.Enemy0xba', 'GloverLevel.EnemyFinalize', 'GloverLevel.EnemyNormalInstruction', 'GloverLevel.EnemyConditionalInstruction', 'GloverLevel.EnemyAttackInstruction']},
     'GloverLevel.Wind': {'_annotated_children': ['GloverLevel.Wind.Seq[12]']},
     'GloverLevel.Water': {'_annotated_children': ['GloverLevel.Water.Seq[9]', 'GloverLevel.Water.Seq[10]']},
     'GloverLevel.Backdrop': {'_annotated_children': ['GloverLevel.Backdrop.Seq[0]']},
@@ -6161,5 +6323,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '4b3c9167b00540a5a8fa08daa65cdad15abdbc43'
+ksy_hash = '694881817de21019eac2dc4520b2521dd869eb52'
 #############
