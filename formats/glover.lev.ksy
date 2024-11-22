@@ -64,7 +64,7 @@ types:
             0x74: plat_mvspn_0x74
             0x7b: plat_copy_spin_from_parent
 
-            0xb8: plat_static_collision
+            0xb8: plat_collision_0xb8_todo
             0xb3: plat_actor_enable_water_animation
             0xb7: plat_set_collision_y_offset
 
@@ -1975,8 +1975,9 @@ types:
 ###############################################################
 ### Platform special
 
-  plat_static_collision: # 0xb8
-    # Don't update platform's collision data after level load
+  plat_collision_0xb8_todo: # 0xb8
+    # TODO: seems like it causes a platform's collision data after
+    #       to not update after level load -- double check this somehow
     -semantic:
       modifies: PLATFORM
     seq: []

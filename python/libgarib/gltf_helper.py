@@ -79,13 +79,13 @@ class MetadataManager(object):
         return result
 
     def __contains__(self, field):
-        return field.name in self.values or (self.parent is not None and field.name in self.parent)
+        return field.name in self.values or (self.parent is not None and field in self.parent)
 
     def __getitem__(self, field):
         if field.name in self.values:
             return self.values[field.name]
-        elif field.name in self.parent:
-            return self.parent[field.name]
+        elif field in self.parent:
+            return self.parent[field]
         return field.value.default
 
     def __setitem__(self, field, value):
