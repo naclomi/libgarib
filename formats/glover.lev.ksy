@@ -108,29 +108,29 @@ types:
             0x70: plat_rocking
             0x78: plat_0x78
 
-            0xc1: plat_sound_0xc1
-            0xc2: plat_sound_0xc2
+            0xc1: plat_movement_sound
+            0xc2: plat_path_sound_at_point_hit
             0x5e: plat_turn_towards_path_point
             0x5f: plat_go_forwards_0x5f
             0x6b: plat_path_point
             0x6c: plat_max_velocity
             0x6d: plat_path_acceleration
-            0xa7: plat_pos_0xa7
+            0xa7: plat_path_set_starting_point
             0xa6: plat_set_initial_pos
 
             0xc0: plat_play_object_animation
-            0xa4: plat_0xa4
+            0xa4: plat_interacts_with_water
             0x5c: plat_vent_advance_frames
             0x64: plat_no_clip
             0x65: plat_destructible
             0xc8: plat_destructible_sound
-            0x9d: plat_0x9d
+            0x9d: plat_has_physics
             0x66: plat_reverse_at_ends_of_path
             0x6a: plat_actor_surface_type
             0x6f: plat_set_tag
             0x82: plat_spike
             0x79: plat_scale
-            0x7a: plat_str_0x7a
+            0x7a: plat_strobe
 
             0x8d: rope
             0x90: plat_sine
@@ -2542,7 +2542,7 @@ types:
 ###############################################################
 ### Platform misc properties
 
-  plat_sound_0xc1: # 0xc1
+  plat_movement_sound: # 0xc1
     -semantic:
       modifies: PLATFORM
     seq:
@@ -2553,7 +2553,7 @@ types:
       - id: pitch
         type: u2
 
-  plat_sound_0xc2: # 0xc2
+  plat_path_sound_at_point_hit: # 0xc2
     -semantic:
       modifies: PLATFORM
     seq:
@@ -2616,11 +2616,11 @@ types:
       - id: acceleration
         type: f4
 
-  plat_pos_0xa7: # 0xa7
+  plat_path_set_starting_point: # 0xa7
     -semantic:
       modifies: PLATFORM
     seq:
-      - id: u8_idx
+      - id: point_idx
         type: u2
 
   plat_set_initial_pos: # 0xa6
@@ -2642,7 +2642,7 @@ types:
       modifies: PLATFORM
     seq: []
 
-  plat_0xa4: # 0xa4
+  plat_interacts_with_water: # 0xa4
     -semantic:
       modifies: PLATFORM
     seq: []
@@ -2693,7 +2693,7 @@ types:
       - id: pitch
         type: u2
 
-  plat_0x9d: # 0x9d
+  plat_has_physics: # 0x9d
     -semantic:
       modifies: PLATFORM
     seq: []
@@ -2738,20 +2738,20 @@ types:
       - id: z
         type: f4
 
-  plat_str_0x7a: # 0x7a
+  plat_strobe: # 0x7a
     seq:
-      - id: u32_0x0c
-        type: u4
-      - id: u32_0x10
-        type: u4
-      - id: u32_0x14
-        type: u4
+      - id: scale_x
+        type: f4
+      - id: scale_y
+        type: f4
+      - id: scale_z
+        type: f4
 
-      - id: u16_0x18
-        type: u2
+      - id: tween_factor
+        type: s2
 
-      - id: u16_0x1c
-        type: u2
+      - id: pause_frames
+        type: s2
 
 ###############################################################
 ### Special objects
@@ -3042,6 +3042,7 @@ types:
         type: f4
 
   enemy_0xba: # 0xba
+    # TODO: sets enemy runtime flag 0x4
     -semantic:
       modifies: ENEMY
     seq: []
