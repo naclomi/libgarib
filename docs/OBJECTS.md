@@ -14,16 +14,17 @@ The game then uses specifc objects by referring to them with their unique 32-bit
 Object banks start with a "directory" listing all objects in the bank and their byte offsets. The directory ends when a record of all null bytes is encountered.
 
 ```c
+typedef uint32_t ObjectID;
 
-struct {
-    uint32_t object_id;
+struct ObjbankDirectoryEntry {
+    ObjectID object_id;
     ObjectRoot * object_offset;
-} ObjbankDirectoryEntry;
+};
 
-struct {
+struct ObjbankDirectory {
     ObjbankDirectoryEntry entries[];
-    uint32_t null_entry; // All 0s 
-} ObjbankDirectory;
+    uint32_t sentinel[2]; // All 0s 
+};
 
 ```
 
@@ -44,22 +45,27 @@ TODO: describe what UNUSED annotation means
 The directory at the top of an object bank points to an object's "root" structure. The root contains the object ID, a pointer to a heirarchical tree of meshes, and a pointer to animation metadata (though most of the animation data itself actually in the mesh tree). There are also several reserved fields that go mostly unused, aside from a pointer to the bank's base address (0 in-file, overwritten to the appropriate RAM address at load time)
 
 ```c
-struct {
-    uint32_t object_id;
+struct ObjectRoot {
+    ObjectID object_id;
     /* [[RESERVED]] */ void * __bank_base_addr;
     /* [[RESERVED]] */ uint32_t __unused_0x08;
     Mesh * mesh_tree;
     /* [[RESERVED]] */ uint32_t __unused_0x14;
     /* [[RESERVED]] */ uint32_t __unused_0x18;
     AnimationMetadata * animations;
-} ObjectRoot;
+};
 
 ```
 
 ### Meshes
 
 ```c
-struct {
+struct TransformKeyframe {
+    float v[4];
+    uint32_t t;
+};
+
+struct Mesh {
     uint32_t mesh_id;
     char name[8];
 
@@ -87,47 +93,42 @@ struct {
     Mesh *sibling;
 
     /* [[RESERVED]] */ void * __runtime_collision_data;
-} Mesh;
-
-struct {
-    float v[4];
-    uint32_t t;
-} TransformKeyframe;
-
+};
 
 ```
 
 #### Geometry
 
 ```c
+typedef uint32_t TextureID;
 
-struct {
+struct Vertex {
     float x, y, z;
-} Vertex;
+};
 
-struct {
+struct Face {
     uint16_t v_idx[3];
-} Face;
+};
 
-union {
+union ColorNormal {
     struct {
         uint8_t r, g, b;
     };
     struct {
         int8_t x, y, z;
     };
-    /* [[RESERVED]] */ uint8_t __unused; // TODO: is this used as alpha?
-} ColorNormal;
+    /* [[RESERVED]] */ uint8_t __unused_0x3; // TODO: is this used as alpha?
+};
 
 typedef s10_5_t int16_t;
-struct {
+struct UV {
     s10_5_t u, v;
-} UV;
-struct {
+};
+struct FaceUVs {
     UV coords[3];
-} FaceUVs;
+};
 
-struct {
+struct Geometry {
     uint16_t num_faces;
     uint16_t num_vertices;
 
@@ -138,8 +139,8 @@ struct {
     /* [[RESERVED]] */ FaceUVs (* __unmodified_uvs)[num_faces] // TODO: is this allocated at runtime?
     ColorNormal (*vert_cn)[num_vertices];
     /* [[UNUSED]] */ uint8_t texture_flags; // TODO: confirm actually unused
-    uint32_t (*texture_ids)[num_faces];
-} Geometry;
+    TextureID (*texture_ids)[num_faces];
+};
 ```
 
 #### Display lists
@@ -154,33 +155,24 @@ TODO:
 TODO: describe incomplete engine implementation
 
 ```c
-struct {
-    uint32_t texture_id;
-    // - id: runtime_data_ptr
-    //   type: u4
-    // - id: x
-    //   type: u2
-    // - id: y
-    //   type: u2
-    // - id: z
-    //   type: u2
-    // - id: width
-    //   type: u2
-    // - id: height
-    //   type: u2
-    // - id: u5
-    //   type: s2
-    // - id: u6
-    //   type: s2
-    // - id: flags
-    //   type: u2
-} Sprite;
+struct Sprite {
+    TextureID texture_id;
+    /* [[RESERVED]] */ void * __runtime_data;
+    int16_t x;
+    int16_t y;
+    int16_t z;
+    uint16_t w;
+    uint16_t h;
+    /* [[RESERVED]] */ uint16_t __unused_0x22;
+    /* [[RESERVED]] */ uint16_t __unused_0x24;
+    uint16_t flags; // TODO: datatype
+};
 ```
 
 ### Animation Metadata
 
 ```c
-struct {
+struct AnimationMetadata {
     // - id: num_animation_definitions
     //   type: s2
     // - id: current_animation_idx
@@ -213,11 +205,11 @@ struct {
     //   type: u4
     // - id: cur_time
     //   type: f4
-} AnimationMetadata;
+};
 ```
 
 ```c
-struct {
+struct AnimationDefinition {
     // - id: start_time
     //   type: s2
     // - id: end_time
@@ -231,7 +223,7 @@ struct {
     //   # where it is 1. the value is never read by the
     //   # game at runtime.
     //   type: u4
-} AnimationDefinition;
+};
 ```
 
 ## Libgarib GlTF format
