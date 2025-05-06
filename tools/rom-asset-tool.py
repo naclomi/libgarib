@@ -94,22 +94,23 @@ def patch(rom_data, map_data, args):
         except IndexError:
             raise Exception("Bad QoL patch spec '{:}'".format(qol_patch))
 
-    for region_key, region_filename in manifest.items():
-        region_key = ast.literal_eval(region_key)
-        if len(region_key) == 3:
-            elem_idx = region_key[2]
-            region_key = region_key[0:2]
-        else:
-            elem_idx = None
-        try:
-            region = rom.get_region(region_key)
-        except KeyError:
-            logging.warning("Region key {:} not found in ROM map, skipping".format(region_key))
-            continue
-        if elem_idx is not None:
-            region.patch(region_filename, manifest_dir, elem_idx)
-        else:
-            region.patch(region_filename, manifest_dir)
+    if manifest is not None:
+        for region_key, region_filename in manifest.items():
+            region_key = ast.literal_eval(region_key)
+            if len(region_key) == 3:
+                elem_idx = region_key[2]
+                region_key = region_key[0:2]
+            else:
+                elem_idx = None
+            try:
+                region = rom.get_region(region_key)
+            except KeyError:
+                logging.warning("Region key {:} not found in ROM map, skipping".format(region_key))
+                continue
+            if elem_idx is not None:
+                region.patch(region_filename, manifest_dir, elem_idx)
+            else:
+                region.patch(region_filename, manifest_dir)
 
     final_rom_data = rom.finalize()
     out_filename = os.path.basename(args.rom_file).split(".")

@@ -3090,31 +3090,28 @@ types:
             0: enemy_instruction_move
             1: enemy_instruction_dash
             2: enemy_instruction_turn
-            9: enemy_instruction_a # TODO
-            0x0a: enemy_instruction_a # TODO
-            0x0b: enemy_instruction_a # TODO
-            0x0d: enemy_instruction_a # TODO
-            0x16: enemy_instruction_a # TODO
-            0x17: enemy_instruction_a # TODO
-
             0x3: enemy_instruction_random_walk
-
             4: enemy_instruction_rest
-            5: enemy_instruction_c # TODO
-            6: enemy_instruction_c # TODO
+            5: enemy_instruction_bullet_0x5 # TODO
+            6: enemy_instruction_bullet_0x6 # TODO
             7: enemy_instruction_play_animation
-            8: enemy_instruction_c # TODO
-            0xc: enemy_instruction_c # TODO
-            0xe: enemy_instruction_c # TODO
-            0xf: enemy_instruction_attack
+            8: enemy_instruction_face_player
+            9: enemy_instruction_follow_player
+            0x0a: enemy_instruction_glom # TODO
+            0x0b: enemy_instruction_a # TODO
+            0x0c: enemy_instruction_c # TODO
+            0x0d: enemy_instruction_a # TODO
+            0x0e: enemy_instruction_c # TODO
+            0x0f: enemy_instruction_attack
             0x10: enemy_instruction_c # TODO
             0x11: enemy_instruction_c # TODO
             0x12: enemy_instruction_goto
             0x13: enemy_instruction_c # TODO
             0x14: enemy_instruction_c # TODO
             0x15: enemy_instruction_c # TODO
+            0x16: enemy_instruction_a # TODO
+            0x17: enemy_instruction_a # TODO
             0x18: enemy_instruction_c # TODO
-
             _: enemy_instruction_error
       - id: execution_condition_param_a
         type: f4
@@ -3152,6 +3149,18 @@ types:
         21: never
         22: random_chance_param_a_over_1000
       instruction_flags:
+        0x000001: modulate_velocity_with_turns
+        0x000002: modulate_acceleration
+        0x000004: slow_down_close_to_destination
+        0x000040: proximity_of_player
+        0x000080: proximity_of_ball
+        0x000100: proximity_of_closer_of_player_or_ball
+        0x000800: prevent_conditinoal_transition
+        0x001000: dont_turn_towards_movement_direction
+        0x002000: movement_roll_into_turn
+        0x004000: dont_animate
+        0x010000: dont_interrupt_animation
+        0x040000: anim_switch_todo_0x40000
         0x100000: face_player
         0x200000: face_ball
         0x400000: face_closer_of_player_or_ball
@@ -3168,6 +3177,33 @@ types:
 
       - id: u32_0x0e
         type: u4
+
+
+
+  enemy_instruction_glom:
+    seq:
+      - id: u32_0x02
+        type: f4
+      - id: u32_0x06
+        type: f4
+      - id: u32_0x0a
+        type: f4
+
+      - id: u32_0x0e
+        type: s4
+
+  enemy_instruction_follow_player:
+    seq:
+      - id: offset_x
+        type: f4
+      - id: offset_y
+        type: f4
+      - id: offset_z
+        type: f4
+
+      - id: vel_magnitude
+        type: f4
+
 
   enemy_instruction_dash:
     seq:
@@ -3248,6 +3284,28 @@ types:
       - id: unused_1
         type: u4
       - id: unused_2
+        type: u4
+
+  enemy_instruction_bullet_0x5:
+    seq:
+      - id: unused_1
+        type: u4
+      - id: unused_2
+        type: u4
+
+  enemy_instruction_bullet_0x6:
+    seq:
+      - id: unused_1
+        type: u4
+      - id: unused_2
+        type: u4
+
+  enemy_instruction_face_player:
+    seq:
+      - id: randomize
+        type: u4
+
+      - id: unused
         type: u4
 
   enemy_instruction_c:

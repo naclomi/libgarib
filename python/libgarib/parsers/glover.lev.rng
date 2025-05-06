@@ -131,7 +131,7 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatStaticCollision"/>
+          <ref name="PlatCollision0xb8Todo"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
@@ -248,10 +248,10 @@
           <ref name="Plat0x78"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc1"/>
+          <ref name="PlatMovementSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc2"/>
+          <ref name="PlatPathSoundAtPointHit"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatTurnTowardsPathPoint"/>
@@ -269,7 +269,7 @@
           <ref name="PlatPathAcceleration"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatPos0xa7"/>
+          <ref name="PlatPathSetStartingPoint"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatSetInitialPos"/>
@@ -278,7 +278,7 @@
           <ref name="PlatPlayObjectAnimation"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0xa4"/>
+          <ref name="PlatInteractsWithWater"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatVentAdvanceFrames"/>
@@ -293,7 +293,7 @@
           <ref name="PlatDestructibleSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0x9d"/>
+          <ref name="PlatHasPhysics"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatReverseAtEndsOfPath"/>
@@ -311,7 +311,7 @@
           <ref name="PlatScale"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatStr0x7a"/>
+          <ref name="PlatStrobe"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="Rope"/>
@@ -3034,8 +3034,8 @@
       <empty/>
     </element>
   </define>
-  <define name="PlatStaticCollision">
-    <element name="PlatStaticCollision">
+  <define name="PlatCollision0xb8Todo">
+    <element name="PlatCollision0xb8Todo">
       <empty/>
     </element>
   </define>
@@ -3612,8 +3612,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PlatSound0xc1">
-    <element name="PlatSound0xc1">
+  <define name="PlatMovementSound">
+    <element name="PlatMovementSound">
       <attribute name="sound_id">
         <text/>
       </attribute>
@@ -3625,8 +3625,8 @@
       </attribute>
     </element>
   </define>
-  <define name="PlatSound0xc2">
-    <element name="PlatSound0xc2">
+  <define name="PlatPathSoundAtPointHit">
+    <element name="PlatPathSoundAtPointHit">
       <attribute name="sound_id">
         <text/>
       </attribute>
@@ -3694,9 +3694,9 @@
       </attribute>
     </element>
   </define>
-  <define name="PlatPos0xa7">
-    <element name="PlatPos0xa7">
-      <attribute name="u8_idx">
+  <define name="PlatPathSetStartingPoint">
+    <element name="PlatPathSetStartingPoint">
+      <attribute name="point_idx">
         <text/>
       </attribute>
     </element>
@@ -3719,8 +3719,8 @@
       <empty/>
     </element>
   </define>
-  <define name="Plat0xa4">
-    <element name="Plat0xa4">
+  <define name="PlatInteractsWithWater">
+    <element name="PlatInteractsWithWater">
       <empty/>
     </element>
   </define>
@@ -3765,8 +3765,8 @@
       </attribute>
     </element>
   </define>
-  <define name="Plat0x9d">
-    <element name="Plat0x9d">
+  <define name="PlatHasPhysics">
+    <element name="PlatHasPhysics">
       <empty/>
     </element>
   </define>
@@ -3807,21 +3807,21 @@
       </attribute>
     </element>
   </define>
-  <define name="PlatStr0x7a">
-    <element name="PlatStr0x7a">
-      <attribute name="u32_0x0c">
+  <define name="PlatStrobe">
+    <element name="PlatStrobe">
+      <attribute name="scale_x">
         <text/>
       </attribute>
-      <attribute name="u32_0x10">
+      <attribute name="scale_y">
         <text/>
       </attribute>
-      <attribute name="u32_0x14">
+      <attribute name="scale_z">
         <text/>
       </attribute>
-      <attribute name="u16_0x18">
+      <attribute name="tween_factor">
         <text/>
       </attribute>
-      <attribute name="u16_0x1c">
+      <attribute name="pause_frames">
         <text/>
       </attribute>
     </element>
@@ -4056,7 +4056,7 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatStaticCollision"/>
+          <ref name="PlatCollision0xb8Todo"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
@@ -4167,10 +4167,10 @@
           <ref name="Plat0x78"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc1"/>
+          <ref name="PlatMovementSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc2"/>
+          <ref name="PlatPathSoundAtPointHit"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatTurnTowardsPathPoint"/>
@@ -4188,7 +4188,7 @@
           <ref name="PlatPathAcceleration"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatPos0xa7"/>
+          <ref name="PlatPathSetStartingPoint"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatSetInitialPos"/>
@@ -4197,7 +4197,7 @@
           <ref name="PlatPlayObjectAnimation"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0xa4"/>
+          <ref name="PlatInteractsWithWater"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatVentAdvanceFrames"/>
@@ -4212,7 +4212,7 @@
           <ref name="PlatDestructibleSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0x9d"/>
+          <ref name="PlatHasPhysics"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatReverseAtEndsOfPath"/>
@@ -4257,7 +4257,7 @@
           <ref name="PlatCopySpinFromParent"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatStaticCollision"/>
+          <ref name="PlatCollision0xb8Todo"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatActorEnableWaterAnimation"/>
@@ -4368,10 +4368,10 @@
           <ref name="Plat0x78"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc1"/>
+          <ref name="PlatMovementSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatSound0xc2"/>
+          <ref name="PlatPathSoundAtPointHit"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatTurnTowardsPathPoint"/>
@@ -4389,7 +4389,7 @@
           <ref name="PlatPathAcceleration"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="PlatPos0xa7"/>
+          <ref name="PlatPathSetStartingPoint"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatSetInitialPos"/>
@@ -4398,7 +4398,7 @@
           <ref name="PlatPlayObjectAnimation"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0xa4"/>
+          <ref name="PlatInteractsWithWater"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatVentAdvanceFrames"/>
@@ -4413,7 +4413,7 @@
           <ref name="PlatDestructibleSound"/>
         </zeroOrMore>
         <zeroOrMore>
-          <ref name="Plat0x9d"/>
+          <ref name="PlatHasPhysics"/>
         </zeroOrMore>
         <zeroOrMore>
           <ref name="PlatReverseAtEndsOfPath"/>
@@ -4580,60 +4580,6 @@
           <ref name="EnemyInstructionTurn"/>
         </group>
         <group>
-          <!--Case 0x9-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">9|0x0*9</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
-          <!--Case 0xA-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">10|0x0*[Aa]</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
-          <!--Case 0xB-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">11|0x0*[Bb]</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
-          <!--Case 0xD-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">13|0x0*[Dd]</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
-          <!--Case 0x16-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">22|0x0*16</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
-          <!--Case 0x17-->
-          <attribute name="instr_type">
-            <data type="string">
-              <param name="pattern">23|0x0*17</param>
-            </data>
-          </attribute>
-          <ref name="EnemyInstructionA"/>
-        </group>
-        <group>
           <!--Case 0x3-->
           <attribute name="instr_type">
             <data type="string">
@@ -4658,7 +4604,7 @@
               <param name="pattern">5|0x0*5</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionBullet0x5"/>
         </group>
         <group>
           <!--Case 0x6-->
@@ -4667,7 +4613,7 @@
               <param name="pattern">6|0x0*6</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionBullet0x6"/>
         </group>
         <group>
           <!--Case 0x7-->
@@ -4685,7 +4631,34 @@
               <param name="pattern">8|0x0*8</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionFacePlayer"/>
+        </group>
+        <group>
+          <!--Case 0x9-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">9|0x0*9</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionFollowPlayer"/>
+        </group>
+        <group>
+          <!--Case 0xA-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">10|0x0*[Aa]</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionGlom"/>
+        </group>
+        <group>
+          <!--Case 0xB-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">11|0x0*[Bb]</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionA"/>
         </group>
         <group>
           <!--Case 0xC-->
@@ -4695,6 +4668,15 @@
             </data>
           </attribute>
           <ref name="EnemyInstructionC"/>
+        </group>
+        <group>
+          <!--Case 0xD-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">13|0x0*[Dd]</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionA"/>
         </group>
         <group>
           <!--Case 0xE-->
@@ -4769,6 +4751,24 @@
           <ref name="EnemyInstructionC"/>
         </group>
         <group>
+          <!--Case 0x16-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">22|0x0*16</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionA"/>
+        </group>
+        <group>
+          <!--Case 0x17-->
+          <attribute name="instr_type">
+            <data type="string">
+              <param name="pattern">23|0x0*17</param>
+            </data>
+          </attribute>
+          <ref name="EnemyInstructionA"/>
+        </group>
+        <group>
           <!--Case 0x18-->
           <attribute name="instr_type">
             <data type="string">
@@ -4799,6 +4799,38 @@
         <text/>
       </attribute>
       <attribute name="u32_0x0e">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionGlom">
+    <element name="EnemyInstructionGlom">
+      <attribute name="u32_0x02">
+        <text/>
+      </attribute>
+      <attribute name="u32_0x06">
+        <text/>
+      </attribute>
+      <attribute name="u32_0x0a">
+        <text/>
+      </attribute>
+      <attribute name="u32_0x0e">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionFollowPlayer">
+    <element name="EnemyInstructionFollowPlayer">
+      <attribute name="offset_x">
+        <text/>
+      </attribute>
+      <attribute name="offset_y">
+        <text/>
+      </attribute>
+      <attribute name="offset_z">
+        <text/>
+      </attribute>
+      <attribute name="vel_magnitude">
         <text/>
       </attribute>
     </element>
@@ -4912,6 +4944,36 @@
         <text/>
       </attribute>
       <attribute name="unused_2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionBullet0x5">
+    <element name="EnemyInstructionBullet0x5">
+      <attribute name="unused_1">
+        <text/>
+      </attribute>
+      <attribute name="unused_2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionBullet0x6">
+    <element name="EnemyInstructionBullet0x6">
+      <attribute name="unused_1">
+        <text/>
+      </attribute>
+      <attribute name="unused_2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionFacePlayer">
+    <element name="EnemyInstructionFacePlayer">
+      <attribute name="randomize">
+        <text/>
+      </attribute>
+      <attribute name="unused">
         <text/>
       </attribute>
     </element>
