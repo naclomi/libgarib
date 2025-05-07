@@ -61,6 +61,56 @@ var GloverLevel = (function() {
     return PuzzleCondGloverChangedTouchingPlatform;
   })();
 
+  var EnemyInstructionSetTimer = GloverLevel.EnemyInstructionSetTimer = (function() {
+    function EnemyInstructionSetTimer(_io, _parent, _root) {
+      this.__type = 'EnemyInstructionSetTimer';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyInstructionSetTimer.prototype._read = function() {
+      this._debug.value = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.value = this._io.readS4be();
+      this._debug.value.end = this._io.pos;
+      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused = this._io.readU4be();
+      this._debug.unused.end = this._io.pos;
+    }
+
+    return EnemyInstructionSetTimer;
+  })();
+
+  var EnemyInstructionCatapult = GloverLevel.EnemyInstructionCatapult = (function() {
+    function EnemyInstructionCatapult(_io, _parent, _root) {
+      this.__type = 'EnemyInstructionCatapult';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyInstructionCatapult.prototype._read = function() {
+      this._debug.velX = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.velX = this._io.readF4be();
+      this._debug.velX.end = this._io.pos;
+      this._debug.velY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.velY = this._io.readF4be();
+      this._debug.velY.end = this._io.pos;
+      this._debug.velZ = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.velZ = this._io.readF4be();
+      this._debug.velZ.end = this._io.pos;
+      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused = this._io.readS4be();
+      this._debug.unused.end = this._io.pos;
+    }
+
+    return EnemyInstructionCatapult;
+  })();
+
   var PuzzleCondBallChangedTouchingPlatform = GloverLevel.PuzzleCondBallChangedTouchingPlatform = (function() {
     function PuzzleCondBallChangedTouchingPlatform(_io, _parent, _root) {
       this.__type = 'PuzzleCondBallChangedTouchingPlatform';
@@ -1470,6 +1520,28 @@ var GloverLevel = (function() {
     }
 
     return SetObjectSparkle;
+  })();
+
+  var EnemyInstructionFleePlayer = GloverLevel.EnemyInstructionFleePlayer = (function() {
+    function EnemyInstructionFleePlayer(_io, _parent, _root) {
+      this.__type = 'EnemyInstructionFleePlayer';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyInstructionFleePlayer.prototype._read = function() {
+      this._debug.panicRadius = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.panicRadius = this._io.readF4be();
+      this._debug.panicRadius.end = this._io.pos;
+      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused = this._io.readU4be();
+      this._debug.unused.end = this._io.pos;
+    }
+
+    return EnemyInstructionFleePlayer;
   })();
 
   var PuzzleActionCameraLookAtGlover = GloverLevel.PuzzleActionCameraLookAtGlover = (function() {
@@ -5141,6 +5213,34 @@ var GloverLevel = (function() {
     return PlatSpin0x80;
   })();
 
+  var EnemyInstructionSteer = GloverLevel.EnemyInstructionSteer = (function() {
+    function EnemyInstructionSteer(_io, _parent, _root) {
+      this.__type = 'EnemyInstructionSteer';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyInstructionSteer.prototype._read = function() {
+      this._debug.dstX = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.dstX = this._io.readF4be();
+      this._debug.dstX.end = this._io.pos;
+      this._debug.dstY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.dstY = this._io.readF4be();
+      this._debug.dstY.end = this._io.pos;
+      this._debug.dstZ = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.dstZ = this._io.readF4be();
+      this._debug.dstZ.end = this._io.pos;
+      this._debug.turnDamping = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.turnDamping = this._io.readF4be();
+      this._debug.turnDamping.end = this._io.pos;
+    }
+
+    return EnemyInstructionSteer;
+  })();
+
   var PuzzleCondGloverIsTouchingPlatform = GloverLevel.PuzzleCondGloverIsTouchingPlatform = (function() {
     function PuzzleCondGloverIsTouchingPlatform(_io, _parent, _root) {
       this.__type = 'PuzzleCondGloverIsTouchingPlatform';
@@ -5779,9 +5879,13 @@ var GloverLevel = (function() {
       MODULATE_VELOCITY_WITH_TURNS: 1,
       MODULATE_ACCELERATION: 2,
       SLOW_DOWN_CLOSE_TO_DESTINATION: 4,
+      PITCH: 8,
+      YAW: 16,
+      ROLL: 32,
       PROXIMITY_OF_PLAYER: 64,
       PROXIMITY_OF_BALL: 128,
       PROXIMITY_OF_CLOSER_OF_PLAYER_OR_BALL: 256,
+      MIRROR_ANGLE: 1024,
       PREVENT_CONDITINOAL_TRANSITION: 2048,
       DONT_TURN_TOWARDS_MOVEMENT_DIRECTION: 4096,
       MOVEMENT_ROLL_INTO_TURN: 8192,
@@ -5795,9 +5899,13 @@ var GloverLevel = (function() {
       1: "MODULATE_VELOCITY_WITH_TURNS",
       2: "MODULATE_ACCELERATION",
       4: "SLOW_DOWN_CLOSE_TO_DESTINATION",
+      8: "PITCH",
+      16: "YAW",
+      32: "ROLL",
       64: "PROXIMITY_OF_PLAYER",
       128: "PROXIMITY_OF_BALL",
       256: "PROXIMITY_OF_CLOSER_OF_PLAYER_OR_BALL",
+      1024: "MIRROR_ANGLE",
       2048: "PREVENT_CONDITINOAL_TRANSITION",
       4096: "DONT_TURN_TOWARDS_MOVEMENT_DIRECTION",
       8192: "MOVEMENT_ROLL_INTO_TURN",
@@ -5828,7 +5936,7 @@ var GloverLevel = (function() {
       this._debug.params = { start: this._io.pos, ioOffset: this._io.byteOffset };
       switch (this.instrType) {
       case 14:
-        this.params = new EnemyInstructionC(this._io, this, this._root);
+        this.params = new EnemyInstructionSetTimer(this._io, this, this._root);
         break;
       case 10:
         this.params = new EnemyInstructionGlom(this._io, this, this._root);
@@ -5858,13 +5966,13 @@ var GloverLevel = (function() {
         this.params = new EnemyInstructionDash(this._io, this, this._root);
         break;
       case 13:
-        this.params = new EnemyInstructionA(this._io, this, this._root);
+        this.params = new EnemyInstructionSteer(this._io, this, this._root);
         break;
       case 11:
-        this.params = new EnemyInstructionA(this._io, this, this._root);
+        this.params = new EnemyInstructionCatapult(this._io, this, this._root);
         break;
       case 12:
-        this.params = new EnemyInstructionC(this._io, this, this._root);
+        this.params = new EnemyInstructionFleePlayer(this._io, this, this._root);
         break;
       case 3:
         this.params = new EnemyInstructionRandomWalk(this._io, this, this._root);

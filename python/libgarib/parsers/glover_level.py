@@ -57,6 +57,48 @@ class GloverLevel(KaitaiStruct):
             self._debug['started_or_stopped']['end'] = self._io.pos()
 
 
+    class EnemyInstructionSetTimer(KaitaiStruct):
+        SEQ_FIELDS = ["value", "unused"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['value']['start'] = self._io.pos()
+            self.value = self._io.read_s4be()
+            self._debug['value']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_u4be()
+            self._debug['unused']['end'] = self._io.pos()
+
+
+    class EnemyInstructionCatapult(KaitaiStruct):
+        SEQ_FIELDS = ["vel_x", "vel_y", "vel_z", "unused"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['vel_x']['start'] = self._io.pos()
+            self.vel_x = self._io.read_f4be()
+            self._debug['vel_x']['end'] = self._io.pos()
+            self._debug['vel_y']['start'] = self._io.pos()
+            self.vel_y = self._io.read_f4be()
+            self._debug['vel_y']['end'] = self._io.pos()
+            self._debug['vel_z']['start'] = self._io.pos()
+            self.vel_z = self._io.read_f4be()
+            self._debug['vel_z']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_s4be()
+            self._debug['unused']['end'] = self._io.pos()
+
+
     class PuzzleCondBallChangedTouchingPlatform(KaitaiStruct):
         SEQ_FIELDS = ["plat_tag", "started_or_stopped"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -1246,6 +1288,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['period']['start'] = self._io.pos()
             self.period = self._io.read_u2be()
             self._debug['period']['end'] = self._io.pos()
+
+
+    class EnemyInstructionFleePlayer(KaitaiStruct):
+        SEQ_FIELDS = ["panic_radius", "unused"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['panic_radius']['start'] = self._io.pos()
+            self.panic_radius = self._io.read_f4be()
+            self._debug['panic_radius']['end'] = self._io.pos()
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_u4be()
+            self._debug['unused']['end'] = self._io.pos()
 
 
     class PuzzleActionCameraLookAtGlover(KaitaiStruct):
@@ -4194,6 +4254,30 @@ class GloverLevel(KaitaiStruct):
             self._debug['f_0x70']['end'] = self._io.pos()
 
 
+    class EnemyInstructionSteer(KaitaiStruct):
+        SEQ_FIELDS = ["dst_x", "dst_y", "dst_z", "turn_damping"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['dst_x']['start'] = self._io.pos()
+            self.dst_x = self._io.read_f4be()
+            self._debug['dst_x']['end'] = self._io.pos()
+            self._debug['dst_y']['start'] = self._io.pos()
+            self.dst_y = self._io.read_f4be()
+            self._debug['dst_y']['end'] = self._io.pos()
+            self._debug['dst_z']['start'] = self._io.pos()
+            self.dst_z = self._io.read_f4be()
+            self._debug['dst_z']['end'] = self._io.pos()
+            self._debug['turn_damping']['start'] = self._io.pos()
+            self.turn_damping = self._io.read_f4be()
+            self._debug['turn_damping']['end'] = self._io.pos()
+
+
     class PuzzleCondGloverIsTouchingPlatform(KaitaiStruct):
         SEQ_FIELDS = ["plat_tag", "invert_result"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -4722,9 +4806,13 @@ class GloverLevel(KaitaiStruct):
             modulate_velocity_with_turns = 1
             modulate_acceleration = 2
             slow_down_close_to_destination = 4
+            pitch = 8
+            yaw = 16
+            roll = 32
             proximity_of_player = 64
             proximity_of_ball = 128
             proximity_of_closer_of_player_or_ball = 256
+            mirror_angle = 1024
             prevent_conditinoal_transition = 2048
             dont_turn_towards_movement_direction = 4096
             movement_roll_into_turn = 8192
@@ -4752,7 +4840,7 @@ class GloverLevel(KaitaiStruct):
             self._debug['params']['start'] = self._io.pos()
             _on = self.instr_type
             if _on == 14:
-                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionSetTimer(self._io, self, self._root)
             elif _on == 10:
                 self.params = GloverLevel.EnemyInstructionGlom(self._io, self, self._root)
             elif _on == 17:
@@ -4772,11 +4860,11 @@ class GloverLevel(KaitaiStruct):
             elif _on == 1:
                 self.params = GloverLevel.EnemyInstructionDash(self._io, self, self._root)
             elif _on == 13:
-                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionSteer(self._io, self, self._root)
             elif _on == 11:
-                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionCatapult(self._io, self, self._root)
             elif _on == 12:
-                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionFleePlayer(self._io, self, self._root)
             elif _on == 3:
                 self.params = GloverLevel.EnemyInstructionRandomWalk(self._io, self, self._root)
             elif _on == 5:
@@ -6007,10 +6095,10 @@ switch_fields = {
                 0x8: GloverLevel.EnemyInstructionFacePlayer,
                 0x9: GloverLevel.EnemyInstructionFollowPlayer,
                 0xa: GloverLevel.EnemyInstructionGlom,
-                0xb: GloverLevel.EnemyInstructionA,
-                0xc: GloverLevel.EnemyInstructionC,
-                0xd: GloverLevel.EnemyInstructionA,
-                0xe: GloverLevel.EnemyInstructionC,
+                0xb: GloverLevel.EnemyInstructionCatapult,
+                0xc: GloverLevel.EnemyInstructionFleePlayer,
+                0xd: GloverLevel.EnemyInstructionSteer,
+                0xe: GloverLevel.EnemyInstructionSetTimer,
                 0xf: GloverLevel.EnemyInstructionAttack,
                 0x10: GloverLevel.EnemyInstructionC,
                 0x11: GloverLevel.EnemyInstructionC,
@@ -6035,10 +6123,14 @@ switch_fields = {
                 GloverLevel.EnemyInstructionFacePlayer: 0x8,
                 GloverLevel.EnemyInstructionFollowPlayer: 0x9,
                 GloverLevel.EnemyInstructionGlom: 0xa,
-                GloverLevel.EnemyInstructionA: [11, 13, 22, 23],
-                GloverLevel.EnemyInstructionC: [12, 14, 16, 17, 19, 20, 21, 24],
+                GloverLevel.EnemyInstructionCatapult: 0xb,
+                GloverLevel.EnemyInstructionFleePlayer: 0xc,
+                GloverLevel.EnemyInstructionSteer: 0xd,
+                GloverLevel.EnemyInstructionSetTimer: 0xe,
                 GloverLevel.EnemyInstructionAttack: 0xf,
+                GloverLevel.EnemyInstructionC: [16, 17, 19, 20, 21, 24],
                 GloverLevel.EnemyInstructionGoto: 0x12,
+                GloverLevel.EnemyInstructionA: [22, 23],
                 GloverLevel.EnemyInstructionError: None,
             }
         },
@@ -6244,6 +6336,8 @@ original_names = {
     'GloverLevel.EnemyAttackInstruction': 'glover_level.enemy_attack_instruction',
     'GloverLevel.EnemyInstruction': 'glover_level.enemy_instruction',
     'GloverLevel.EnemyInstructionA': 'glover_level.enemy_instruction_a',
+    'GloverLevel.EnemyInstructionSteer': 'glover_level.enemy_instruction_steer',
+    'GloverLevel.EnemyInstructionCatapult': 'glover_level.enemy_instruction_catapult',
     'GloverLevel.EnemyInstructionGlom': 'glover_level.enemy_instruction_glom',
     'GloverLevel.EnemyInstructionFollowPlayer': 'glover_level.enemy_instruction_follow_player',
     'GloverLevel.EnemyInstructionDash': 'glover_level.enemy_instruction_dash',
@@ -6257,6 +6351,8 @@ original_names = {
     'GloverLevel.EnemyInstructionBullet0x5': 'glover_level.enemy_instruction_bullet_0x5',
     'GloverLevel.EnemyInstructionBullet0x6': 'glover_level.enemy_instruction_bullet_0x6',
     'GloverLevel.EnemyInstructionFacePlayer': 'glover_level.enemy_instruction_face_player',
+    'GloverLevel.EnemyInstructionFleePlayer': 'glover_level.enemy_instruction_flee_player',
+    'GloverLevel.EnemyInstructionSetTimer': 'glover_level.enemy_instruction_set_timer',
     'GloverLevel.EnemyInstructionC': 'glover_level.enemy_instruction_c',
     'GloverLevel.EnemyInstructionError': 'glover_level.enemy_instruction_error',
     'GloverLevel.EndLevelData': 'glover_level.end_level_data',
@@ -6447,5 +6543,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = 'cd8c23ab241a92bea768c46b52fad796a620cfb9'
+ksy_hash = '820f082c4d60baf430a6dae8186bc7f068f57c5c'
 #############

@@ -4658,7 +4658,7 @@
               <param name="pattern">11|0x0*[Bb]</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionA"/>
+          <ref name="EnemyInstructionCatapult"/>
         </group>
         <group>
           <!--Case 0xC-->
@@ -4667,7 +4667,7 @@
               <param name="pattern">12|0x0*[Cc]</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionFleePlayer"/>
         </group>
         <group>
           <!--Case 0xD-->
@@ -4676,7 +4676,7 @@
               <param name="pattern">13|0x0*[Dd]</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionA"/>
+          <ref name="EnemyInstructionSteer"/>
         </group>
         <group>
           <!--Case 0xE-->
@@ -4685,7 +4685,7 @@
               <param name="pattern">14|0x0*[Ee]</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionSetTimer"/>
         </group>
         <group>
           <!--Case 0xF-->
@@ -4799,6 +4799,38 @@
         <text/>
       </attribute>
       <attribute name="u32_0x0e">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionSteer">
+    <element name="EnemyInstructionSteer">
+      <attribute name="dst_x">
+        <text/>
+      </attribute>
+      <attribute name="dst_y">
+        <text/>
+      </attribute>
+      <attribute name="dst_z">
+        <text/>
+      </attribute>
+      <attribute name="turn_damping">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionCatapult">
+    <element name="EnemyInstructionCatapult">
+      <attribute name="vel_x">
+        <text/>
+      </attribute>
+      <attribute name="vel_y">
+        <text/>
+      </attribute>
+      <attribute name="vel_z">
+        <text/>
+      </attribute>
+      <attribute name="unused">
         <text/>
       </attribute>
     </element>
@@ -4971,6 +5003,26 @@
   <define name="EnemyInstructionFacePlayer">
     <element name="EnemyInstructionFacePlayer">
       <attribute name="randomize">
+        <text/>
+      </attribute>
+      <attribute name="unused">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionFleePlayer">
+    <element name="EnemyInstructionFleePlayer">
+      <attribute name="panic_radius">
+        <text/>
+      </attribute>
+      <attribute name="unused">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionSetTimer">
+    <element name="EnemyInstructionSetTimer">
+      <attribute name="value">
         <text/>
       </attribute>
       <attribute name="unused">
