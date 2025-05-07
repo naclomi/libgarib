@@ -3098,19 +3098,19 @@ types:
             8: enemy_instruction_face_player
             9: enemy_instruction_follow_player
             0x0a: enemy_instruction_glom # TODO
-            0x0b: enemy_instruction_a # TODO
-            0x0c: enemy_instruction_c # TODO
-            0x0d: enemy_instruction_a # TODO
-            0x0e: enemy_instruction_c # TODO
+            0x0b: enemy_instruction_catapult
+            0x0c: enemy_instruction_flee_player
+            0x0d: enemy_instruction_steer # TODO
+            0x0e: enemy_instruction_set_timer
             0x0f: enemy_instruction_attack
-            0x10: enemy_instruction_c # TODO
-            0x11: enemy_instruction_c # TODO
+            0x10: enemy_instruction_c # TODO: something to do with animation
+            0x11: enemy_instruction_c # TODO: charge player, func 0x80194548
             0x12: enemy_instruction_goto
             0x13: enemy_instruction_c # TODO
-            0x14: enemy_instruction_c # TODO
-            0x15: enemy_instruction_c # TODO
-            0x16: enemy_instruction_a # TODO
-            0x17: enemy_instruction_a # TODO
+            0x14: enemy_instruction_c # TODO NME_INSTR_DEC_ACCUMULATOR_AND_BRANCH_IF_NONZERO
+            0x15: enemy_instruction_c # TODO: NME_INSTR_LOAD_ACCUMULATOR
+            0x16: enemy_instruction_a # TODO: NME_INSTR_TURN_AND_THEN_MOVE_TOWARDS_POINT
+            0x17: enemy_instruction_a # TODO: 
             0x18: enemy_instruction_c # TODO
             _: enemy_instruction_error
       - id: execution_condition_param_a
@@ -3152,9 +3152,13 @@ types:
         0x000001: modulate_velocity_with_turns
         0x000002: modulate_acceleration
         0x000004: slow_down_close_to_destination
+        0x000008: pitch 
+        0x000010: yaw  
+        0x000020: roll  
         0x000040: proximity_of_player
         0x000080: proximity_of_ball
         0x000100: proximity_of_closer_of_player_or_ball
+        0x000400: mirror_angle
         0x000800: prevent_conditinoal_transition
         0x001000: dont_turn_towards_movement_direction
         0x002000: movement_roll_into_turn
@@ -3178,7 +3182,30 @@ types:
       - id: u32_0x0e
         type: u4
 
+  enemy_instruction_steer:
+    seq:
+      - id: dst_x
+        type: f4
+      - id: dst_y
+        type: f4
+      - id: dst_z
+        type: f4
 
+      - id: turn_damping
+        type: f4
+
+
+  enemy_instruction_catapult:
+    seq:
+      - id: vel_x
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_z
+        type: f4
+
+      - id: unused
+        type: s4
 
   enemy_instruction_glom:
     seq:
@@ -3307,6 +3334,26 @@ types:
 
       - id: unused
         type: u4
+
+  enemy_instruction_flee_player:
+    seq:
+      - id: panic_radius
+        type: f4
+
+      - id: unused
+        type: u4
+
+  enemy_instruction_set_timer:
+    # Reinterpreted as a short in-engine
+    # Counts towards 0 once per frame. Different enemies
+    # trigger actions at various timer values
+    seq:
+      - id: value
+        type: s4
+
+      - id: unused
+        type: u4
+
 
   enemy_instruction_c:
     seq:
