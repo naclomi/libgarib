@@ -967,6 +967,34 @@ class GloverLevel(KaitaiStruct):
             self._debug['child_mesh_id']['end'] = self._io.pos()
 
 
+    class EnemyImpulseForward(KaitaiStruct):
+
+        class AnimationBehaviorFlags(Enum):
+            force_animation = 0
+            do_not_force_animation = 16384
+        SEQ_FIELDS = ["unused", "vel_y", "vel_forward", "animation_behavior"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['unused']['start'] = self._io.pos()
+            self.unused = self._io.read_f4be()
+            self._debug['unused']['end'] = self._io.pos()
+            self._debug['vel_y']['start'] = self._io.pos()
+            self.vel_y = self._io.read_f4be()
+            self._debug['vel_y']['end'] = self._io.pos()
+            self._debug['vel_forward']['start'] = self._io.pos()
+            self.vel_forward = self._io.read_f4be()
+            self._debug['vel_forward']['end'] = self._io.pos()
+            self._debug['animation_behavior']['start'] = self._io.pos()
+            self.animation_behavior = KaitaiStream.resolve_enum(GloverLevel.EnemyImpulseForward.AnimationBehaviorFlags, self._io.read_u4be())
+            self._debug['animation_behavior']['end'] = self._io.pos()
+
+
     class PuzzleActionStartCameo(KaitaiStruct):
         SEQ_FIELDS = ["reserved", "cameo_idx", "activation_delay", "flags"]
         def __init__(self, _io, _parent=None, _root=None):
@@ -2266,6 +2294,24 @@ class GloverLevel(KaitaiStruct):
 
         def _read(self):
             pass
+
+
+    class EnemyInstructionNoop(KaitaiStruct):
+        SEQ_FIELDS = ["unused_1", "unused_2"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['unused_1']['start'] = self._io.pos()
+            self.unused_1 = self._io.read_u4be()
+            self._debug['unused_1']['end'] = self._io.pos()
+            self._debug['unused_2']['start'] = self._io.pos()
+            self.unused_2 = self._io.read_u4be()
+            self._debug['unused_2']['end'] = self._io.pos()
 
 
     class EnemyInstructionC(KaitaiStruct):
@@ -4822,6 +4868,7 @@ class GloverLevel(KaitaiStruct):
             face_player = 1048576
             face_ball = 2097152
             face_closer_of_player_or_ball = 4194304
+            slow_down_towards_target = 8388608
         SEQ_FIELDS = ["instr_type", "lifetime", "params", "execution_condition_param_a", "execution_condition_param_b", "flags", "execution_condition"]
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
@@ -4850,7 +4897,7 @@ class GloverLevel(KaitaiStruct):
             elif _on == 4:
                 self.params = GloverLevel.EnemyInstructionRest(self._io, self, self._root)
             elif _on == 24:
-                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyKill(self._io, self, self._root)
             elif _on == 6:
                 self.params = GloverLevel.EnemyInstructionBullet0x6(self._io, self, self._root)
             elif _on == 20:
@@ -4870,9 +4917,9 @@ class GloverLevel(KaitaiStruct):
             elif _on == 5:
                 self.params = GloverLevel.EnemyInstructionBullet0x5(self._io, self, self._root)
             elif _on == 19:
-                self.params = GloverLevel.EnemyInstructionC(self._io, self, self._root)
+                self.params = GloverLevel.EnemyInstructionNoop(self._io, self, self._root)
             elif _on == 23:
-                self.params = GloverLevel.EnemyInstructionA(self._io, self, self._root)
+                self.params = GloverLevel.EnemyImpulseForward(self._io, self, self._root)
             elif _on == 15:
                 self.params = GloverLevel.EnemyInstructionAttack(self._io, self, self._root)
             elif _on == 8:
@@ -5443,6 +5490,24 @@ class GloverLevel(KaitaiStruct):
             self._debug['preceding_instr_idx']['start'] = self._io.pos()
             self.preceding_instr_idx = self._io.read_s2be()
             self._debug['preceding_instr_idx']['end'] = self._io.pos()
+
+
+    class EnemyKill(KaitaiStruct):
+        SEQ_FIELDS = ["unused_1", "unused_2"]
+        def __init__(self, _io, _parent=None, _root=None):
+            self._io = _io
+            self._parent = _parent
+            self._root = _root if _root else self
+            self._debug = collections.defaultdict(dict)
+            self._read()
+
+        def _read(self):
+            self._debug['unused_1']['start'] = self._io.pos()
+            self.unused_1 = self._io.read_u4be()
+            self._debug['unused_1']['end'] = self._io.pos()
+            self._debug['unused_2']['start'] = self._io.pos()
+            self.unused_2 = self._io.read_u4be()
+            self._debug['unused_2']['end'] = self._io.pos()
 
 
     class PlatHasPhysics(KaitaiStruct):
@@ -6103,12 +6168,12 @@ switch_fields = {
                 0x10: GloverLevel.EnemyInstructionC,
                 0x11: GloverLevel.EnemyInstructionC,
                 0x12: GloverLevel.EnemyInstructionGoto,
-                0x13: GloverLevel.EnemyInstructionC,
+                0x13: GloverLevel.EnemyInstructionNoop,
                 0x14: GloverLevel.EnemyInstructionC,
                 0x15: GloverLevel.EnemyInstructionC,
                 0x16: GloverLevel.EnemyInstructionA,
-                0x17: GloverLevel.EnemyInstructionA,
-                0x18: GloverLevel.EnemyInstructionC,
+                0x17: GloverLevel.EnemyImpulseForward,
+                0x18: GloverLevel.EnemyKill,
                 None: GloverLevel.EnemyInstructionError,
             },
             'type-to-code': {
@@ -6128,9 +6193,12 @@ switch_fields = {
                 GloverLevel.EnemyInstructionSteer: 0xd,
                 GloverLevel.EnemyInstructionSetTimer: 0xe,
                 GloverLevel.EnemyInstructionAttack: 0xf,
-                GloverLevel.EnemyInstructionC: [16, 17, 19, 20, 21, 24],
+                GloverLevel.EnemyInstructionC: [16, 17, 20, 21],
                 GloverLevel.EnemyInstructionGoto: 0x12,
-                GloverLevel.EnemyInstructionA: [22, 23],
+                GloverLevel.EnemyInstructionNoop: 0x13,
+                GloverLevel.EnemyInstructionA: 0x16,
+                GloverLevel.EnemyImpulseForward: 0x17,
+                GloverLevel.EnemyKill: 0x18,
                 GloverLevel.EnemyInstructionError: None,
             }
         },
@@ -6336,6 +6404,7 @@ original_names = {
     'GloverLevel.EnemyAttackInstruction': 'glover_level.enemy_attack_instruction',
     'GloverLevel.EnemyInstruction': 'glover_level.enemy_instruction',
     'GloverLevel.EnemyInstructionA': 'glover_level.enemy_instruction_a',
+    'GloverLevel.EnemyImpulseForward': 'glover_level.enemy_impulse_forward',
     'GloverLevel.EnemyInstructionSteer': 'glover_level.enemy_instruction_steer',
     'GloverLevel.EnemyInstructionCatapult': 'glover_level.enemy_instruction_catapult',
     'GloverLevel.EnemyInstructionGlom': 'glover_level.enemy_instruction_glom',
@@ -6353,6 +6422,8 @@ original_names = {
     'GloverLevel.EnemyInstructionFacePlayer': 'glover_level.enemy_instruction_face_player',
     'GloverLevel.EnemyInstructionFleePlayer': 'glover_level.enemy_instruction_flee_player',
     'GloverLevel.EnemyInstructionSetTimer': 'glover_level.enemy_instruction_set_timer',
+    'GloverLevel.EnemyKill': 'glover_level.enemy_kill',
+    'GloverLevel.EnemyInstructionNoop': 'glover_level.enemy_instruction_noop',
     'GloverLevel.EnemyInstructionC': 'glover_level.enemy_instruction_c',
     'GloverLevel.EnemyInstructionError': 'glover_level.enemy_instruction_error',
     'GloverLevel.EndLevelData': 'glover_level.end_level_data',
@@ -6543,5 +6614,5 @@ def getSwitches(cls):
     return switch_fields.get(cls.__qualname__, {})
 KaitaiStruct.getSwitches = getSwitches
 
-ksy_hash = '820f082c4d60baf430a6dae8186bc7f068f57c5c'
+ksy_hash = '31166ff98fef376ec8c3396a9c60e94389a2edf9'
 #############

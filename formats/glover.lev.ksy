@@ -3106,12 +3106,12 @@ types:
             0x10: enemy_instruction_c # TODO: something to do with animation
             0x11: enemy_instruction_c # TODO: charge player, func 0x80194548
             0x12: enemy_instruction_goto
-            0x13: enemy_instruction_c # TODO
+            0x13: enemy_instruction_noop
             0x14: enemy_instruction_c # TODO NME_INSTR_DEC_ACCUMULATOR_AND_BRANCH_IF_NONZERO
             0x15: enemy_instruction_c # TODO: NME_INSTR_LOAD_ACCUMULATOR
             0x16: enemy_instruction_a # TODO: NME_INSTR_TURN_AND_THEN_MOVE_TOWARDS_POINT
-            0x17: enemy_instruction_a # TODO: 
-            0x18: enemy_instruction_c # TODO
+            0x17: enemy_impulse_forward
+            0x18: enemy_kill
             _: enemy_instruction_error
       - id: execution_condition_param_a
         type: f4
@@ -3168,6 +3168,7 @@ types:
         0x100000: face_player
         0x200000: face_ball
         0x400000: face_closer_of_player_or_ball
+        0x800000: slow_down_towards_target
 
 
   enemy_instruction_a:
@@ -3181,6 +3182,23 @@ types:
 
       - id: u32_0x0e
         type: u4
+
+  enemy_impulse_forward:
+    seq:
+      - id: unused
+        type: f4
+      - id: vel_y
+        type: f4
+      - id: vel_forward
+        type: f4
+
+      - id: animation_behavior
+        type: u4
+        enum: animation_behavior_flags
+    enums:
+      animation_behavior_flags:
+        0: force_animation
+        0x4000: do_not_force_animation
 
   enemy_instruction_steer:
     seq:
@@ -3354,12 +3372,24 @@ types:
       - id: unused
         type: u4
 
+  enemy_kill:
+    seq:
+      - id: unused_1
+        type: u4
+      - id: unused_2
+        type: u4
+
+  enemy_instruction_noop:
+    seq:
+      - id: unused_1
+        type: u4
+      - id: unused_2
+        type: u4
 
   enemy_instruction_c:
     seq:
       - id: u32_0x02
         type: u4
-
       - id: u32_0x0e
         type: u4
 

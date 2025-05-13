@@ -4730,7 +4730,7 @@
               <param name="pattern">19|0x0*13</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyInstructionNoop"/>
         </group>
         <group>
           <!--Case 0x14-->
@@ -4766,7 +4766,7 @@
               <param name="pattern">23|0x0*17</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionA"/>
+          <ref name="EnemyImpulseForward"/>
         </group>
         <group>
           <!--Case 0x18-->
@@ -4775,7 +4775,7 @@
               <param name="pattern">24|0x0*18</param>
             </data>
           </attribute>
-          <ref name="EnemyInstructionC"/>
+          <ref name="EnemyKill"/>
         </group>
         <group>
           <!--Default case (only for types not listed above!)-->
@@ -4799,6 +4799,22 @@
         <text/>
       </attribute>
       <attribute name="u32_0x0e">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyImpulseForward">
+    <element name="EnemyImpulseForward">
+      <attribute name="unused">
+        <text/>
+      </attribute>
+      <attribute name="vel_y">
+        <text/>
+      </attribute>
+      <attribute name="vel_forward">
+        <text/>
+      </attribute>
+      <attribute name="animation_behavior">
         <text/>
       </attribute>
     </element>
@@ -5026,6 +5042,26 @@
         <text/>
       </attribute>
       <attribute name="unused">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyKill">
+    <element name="EnemyKill">
+      <attribute name="unused_1">
+        <text/>
+      </attribute>
+      <attribute name="unused_2">
+        <text/>
+      </attribute>
+    </element>
+  </define>
+  <define name="EnemyInstructionNoop">
+    <element name="EnemyInstructionNoop">
+      <attribute name="unused_1">
+        <text/>
+      </attribute>
+      <attribute name="unused_2">
         <text/>
       </attribute>
     </element>

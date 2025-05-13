@@ -1,6 +1,12 @@
 from construct import *
 from construct.lib import *
 
+def glover_level__enemy_impulse_forward__animation_behavior_flags(subcon):
+	return Enum(subcon,
+		force_animation=0,
+		do_not_force_animation=16384,
+	)
+
 def glover_level__plat_constant_spin__axis(subcon):
 	return Enum(subcon,
 		x=0,
@@ -188,6 +194,7 @@ def glover_level__enemy_instruction__instruction_flags(subcon):
 		face_player=1048576,
 		face_ball=2097152,
 		face_closer_of_player_or_ball=4194304,
+		slow_down_towards_target=8388608,
 	)
 
 
@@ -453,6 +460,14 @@ glover_level__cameo_set_enemy_flag_todo = Struct(
 glover_level__actor_0xbf = Struct(
 	'mode' / Int16ub,
 	'child_mesh_id' / Int32ub,
+)
+
+
+glover_level__enemy_impulse_forward = Struct(
+	'unused' / Float32b,
+	'vel_y' / Float32b,
+	'vel_forward' / Float32b,
+	'animation_behavior' / glover_level__enemy_impulse_forward__animation_behavior_flags(Int32ub),
 )
 
 glover_level__puzzle_action_start_cameo = Struct(
@@ -803,6 +818,11 @@ glover_level__puzzle_cond_reg_eq = Struct(
 )
 
 glover_level__plat_actor_enable_water_animation = Struct(
+)
+
+glover_level__enemy_instruction_noop = Struct(
+	'unused_1' / Int32ub,
+	'unused_2' / Int32ub,
 )
 
 glover_level__enemy_instruction_c = Struct(
@@ -1423,7 +1443,7 @@ glover_level__plat_special_0x9e = Struct(
 glover_level__enemy_instruction = Struct(
 	'instr_type' / Int16ub,
 	'lifetime' / Int16sb,
-	'params' / Switch(this.instr_type, {14: LazyBound(lambda: glover_level__enemy_instruction_set_timer), 10: LazyBound(lambda: glover_level__enemy_instruction_glom), 17: LazyBound(lambda: glover_level__enemy_instruction_c), 0: LazyBound(lambda: glover_level__enemy_instruction_move), 4: LazyBound(lambda: glover_level__enemy_instruction_rest), 24: LazyBound(lambda: glover_level__enemy_instruction_c), 6: LazyBound(lambda: glover_level__enemy_instruction_bullet_0x6), 20: LazyBound(lambda: glover_level__enemy_instruction_c), 7: LazyBound(lambda: glover_level__enemy_instruction_play_animation), 1: LazyBound(lambda: glover_level__enemy_instruction_dash), 13: LazyBound(lambda: glover_level__enemy_instruction_steer), 11: LazyBound(lambda: glover_level__enemy_instruction_catapult), 12: LazyBound(lambda: glover_level__enemy_instruction_flee_player), 3: LazyBound(lambda: glover_level__enemy_instruction_random_walk), 5: LazyBound(lambda: glover_level__enemy_instruction_bullet_0x5), 19: LazyBound(lambda: glover_level__enemy_instruction_c), 23: LazyBound(lambda: glover_level__enemy_instruction_a), 15: LazyBound(lambda: glover_level__enemy_instruction_attack), 8: LazyBound(lambda: glover_level__enemy_instruction_face_player), 9: LazyBound(lambda: glover_level__enemy_instruction_follow_player), 21: LazyBound(lambda: glover_level__enemy_instruction_c), 16: LazyBound(lambda: glover_level__enemy_instruction_c), 18: LazyBound(lambda: glover_level__enemy_instruction_goto), 2: LazyBound(lambda: glover_level__enemy_instruction_turn), 22: LazyBound(lambda: glover_level__enemy_instruction_a), }, default=LazyBound(lambda: glover_level__enemy_instruction_error)),
+	'params' / Switch(this.instr_type, {14: LazyBound(lambda: glover_level__enemy_instruction_set_timer), 10: LazyBound(lambda: glover_level__enemy_instruction_glom), 17: LazyBound(lambda: glover_level__enemy_instruction_c), 0: LazyBound(lambda: glover_level__enemy_instruction_move), 4: LazyBound(lambda: glover_level__enemy_instruction_rest), 24: LazyBound(lambda: glover_level__enemy_kill), 6: LazyBound(lambda: glover_level__enemy_instruction_bullet_0x6), 20: LazyBound(lambda: glover_level__enemy_instruction_c), 7: LazyBound(lambda: glover_level__enemy_instruction_play_animation), 1: LazyBound(lambda: glover_level__enemy_instruction_dash), 13: LazyBound(lambda: glover_level__enemy_instruction_steer), 11: LazyBound(lambda: glover_level__enemy_instruction_catapult), 12: LazyBound(lambda: glover_level__enemy_instruction_flee_player), 3: LazyBound(lambda: glover_level__enemy_instruction_random_walk), 5: LazyBound(lambda: glover_level__enemy_instruction_bullet_0x5), 19: LazyBound(lambda: glover_level__enemy_instruction_noop), 23: LazyBound(lambda: glover_level__enemy_impulse_forward), 15: LazyBound(lambda: glover_level__enemy_instruction_attack), 8: LazyBound(lambda: glover_level__enemy_instruction_face_player), 9: LazyBound(lambda: glover_level__enemy_instruction_follow_player), 21: LazyBound(lambda: glover_level__enemy_instruction_c), 16: LazyBound(lambda: glover_level__enemy_instruction_c), 18: LazyBound(lambda: glover_level__enemy_instruction_goto), 2: LazyBound(lambda: glover_level__enemy_instruction_turn), 22: LazyBound(lambda: glover_level__enemy_instruction_a), }, default=LazyBound(lambda: glover_level__enemy_instruction_error)),
 	'execution_condition_param_a' / Float32b,
 	'execution_condition_param_b' / Float32b,
 	'flags' / glover_level__enemy_instruction__instruction_flags(Int32ub),
@@ -1583,6 +1603,11 @@ glover_level__cameo_set_camera_attention = Struct(
 	'z' / Float32b,
 	'frame_count' / Int16sb,
 	'preceding_instr_idx' / Int16sb,
+)
+
+glover_level__enemy_kill = Struct(
+	'unused_1' / Int32ub,
+	'unused_2' / Int32ub,
 )
 
 glover_level__plat_has_physics = Struct(

@@ -1129,6 +1129,42 @@ var GloverLevel = (function() {
     return Actor0xbf;
   })();
 
+  var EnemyImpulseForward = GloverLevel.EnemyImpulseForward = (function() {
+    EnemyImpulseForward.AnimationBehaviorFlags = Object.freeze({
+      FORCE_ANIMATION: 0,
+      DO_NOT_FORCE_ANIMATION: 16384,
+
+      0: "FORCE_ANIMATION",
+      16384: "DO_NOT_FORCE_ANIMATION",
+    });
+
+    function EnemyImpulseForward(_io, _parent, _root) {
+      this.__type = 'EnemyImpulseForward';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyImpulseForward.prototype._read = function() {
+      this._debug.unused = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused = this._io.readF4be();
+      this._debug.unused.end = this._io.pos;
+      this._debug.velY = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.velY = this._io.readF4be();
+      this._debug.velY.end = this._io.pos;
+      this._debug.velForward = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.velForward = this._io.readF4be();
+      this._debug.velForward.end = this._io.pos;
+      this._debug.animationBehavior = { start: this._io.pos, ioOffset: this._io.byteOffset, enumName: "GloverLevel.EnemyImpulseForward.AnimationBehaviorFlags" };
+      this.animationBehavior = this._io.readU4be();
+      this._debug.animationBehavior.end = this._io.pos;
+    }
+
+    return EnemyImpulseForward;
+  })();
+
   var PuzzleActionStartCameo = GloverLevel.PuzzleActionStartCameo = (function() {
     function PuzzleActionStartCameo(_io, _parent, _root) {
       this.__type = 'PuzzleActionStartCameo';
@@ -2700,6 +2736,28 @@ var GloverLevel = (function() {
     }
 
     return PlatActorEnableWaterAnimation;
+  })();
+
+  var EnemyInstructionNoop = GloverLevel.EnemyInstructionNoop = (function() {
+    function EnemyInstructionNoop(_io, _parent, _root) {
+      this.__type = 'EnemyInstructionNoop';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyInstructionNoop.prototype._read = function() {
+      this._debug.unused1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused1 = this._io.readU4be();
+      this._debug.unused1.end = this._io.pos;
+      this._debug.unused2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused2 = this._io.readU4be();
+      this._debug.unused2.end = this._io.pos;
+    }
+
+    return EnemyInstructionNoop;
   })();
 
   var EnemyInstructionC = GloverLevel.EnemyInstructionC = (function() {
@@ -5895,6 +5953,7 @@ var GloverLevel = (function() {
       FACE_PLAYER: 1048576,
       FACE_BALL: 2097152,
       FACE_CLOSER_OF_PLAYER_OR_BALL: 4194304,
+      SLOW_DOWN_TOWARDS_TARGET: 8388608,
 
       1: "MODULATE_VELOCITY_WITH_TURNS",
       2: "MODULATE_ACCELERATION",
@@ -5915,6 +5974,7 @@ var GloverLevel = (function() {
       1048576: "FACE_PLAYER",
       2097152: "FACE_BALL",
       4194304: "FACE_CLOSER_OF_PLAYER_OR_BALL",
+      8388608: "SLOW_DOWN_TOWARDS_TARGET",
     });
 
     function EnemyInstruction(_io, _parent, _root) {
@@ -5951,7 +6011,7 @@ var GloverLevel = (function() {
         this.params = new EnemyInstructionRest(this._io, this, this._root);
         break;
       case 24:
-        this.params = new EnemyInstructionC(this._io, this, this._root);
+        this.params = new EnemyKill(this._io, this, this._root);
         break;
       case 6:
         this.params = new EnemyInstructionBullet0x6(this._io, this, this._root);
@@ -5981,10 +6041,10 @@ var GloverLevel = (function() {
         this.params = new EnemyInstructionBullet0x5(this._io, this, this._root);
         break;
       case 19:
-        this.params = new EnemyInstructionC(this._io, this, this._root);
+        this.params = new EnemyInstructionNoop(this._io, this, this._root);
         break;
       case 23:
-        this.params = new EnemyInstructionA(this._io, this, this._root);
+        this.params = new EnemyImpulseForward(this._io, this, this._root);
         break;
       case 15:
         this.params = new EnemyInstructionAttack(this._io, this, this._root);
@@ -6663,6 +6723,28 @@ var GloverLevel = (function() {
     }
 
     return CameoSetCameraAttention;
+  })();
+
+  var EnemyKill = GloverLevel.EnemyKill = (function() {
+    function EnemyKill(_io, _parent, _root) {
+      this.__type = 'EnemyKill';
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+      this._debug = {};
+
+      this._read();
+    }
+    EnemyKill.prototype._read = function() {
+      this._debug.unused1 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused1 = this._io.readU4be();
+      this._debug.unused1.end = this._io.pos;
+      this._debug.unused2 = { start: this._io.pos, ioOffset: this._io.byteOffset };
+      this.unused2 = this._io.readU4be();
+      this._debug.unused2.end = this._io.pos;
+    }
+
+    return EnemyKill;
   })();
 
   var PlatHasPhysics = GloverLevel.PlatHasPhysics = (function() {
